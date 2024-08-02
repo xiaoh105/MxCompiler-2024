@@ -6,8 +6,7 @@ grammar Mx;
 
 @lexer::members {
     int formatMode = 0;
-    int exprMode = 0;
-    Stack<Integer> braceStack = new Stack<>();
+    boolean exprMode = false;
 }
 
 program
@@ -38,6 +37,7 @@ varDef
 
 statement
     : varDef
+    | suite
     | expression ';'
     | If '(' expression ')' trueStmt=statement (Else falseStmt=statement)?
     | While '(' expression ')' suite
@@ -49,8 +49,7 @@ statement
 
 expression
     : primary
-    | suite
-    | 'f"' (FormatStringLiteral | '{' expression '}')* QuotationPriority
+    | 'f"' (FormatStringLiteral | '$' expression '$')* QuotationPriority
     | expression (Increment | Decrement)
     | Identifier '(' arguments? ')'
     | expression '.' Identifier '(' arguments? ')'
@@ -121,22 +120,16 @@ format: 'f"' (FormatStringLiteral | '{' expression '}')* '"';
 FormatQuatation
     : 'f"'
     {
-        if (formatMode > 0) {
-            braceStack.push(exprMode);
-        }
         formatMode++;
-        exprMode = 0;
+        exprMode = false;
     }
     ;
 QuotationPriority
-    : {formatMode > 0 && exprMode == 0}? '"'
+    : {formatMode > 0 && !exprMode}? '"'
     {
         formatMode--;
         if (formatMode > 0) {
-            exprMode = braceStack.peek();
-            braceStack.pop();
-        } else {
-            exprMode = 0;
+            exprMode = true;
         }
     }
     ;
@@ -148,14 +141,14 @@ DecimalNumber
     | '0'
     ;
 StringLiteral
-    : {formatMode == 0 || exprMode > 0}? '"'('\\n' | '\\\\' | '\\"' | [ !#-[\]-~])*'"'
+    : {formatMode == 0 || exprMode}? '"'('\\n' | '\\\\' | '\\"' | [ !#-[\]-~])*'"'
     ;
 FormatStringLiteral
-    : {formatMode > 0 && exprMode == 0}? ('\\n' | '\\\\' | '\\"' | '{{' | '}}' | [ !#-[\]-z|~])+
+    : {formatMode > 0 && !exprMode}? ('\\n' | '\\\\' | '\\"' | '$$' | [ !#%-[\]-~])+
     ;
 Null : 'null';
 ArrayLiteral
-    : {formatMode == 0 || exprMode > 0}? '{' DecimalNumber (',' DecimalNumber)* '}'
+    : '{' DecimalNumber (',' DecimalNumber)* '}'
     ;
 // Quotations
 Quotation : '"';
@@ -212,21 +205,15 @@ LeftParen : '(';
 RightParen : ')';
 LeftBracket : '[';
 RightBracket : ']';
-LeftBrace
-    : '{'
-    {
-        if (formatMode > 0) {
-            exprMode++;
-        }
-    };
-RightBrace
-    : '}'
-    {
-        if (formatMode > 0) {
-            exprMode--;
-        }
-    };
+LeftBrace : '{';
+RightBrace : '}';
 // Other Symbols
+Dollar
+    : '$'
+    {
+        exprMode = !exprMode;
+    }
+    ;
 Question : '?';
 Colon : ':';
 Semicolon : ';';
