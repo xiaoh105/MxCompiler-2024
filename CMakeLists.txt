@@ -11,4 +11,8 @@ add_executable(MxCompiler src/main.cpp
         src/parser/MxLexer.cpp
         src/parser/MxVisitor.cpp
         src/parser/MxBaseVisitor.cpp
-        src/parser/MxBaseVisitor.cpp)
+        src/parser/MxBaseVisitor.cpp
+        src/utils/type.cpp
+        src/utils/function.cpp)
+
+target_link_libraries(MxCompiler antlr4-runtime)
