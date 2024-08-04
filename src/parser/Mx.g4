@@ -1,12 +1,8 @@
 grammar Mx;
 
-@header {
-    import java.util.Stack;
-}
-
 @lexer::members {
     int formatMode = 0;
-    boolean exprMode = false;
+    bool exprMode = false;
 }
 
 program
@@ -22,13 +18,14 @@ classDef
     ;
 
 classStmt
-    : type Identifier (',' Identifier)* ';'
-    | classIdentifier=Identifier '(' ')' suite
-    | returnType=type funcName=Identifier '(' (type Identifier)* ')' suite
+    : memberType=type Identifier (',' Identifier)* ';'                        # memberDefStmt
+    | classIdentifier=Identifier '(' ')' suite                                # constructorDefStmt
+    | returnType=type funcName=Identifier '(' (type Identifier)* ')' suite    # funcDefStmt
     ;
 
 funcDef
-    : returnType=type funcName=Identifier '(' (type Identifier (',' type Identifier)*)? ')' suite
+    : returnType=type funcName=Identifier
+      '(' (type Identifier (',' type Identifier)*)? ')' suite
     ;
 
 varDef
@@ -36,40 +33,41 @@ varDef
     ;
 
 statement
-    : varDef
-    | suite
-    | expression ';'
-    | If '(' expression ')' trueStmt=statement (Else falseStmt=statement)?
-    | While '(' expression ')' suite
-    | For '(' initializeStmt=statement conditionExpr=expression ';' stepExpr=expression ')' statement
-    | Return returnExpr=expression ';'
-    | Break ';'
-    | Continue ';'
+    : type Identifier ('=' expression)? (',' Identifier ('=' expression)?)* ';' # varDefStmt
+    | suite                                                                     # suiteStmt
+    | expression ';'                                                            # exprStmt
+    | If '(' expression ')' trueStmt=statement (Else falseStmt=statement)?      # ifStmt
+    | While '(' expression ')' suite                                            # whileStmt
+    | For '(' initializeStmt=statement conditionExpr=expression ';'
+      stepExpr=expression ')' statement                                         # forStmt
+    | Return returnExpr=expression ';'                                          # returnStmt
+    | Break ';'                                                                 # breakStmt
+    | Continue ';'                                                              # continueStmt
     ;
 
 expression
-    : primary
-    | 'f"' (FormatStringLiteral | '$' expression '$')* QuotationPriority
-    | expression (Increment | Decrement)
-    | Identifier '(' arguments? ')'
-    | expression '.' Identifier '(' arguments? ')'
-    | expression ('[' expression ']')+
-    | expression '.' Identifier
-    | <assoc=right> (Increment | Decrement) expression
-    | <assoc=right> (Add | Sub) expression
-    | <assoc=right> (NotLogic | Not) expression
-    | expression (Mul | Div | Mod) expression
-    | expression (Add | Sub) expression
-    | expression (ShiftLeft | ShiftRight) expression
-    | expression (Less | LessEqual | Greater | GreaterEqual) expression
-    | expression (Equal | UnEqual) expression
-    | expression And expression
-    | expression Xor expression
-    | expression Or expression
-    | expression AndLogic expression
-    | expression OrLogic expression
-    | <assoc=right> expression '?' expression ':' expression
-    | expression Assign expression
+    : primary                                                               # atomicStmt
+    | 'f"' (FormatStringLiteral | '$' expression '$')* Quotation            # formatStmt
+    | expression (Increment | Decrement)                                    # unaryStmt
+    | funcName=Identifier '(' arguments? ')'                                # funcCallStmt
+    | classVar=expression '.' funcName=Identifier '(' arguments? ')'        # funcCallStmt
+    | expression ('[' index=expression ']')+                                # subscriptStmt
+    | expression '.' Identifier                                             # memberStmt
+    | <assoc=right> (Increment | Decrement) expression                      # unaryStmt
+    | <assoc=right> (Add | Sub) expression                                  # unaryStmt
+    | <assoc=right> (NotLogic | Not) expression                             # unaryStmt
+    | expression (Mul | Div | Mod) expression                               # binaryStmt
+    | expression (Add | Sub) expression                                     # binaryStmt
+    | expression (ShiftLeft | ShiftRight) expression                        # binaryStmt
+    | expression (Less | LessEqual | Greater | GreaterEqual) expression     # binaryStmt
+    | expression (Equal | UnEqual) expression                               # binaryStmt
+    | expression And expression                                             # binaryStmt
+    | expression Xor expression                                             # binaryStmt
+    | expression Or expression                                              # binaryStmt
+    | expression AndLogic expression                                        # binaryStmt
+    | expression OrLogic expression                                         # binaryStmt
+    | <assoc=right> expression '?' expression ':' expression                # tenaryStmt
+    | expression Assign expression                                          # assignStmt
     ;
 
 suite
@@ -81,13 +79,13 @@ arguments
     ;
 
 primary
-    : '(' expression ')'
-    | literal
-    | Identifier
-    | This
-    | New type ('('')')?
-    | New type '[]' ArrayLiteral
-    | New type ('[' expression ']')+ ('[]')*
+    : '(' expression ')'                         # parenPrimary
+    | literal                                    # literalPrimary
+    | Identifier                                 # varPrimary
+    | This                                       # thisPrimary
+    | New type ('('')')?                         # newPrimary
+    | New type '[]' ArrayLiteral                 # newPrimary
+    | New type ('[' expression ']')+ ('[]')*     # newPrimary
     ;
 
 literal
@@ -100,12 +98,12 @@ literal
     ;
 
 type
-    : Int                                       # builtinType
-    | Bool                                      # builtinType
-    | String                                    # builtinType
-    | Identifier                                # definedType
-    | Void                                      # voidType
-    | (Int | Bool | String | Identifier)'[]'+   # arrayType
+    : Int
+    | Bool
+    | String
+    | Identifier
+    | Void
+    | (Int | Bool | String | Identifier)'[]'+
     ;
 
 array
@@ -114,9 +112,7 @@ array
     | '{' array (',' array)* '}'
     ;
 
-format: 'f"' (FormatStringLiteral | '{' expression '}')* '"';
-
-// Format quatations
+// Format quatations and Quotations
 FormatQuatation
     : 'f"'
     {
@@ -124,7 +120,7 @@ FormatQuatation
         exprMode = false;
     }
     ;
-QuotationPriority
+Quotation
     : {formatMode > 0 && !exprMode}? '"'
     {
         formatMode--;
@@ -150,8 +146,6 @@ Null : 'null';
 ArrayLiteral
     : '{' DecimalNumber (',' DecimalNumber)* '}'
     ;
-// Quotations
-Quotation : '"';
 // Reserved Words
 New : 'new';
 Class : 'class';
@@ -210,9 +204,7 @@ RightBrace : '}';
 // Other Symbols
 Dollar
     : '$'
-    {
-        exprMode = !exprMode;
-    }
+    { exprMode = !exprMode; }
     ;
 Question : '?';
 Colon : ':';
