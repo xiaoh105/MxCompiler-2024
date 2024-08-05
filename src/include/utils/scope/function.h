@@ -1,7 +1,7 @@
 /*
  * Mx Compiler
  * File Name: function.h
- * Identification: ./src/include/utils/function.h
+ * Identification: ./src/include/utils/scope/function.h
  * Function: Manage function information for AST.
  */
 
@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "utils/type.h"
+#include "utils/scope/type.h"
 
 /**
  * A class used to manage function parameters.

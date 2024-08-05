@@ -1,14 +1,14 @@
 /*
  * Mx Compiler
  * File Name: function.h
- * Identification: ./src/utils/function.h
+ * Identification: ./src/utils/scope/function.h
  * Function: Manage function information for AST.
  */
 
 #include <iostream>
 #include <stdexcept>
 
-#include "utils/function.h"
+#include "utils/scope/function.h"
 
 Function::Function(const std::string &name, const Type &return_type) : name_(name), return_type_(return_type) {}
 

@@ -1,7 +1,7 @@
 /*
  * Mx Compiler
  * File Name: type.h
- * Identification: ./src/include/utils/type.h
+ * Identification: ./src/include/utils/scope/type.h
  * Function: Manage type information for AST.
  */
 
@@ -10,7 +10,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "utils/function.h"
+#include "utils/scope/function.h"
 
 // Enumerate builtin classes and handle Uninitialized situation.
 enum TypeInfo : int { kUnknown = 0, kBool, kInt, kVoid, kString, kOther };
