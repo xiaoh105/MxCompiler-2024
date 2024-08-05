@@ -4,6 +4,7 @@
  * Identification: ./src/include/utils/type.h
  * Function: Manage type information for AST.
  */
+
 #pragma once
 
 #include <string>
@@ -11,15 +12,21 @@
 
 #include "utils/function.h"
 
+// Enumerate builtin classes and handle Uninitialized situation.
 enum TypeInfo : int { kUnknown = 0, kBool, kInt, kVoid, kString, kOther };
 
 class Typename;
 
+/**
+ * A class used to manage an actual type of a variable/argument.
+ * Contains reference to Typename, but also contains the dimision of array.
+ */
 class Type {
 public:
   Type();
-  Type(const Typename &type_name, std::size_t dim);
+  Type(const Typename &type_name, std::size_t dim = 0);
   [[nodiscard]] std::size_t GetDim() const;
+  [[nodiscard]] Typename GetTypename() const;
   bool operator==(const Type &other) const;
   bool operator!=(const Type &other) const;
 
@@ -29,7 +36,7 @@ private:
 };
 
 /**
- * A class used to manage the general information of a class.
+ * A class used to manage the general information of a class.(i.e. when a class is defined)
  */
 class Typename {
 public:

@@ -1,3 +1,10 @@
+/*
+ * Mx Compiler
+ * File Name: type.cpp
+ * Identification: ./src/utils/type.cpp
+ * Function: Manage type information for AST.
+ */
+
 #include "utils/error/semantic_error.h"
 #include "utils/type.h"
 
@@ -64,6 +71,8 @@ Type::Type() : type_name_({}), dim_() {}
 Type::Type(const Typename &type_name, std::size_t dim) : type_name_(type_name), dim_(dim) {}
 
 std::size_t Type::GetDim() const { return dim_; }
+
+Typename Type::GetTypename() const { return type_name_; }
 
 bool Type::operator==(const Type &other) const {
   return type_name_ == other.type_name_ && dim_ == other.dim_;
