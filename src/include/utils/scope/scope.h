@@ -21,7 +21,7 @@ class GlobalScope {
   void AddFunction(const std::string &name, const Function &function, const Position &pos);
   [[nodiscard]] bool HasType(const std::string &name) const;
   [[nodiscard]] bool HasFunction(const std::string &name) const;
-  std::pair<bool, const Type &> GetType(const std::string &name) const;
+  std::pair<bool, const Typename &> GetType(const std::string &name) const;
   std::pair<bool, const Function &> GetFunction(const std::string &name) const;
   GlobalScope &operator=(const GlobalScope &other) = delete;
   GlobalScope &operator=(GlobalScope &&other) noexcept = delete;

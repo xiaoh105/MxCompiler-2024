@@ -50,8 +50,8 @@ void GlobalScope::AddFunction(const std::string &name, const Function &function,
 
 bool GlobalScope::HasType(const std::string &name) const { return type_.contains(name); }
 
-std::pair<bool, const Type &> GlobalScope::GetType(const std::string &name) const {
-  using return_type = std::pair<bool, const Type &>;
+std::pair<bool, const Typename &> GlobalScope::GetType(const std::string &name) const {
+  using return_type = std::pair<bool, const Typename &>;
   auto it = type_.find(name);
   return it == type_.end() ? return_type{false, {}} : return_type{true, it->second};
 }
