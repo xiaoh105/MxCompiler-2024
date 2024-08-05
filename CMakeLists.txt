@@ -13,6 +13,7 @@ add_executable(MxCompiler src/main.cpp
         src/parser/MxBaseVisitor.cpp
         src/parser/MxBaseVisitor.cpp
         src/utils/scope/type.cpp
-        src/utils/scope/function.cpp)
+        src/utils/scope/function.cpp
+        src/utils/scope/scope.cpp)
 
 target_link_libraries(MxCompiler antlr4-runtime)

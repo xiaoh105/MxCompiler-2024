@@ -12,9 +12,8 @@
 
 Function::Function() : return_type_({}) {}
 
-Function::Function(const std::string &name, const Type &return_type) : name_(name), return_type_(return_type) {}
-
-void Function::AppendArgument(const Type &type) { arguments_.push_back(type); }
+Function::Function(const Type &return_type, const std::vector<Type> &args)
+    : return_type_(return_type), arguments_(args) {}
 
 std::size_t Function::GetArgNum() const { return arguments_.size(); }
 

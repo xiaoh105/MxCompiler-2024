@@ -55,12 +55,22 @@ class Typename {
   Type CreateType(std::size_t dim = 0) const;
   bool operator==(const Typename &other) const;
   bool operator!=(const Typename &other) const;
-  Typename &operator=(const Typename &other) = default;
-  Typename &operator=(Typename &&other) noexcept = default;
 
  private:
   TypeInfo type_info_{kUnknown};
-  std::string name_{};
+  const std::string name_{};
   std::unordered_map<std::string, const Type &> member_{};
   std::unordered_map<std::string, const Function &> function_{};
 };
+
+Typename GetStringTypename();
+
+const Typename kIntTypename("int");
+const Typename kBoolTypename("bool");
+const Typename kVoidTypename("void");
+const Typename kStringTypename = GetStringTypename();
+
+const Type kIntType(kIntTypename, 0);
+const Type kBoolType(kBoolTypename, 0);
+const Type kVoidType(kVoidTypename, 0);
+const Type kStringType(kStringTypename, 0);

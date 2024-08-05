@@ -8,6 +8,19 @@
 #include "utils/scope/type.h"
 #include "utils/error/semantic_error.hpp"
 
+Typename GetStringTypename() {
+  Typename kStr("string");
+  Function length(kIntType, {});
+  kStr.AddFunction("length", length);
+  Function substring(kStringType, {kIntType, kIntType});
+  kStr.AddFunction("substring", substring);
+  Function parse_int(kIntType, {});
+  kStr.AddFunction("parseInt", parse_int);
+  Function ord(kIntType, {kIntType});
+  kStr.AddFunction("ord", ord);
+  return kStr;
+}
+
 Typename::Typename(const std::string &name) : name_(name) {
   if (name == "int") {
     type_info_ = kInt;

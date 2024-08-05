@@ -20,14 +20,12 @@ class Type;
 class Function {
  public:
   Function();
-  explicit Function(const std::string &name, const Type &return_type);
-  void AppendArgument(const Type &type);
+  Function(const Type &return_type, const std::vector<Type> &args);
   [[nodiscard]] std::size_t GetArgNum() const;
   [[nodiscard]] Type GetArgument(std::size_t index) const;
   [[nodiscard]] const std::vector<Type> &GetArguments() const;
 
  private:
-  std::string name_;
-  std::vector<Type> arguments_;
   const Type &return_type_;
+  std::vector<Type> arguments_;
 };

@@ -29,6 +29,15 @@ class MultipleDef : public SemanticError {
 };
 
 /**
+ * Invalid use of type.(e.g. Declare variable using 'void' or use non-boolean variables as if condition.
+ */
+class InvalidType : public SemanticError {
+public:
+  InvalidType() = delete;
+  InvalidType(const Position &pos) : SemanticError("Invalid Type", pos) {}
+};
+
+/**
  * Denoting that an error is not handled correctly or in the right place.
  */
 class UnhandledErr : public SemanticError {
