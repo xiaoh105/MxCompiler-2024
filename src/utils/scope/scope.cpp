@@ -1,3 +1,9 @@
+/*
+ * Mx Compiler
+ * File Name: scope.cpp
+ * Identification: ./src/utils/scope/scope.h
+ * Function: Manage scope information.
+ */
 #include "utils/scope/scope.h"
 #include "utils/error/semantic_error.hpp"
 
@@ -23,6 +29,9 @@ GlobalScope::GlobalScope() {
 }
 
 void GlobalScope::AddType(const std::string &name, const Typename &type, const Position &pos) {
+  if (function_.contains(name)) {
+    throw MultipleDef(pos);
+  }
   auto result = type_.emplace(name, type).second;
   if (!result) {
     throw MultipleDef(pos);
@@ -30,6 +39,9 @@ void GlobalScope::AddType(const std::string &name, const Typename &type, const P
 }
 
 void GlobalScope::AddFunction(const std::string &name, const Function &function, const Position &pos) {
+  if (type_.contains(name)) {
+    throw MultipleDef(pos);
+  }
   auto result = function_.emplace(name, function).second;
   if (!result) {
     throw MultipleDef(pos);
@@ -61,6 +73,9 @@ Scope::Scope(Scope &&other) noexcept
       parent_scope_(std::move(other.parent_scope_)) {}
 
 void Scope::DefineVar(const std::string &name, const Type &type, const Position &pos) {
+  if (global_scope_.HasFunction(name)) {
+    throw MultipleDef(pos);
+  }
   auto result = local_.emplace(name, type).second;
   if (!result) {
     throw MultipleDef(pos);
@@ -72,7 +87,10 @@ bool Scope::HasVar(const std::string &name) const { return local_.contains(name)
 std::pair<bool, const Type &> Scope::GetVar(const std::string &name) const {
   using return_type = std::pair<bool, const Type &>;
   auto it = local_.find(name);
-  return it == local_.end() ? return_type{false, {}} : return_type{true, it->second};
+  if (it != local_.end()) {
+    return {true, it->second};
+  }
+  return parent_scope_ == nullptr ? return_type{false, {}} : parent_scope_->GetVar(name);
 }
 
 const std::unique_ptr<Scope> &Scope::GetParent() const { return parent_scope_; }
