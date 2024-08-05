@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "MxParser.h"
+#include "parser/MxParser.h"
 #include "antlr4-runtime.h"
 
 /**
@@ -81,6 +81,8 @@ class MxVisitor : public antlr4::tree::AbstractParseTreeVisitor {
 
   virtual std::any visitNewPrimary(MxParser::NewPrimaryContext *context) = 0;
 
+  virtual std::any visitArray(MxParser::ArrayContext *context) = 0;
+
   virtual std::any visitDecimalLiteral(MxParser::DecimalLiteralContext *context) = 0;
 
   virtual std::any visitBoolLiteral(MxParser::BoolLiteralContext *context) = 0;
@@ -92,6 +94,4 @@ class MxVisitor : public antlr4::tree::AbstractParseTreeVisitor {
   virtual std::any visitArrayLiteral(MxParser::ArrayLiteralContext *context) = 0;
 
   virtual std::any visitType(MxParser::TypeContext *context) = 0;
-
-  virtual std::any visitArray(MxParser::ArrayContext *context) = 0;
 };

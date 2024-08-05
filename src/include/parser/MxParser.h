@@ -18,60 +18,59 @@ class MxParser : public antlr4::Parser {
     StringLiteral = 8,
     FormatStringLiteral = 9,
     Null = 10,
-    ArrayLiteral = 11,
-    New = 12,
-    Class = 13,
-    This = 14,
-    If = 15,
-    Else = 16,
-    For = 17,
-    While = 18,
-    Break = 19,
-    Continue = 20,
-    Return = 21,
-    Bool = 22,
-    Int = 23,
-    Void = 24,
-    String = 25,
-    Identifier = 26,
-    Add = 27,
-    Sub = 28,
-    Mul = 29,
-    Div = 30,
-    Mod = 31,
-    Less = 32,
-    LessEqual = 33,
-    Greater = 34,
-    GreaterEqual = 35,
-    Equal = 36,
-    UnEqual = 37,
-    AndLogic = 38,
-    OrLogic = 39,
-    NotLogic = 40,
-    ShiftRight = 41,
-    ShiftLeft = 42,
-    And = 43,
-    Or = 44,
-    Xor = 45,
-    Not = 46,
-    Assign = 47,
-    Increment = 48,
-    Decrement = 49,
-    Dot = 50,
-    LeftParen = 51,
-    RightParen = 52,
-    LeftBracket = 53,
-    RightBracket = 54,
-    LeftBrace = 55,
-    RightBrace = 56,
-    Dollar = 57,
-    Question = 58,
-    Colon = 59,
-    Semicolon = 60,
-    Comma = 61,
-    Whitespace = 62,
-    LineComment = 63,
-    BlockComment = 64
+    New = 11,
+    Class = 12,
+    This = 13,
+    If = 14,
+    Else = 15,
+    For = 16,
+    While = 17,
+    Break = 18,
+    Continue = 19,
+    Return = 20,
+    Bool = 21,
+    Int = 22,
+    Void = 23,
+    String = 24,
+    Identifier = 25,
+    Add = 26,
+    Sub = 27,
+    Mul = 28,
+    Div = 29,
+    Mod = 30,
+    Less = 31,
+    LessEqual = 32,
+    Greater = 33,
+    GreaterEqual = 34,
+    Equal = 35,
+    UnEqual = 36,
+    AndLogic = 37,
+    OrLogic = 38,
+    NotLogic = 39,
+    ShiftRight = 40,
+    ShiftLeft = 41,
+    And = 42,
+    Or = 43,
+    Xor = 44,
+    Not = 45,
+    Assign = 46,
+    Increment = 47,
+    Decrement = 48,
+    Dot = 49,
+    LeftParen = 50,
+    RightParen = 51,
+    LeftBracket = 52,
+    RightBracket = 53,
+    LeftBrace = 54,
+    RightBrace = 55,
+    Dollar = 56,
+    Question = 57,
+    Colon = 58,
+    Semicolon = 59,
+    Comma = 60,
+    Whitespace = 61,
+    LineComment = 62,
+    BlockComment = 63
   };
 
   enum {
@@ -86,9 +85,9 @@ class MxParser : public antlr4::Parser {
     RuleSuite = 8,
     RuleArguments = 9,
     RulePrimary = 10,
-    RuleLiteral = 11,
-    RuleType = 12,
-    RuleArray = 13
+    RuleArray = 11,
+    RuleLiteral = 12,
+    RuleType = 13
   };
 
   explicit MxParser(antlr4::TokenStream *input);
@@ -118,9 +117,9 @@ class MxParser : public antlr4::Parser {
   class SuiteContext;
   class ArgumentsContext;
   class PrimaryContext;
+  class ArrayContext;
   class LiteralContext;
   class TypeContext;
-  class ArrayContext;
 
   class ProgramContext : public antlr4::ParserRuleContext {
    public:
@@ -629,7 +628,7 @@ class MxParser : public antlr4::Parser {
     TypeContext *type();
     antlr4::tree::TerminalNode *LeftParen();
     antlr4::tree::TerminalNode *RightParen();
-    antlr4::tree::TerminalNode *ArrayLiteral();
+    ArrayContext *array();
     std::vector<antlr4::tree::TerminalNode *> LeftBracket();
     antlr4::tree::TerminalNode *LeftBracket(size_t i);
     std::vector<ExpressionContext *> expression();
@@ -641,6 +640,24 @@ class MxParser : public antlr4::Parser {
   };
 
   PrimaryContext *primary();
+
+  class ArrayContext : public antlr4::ParserRuleContext {
+   public:
+    ArrayContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *LeftBrace();
+    antlr4::tree::TerminalNode *RightBrace();
+    std::vector<LiteralContext *> literal();
+    LiteralContext *literal(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Comma();
+    antlr4::tree::TerminalNode *Comma(size_t i);
+    std::vector<ArrayContext *> array();
+    ArrayContext *array(size_t i);
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  ArrayContext *array();
 
   class LiteralContext : public antlr4::ParserRuleContext {
    public:
@@ -715,23 +732,6 @@ class MxParser : public antlr4::Parser {
   };
 
   TypeContext *type();
-
-  class ArrayContext : public antlr4::ParserRuleContext {
-   public:
-    ArrayContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *LeftBrace();
-    antlr4::tree::TerminalNode *RightBrace();
-    antlr4::tree::TerminalNode *ArrayLiteral();
-    std::vector<ArrayContext *> array();
-    ArrayContext *array(size_t i);
-    std::vector<antlr4::tree::TerminalNode *> Comma();
-    antlr4::tree::TerminalNode *Comma(size_t i);
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  ArrayContext *array();
 
   bool sempred(antlr4::RuleContext *_localctx, size_t ruleIndex, size_t predicateIndex) override;
 

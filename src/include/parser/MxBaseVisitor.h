@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "MxVisitor.h"
+#include "parser/MxVisitor.h"
 #include "antlr4-runtime.h"
 
 /**
@@ -80,6 +80,8 @@ class MxBaseVisitor : public MxVisitor {
 
   virtual std::any visitNewPrimary(MxParser::NewPrimaryContext *ctx) override { return visitChildren(ctx); }
 
+  virtual std::any visitArray(MxParser::ArrayContext *ctx) override { return visitChildren(ctx); }
+
   virtual std::any visitDecimalLiteral(MxParser::DecimalLiteralContext *ctx) override { return visitChildren(ctx); }
 
   virtual std::any visitBoolLiteral(MxParser::BoolLiteralContext *ctx) override { return visitChildren(ctx); }
@@ -91,6 +93,4 @@ class MxBaseVisitor : public MxVisitor {
   virtual std::any visitArrayLiteral(MxParser::ArrayLiteralContext *ctx) override { return visitChildren(ctx); }
 
   virtual std::any visitType(MxParser::TypeContext *ctx) override { return visitChildren(ctx); }
-
-  virtual std::any visitArray(MxParser::ArrayContext *ctx) override { return visitChildren(ctx); }
 };

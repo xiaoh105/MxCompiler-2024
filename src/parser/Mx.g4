@@ -84,8 +84,14 @@ primary
     | Identifier                                 # varPrimary
     | This                                       # thisPrimary
     | New type ('('')')?                         # newPrimary
-    | New type '[]' ArrayLiteral                 # newPrimary
+    | New type '[]' array                        # newPrimary
     | New type ('[' expression ']')+ ('[]')*     # newPrimary
+    ;
+
+array
+    : '{' '}'
+    | '{' literal (',' literal)* '}'
+    | '{' array (',' array)* '}'
     ;
 
 literal
@@ -104,12 +110,6 @@ type
     | Identifier
     | Void
     | (Int | Bool | String | Identifier)'[]'+
-    ;
-
-array
-    : '{' '}'
-    | ArrayLiteral
-    | '{' array (',' array)* '}'
     ;
 
 // Format quatations and Quotations
@@ -143,9 +143,6 @@ FormatStringLiteral
     : {formatMode > 0 && !exprMode}? ('\\n' | '\\\\' | '\\"' | '$$' | [ !#%-[\]-~])+
     ;
 Null : 'null';
-ArrayLiteral
-    : '{' DecimalNumber (',' DecimalNumber)* '}'
-    ;
 // Reserved Words
 New : 'new';
 Class : 'class';
