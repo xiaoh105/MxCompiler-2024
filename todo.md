@@ -7,6 +7,6 @@
 - [ ] AST Nodes
     - [ ] Structure
     - [ ] Attributes
-- [ ] Error Type and Error Reporting
+- [x] Error Type and Error Reporting(8/5)
   - [x] Position(8/5)
 ### Semantic Check

@@ -12,10 +12,7 @@
 
 Function::Function(const std::string &name, const Type &return_type) : name_(name), return_type_(return_type) {}
 
-void Function::AppendArgument(const Type &type) {
-  arguments_.push_back(type);
-}
-
+void Function::AppendArgument(const Type &type) { arguments_.push_back(type); }
 
 std::size_t Function::GetArgNum() const { return arguments_.size(); }
 

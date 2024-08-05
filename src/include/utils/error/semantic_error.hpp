@@ -13,17 +13,17 @@
  * A class used to regulate and report errors for all semantic errors.
  */
 class SemanticError : public CompilerError {
-public:
+ public:
   SemanticError() = delete;
   SemanticError(const std::string &error_detail, const Position &pos)
-    : CompilerError("Semantic error", error_detail, pos) {}
+      : CompilerError("Semantic error", error_detail, pos) {}
 };
 
 /**
  * Multiple definitions for a single variable/function/class.
  */
 class MultipleDef : public SemanticError {
-public:
+ public:
   MultipleDef() = delete;
   MultipleDef(const Position &pos) : SemanticError("Multiple Definition", pos) {}
 };
@@ -32,7 +32,7 @@ public:
  * Denoting that an error is not handled correctly or in the right place.
  */
 class UnhandledErr : public SemanticError {
-public:
+ public:
   UnhandledErr() : SemanticError("An error isn't handled corrently", {0, 0, "Unknown"}) {}
   UnhandledErr(const std::string &text) : SemanticError("An error isn't handled correctly", {0, 0, text}) {}
 };

@@ -16,15 +16,15 @@
  * A class used to regulate and report errors in Mx Compiler.
  */
 class CompilerError : public std::exception {
-public:
+ public:
   CompilerError() = delete;
   CompilerError(const std::string &error_type, const std::string &error_detail, const Position &pos)
-    : error_type_(error_type), error_detail_(error_detail), position_(pos) {}
+      : error_type_(error_type), error_detail_(error_detail), position_(pos) {}
   [[nodiscard]] const char *what() const noexcept override {
     return (error_header_ + error_type_ + ": " + error_detail_ + ":\n" + position_.ToString()).c_str();
   }
 
-private:
+ private:
   const std::string error_header_{"Error occurred when compiling is running. \n"};
   const std::string error_type_;
   const std::string error_detail_;

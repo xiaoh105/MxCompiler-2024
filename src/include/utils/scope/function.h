@@ -16,7 +16,7 @@
  * A class used to manage function parameters.
  */
 class Function {
-public:
+ public:
   Function() = default;
   explicit Function(const std::string &name, const Type &return_type);
   void AppendArgument(const Type &type);
@@ -24,7 +24,7 @@ public:
   [[nodiscard]] Type GetArgument(std::size_t index) const;
   [[nodiscard]] const std::vector<Type> &GetArguments() const;
 
-private:
+ private:
   std::string name_{};
   std::vector<Type> arguments_{};
   Type return_type_{};

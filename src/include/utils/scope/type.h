@@ -22,7 +22,7 @@ class Typename;
  * Contains reference to Typename, but also contains the dimision of array.
  */
 class Type {
-public:
+ public:
   Type();
   Type(const Typename &type_name, std::size_t dim = 0);
   [[nodiscard]] std::size_t GetDim() const;
@@ -30,7 +30,7 @@ public:
   bool operator==(const Type &other) const;
   bool operator!=(const Type &other) const;
 
-private:
+ private:
   const Typename &type_name_;
   std::size_t dim_;
 };
@@ -39,7 +39,7 @@ private:
  * A class used to manage the general information of a class.(i.e. when a class is defined)
  */
 class Typename {
-public:
+ public:
   Typename() = default;
   explicit Typename(const std::string &name);
   Typename(const Typename &other) = default;
@@ -56,7 +56,7 @@ public:
   Typename &operator=(const Typename &other) = default;
   Typename &operator=(Typename &&other) noexcept = default;
 
-private:
+ private:
   TypeInfo type_info_{kUnknown};
   std::string name_{};
   std::unordered_map<std::string, Type> member_{};
