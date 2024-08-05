@@ -71,14 +71,33 @@ bool Typename::operator==(const Typename &other) const { return name_ == other.n
 
 bool Typename::operator!=(const Typename &other) const { return name_ != other.name_; }
 
-Type::Type() : type_name_({}), dim_() {}
+Type::Type() : type_name_({}), dim_(), any_dim_(false) {}
 
-Type::Type(const Typename &type_name, std::size_t dim) : type_name_(type_name), dim_(dim) {}
+Type::Type(const Typename &type_name, std::size_t dim, bool any_dim)
+    : type_name_(type_name), dim_(dim), any_dim_(any_dim) {}
 
 std::size_t Type::GetDim() const { return dim_; }
 
+void Type::SetDim(std::size_t dim) {
+  if (any_dim_) {
+    any_dim_ = false;
+    dim_ = dim;
+  }
+}
+
 Typename Type::GetTypename() const { return type_name_; }
 
-bool Type::operator==(const Type &other) const { return type_name_ == other.type_name_ && dim_ == other.dim_; }
+bool Type::operator==(const Type &other) const {
+  if (type_name_ != other.type_name_) {
+    return false;
+  }
+  if (any_dim_) {
+    return other.any_dim_ || other.dim_ >= 1;
+  }
+  if (other.any_dim_) {
+    return any_dim_ || dim_ >= 1;
+  }
+  return dim_ == other.dim_;
+}
 
-bool Type::operator!=(const Type &other) const { return type_name_ != other.type_name_ || dim_ != other.dim_; }
+bool Type::operator!=(const Type &other) const { return !operator==(other); }

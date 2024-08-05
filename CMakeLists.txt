@@ -16,4 +16,6 @@ add_executable(MxCompiler src/main.cpp
         src/utils/scope/function.cpp
         src/utils/scope/scope.cpp)
 
+target_include_directories(MxCompiler SYSTEM PUBLIC /usr/include/c++/13.3.0)
+
 target_link_libraries(MxCompiler antlr4-runtime)

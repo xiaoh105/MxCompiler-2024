@@ -26,15 +26,18 @@ class Function;
 class Type {
  public:
   Type();
-  Type(const Typename &type_name, std::size_t dim = 0);
+  Type(const Typename &type_name, std::size_t dim = 0, bool any_dim = false);
   [[nodiscard]] std::size_t GetDim() const;
   [[nodiscard]] Typename GetTypename() const;
+  void SetDim(std::size_t dim);
   bool operator==(const Type &other) const;
   bool operator!=(const Type &other) const;
 
  private:
   const Typename &type_name_;
   std::size_t dim_;
+  /// Array literal '{}' can be an array of any dimension.
+  bool any_dim_;
 };
 
 /**
