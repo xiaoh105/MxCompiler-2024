@@ -1,5 +1,5 @@
 /*
-* Mx Compiler
+ * Mx Compiler
  * File Name: scope.h
  * Identification: ./src/include/utils/scope/scope.h
  * Function: Manage scope information.
@@ -13,7 +13,7 @@
 #include "utils/scope/type.h"
 
 class GlobalScope {
-public:
+ public:
   GlobalScope();
   GlobalScope(const GlobalScope &other) = delete;
   GlobalScope(GlobalScope &&other) noexcept = delete;
@@ -26,13 +26,13 @@ public:
   GlobalScope &operator=(const GlobalScope &other) = delete;
   GlobalScope &operator=(GlobalScope &&other) noexcept = delete;
 
-private:
+ private:
   std::unordered_map<std::string, const Typename &> type_;
   std::unordered_map<std::string, const Function &> function_;
 };
 
 class Scope {
-public:
+ public:
   Scope() = delete;
   Scope(const GlobalScope &global_scope, std::unique_ptr<Scope> parent_scope = nullptr);
   Scope(const Scope &other) = delete;
@@ -44,7 +44,7 @@ public:
   Scope &operator=(Scope &&other) noexcept;
   [[nodiscard]] const std::unique_ptr<Scope> &GetParent() const;
 
-private:
+ private:
   const GlobalScope &global_scope_;
   std::unordered_map<std::string, Type> local_;
   std::unique_ptr<Scope> parent_scope_;

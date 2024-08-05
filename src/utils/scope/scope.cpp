@@ -75,7 +75,7 @@ std::pair<bool, const Type &> Scope::GetVar(const std::string &name) const {
   return it == local_.end() ? return_type{false, {}} : return_type{true, it->second};
 }
 
-const std::unique_ptr<Scope> &Scope::GetParent() const { return  parent_scope_; }
+const std::unique_ptr<Scope> &Scope::GetParent() const { return parent_scope_; }
 
 Scope &Scope::operator=(Scope &&other) noexcept {
   if (this == &other) {
