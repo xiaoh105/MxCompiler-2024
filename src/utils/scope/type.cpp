@@ -40,14 +40,14 @@ void Typename::AddFunction(const std::string &function_name, const Function &fun
 
 bool Typename::HasMember(const std::string &name) const { return member_.contains(name); }
 
-std::pair<bool, Type> Typename::GetMember(const std::string &name) const {
+std::pair<bool, const Type &> Typename::GetMember(const std::string &name) const {
   auto it = member_.find(name);
   return it == member_.end() ? std::pair{false, Type{}} : std::pair{true, it->second};
 }
 
 bool Typename::HasFunction(const std::string &name) const { return function_.contains(name); }
 
-std::pair<bool, Function> Typename::GetFunction(const std::string &name) const {
+std::pair<bool, const Function &> Typename::GetFunction(const std::string &name) const {
   auto it = function_.find(name);
   return it == function_.end() ? std::pair{false, Function{}} : std::pair{true, it->second};
 }

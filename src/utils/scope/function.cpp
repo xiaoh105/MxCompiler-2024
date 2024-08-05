@@ -10,6 +10,8 @@
 
 #include "utils/scope/function.h"
 
+Function::Function() : return_type_({}) {}
+
 Function::Function(const std::string &name, const Type &return_type) : name_(name), return_type_(return_type) {}
 
 void Function::AppendArgument(const Type &type) { arguments_.push_back(type); }

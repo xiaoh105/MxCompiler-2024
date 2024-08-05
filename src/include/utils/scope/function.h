@@ -12,12 +12,14 @@
 
 #include "utils/scope/type.h"
 
+class Type;
+
 /**
  * A class used to manage function parameters.
  */
 class Function {
  public:
-  Function() = default;
+  Function();
   explicit Function(const std::string &name, const Type &return_type);
   void AppendArgument(const Type &type);
   [[nodiscard]] std::size_t GetArgNum() const;
@@ -25,7 +27,7 @@ class Function {
   [[nodiscard]] const std::vector<Type> &GetArguments() const;
 
  private:
-  std::string name_{};
-  std::vector<Type> arguments_{};
-  Type return_type_{};
+  std::string name_;
+  std::vector<Type> arguments_;
+  const Type &return_type_;
 };

@@ -17,6 +17,8 @@ enum TypeInfo : int { kUnknown = 0, kBool, kInt, kVoid, kString, kOther };
 
 class Typename;
 
+class Function;
+
 /**
  * A class used to manage an actual type of a variable/argument.
  * Contains reference to Typename, but also contains the dimision of array.
@@ -48,8 +50,8 @@ class Typename {
   void AddFunction(const std::string &function_name, const Function &function);
   bool HasMember(const std::string &name) const;
   bool HasFunction(const std::string &name) const;
-  std::pair<bool, Type> GetMember(const std::string &name) const;
-  std::pair<bool, Function> GetFunction(const std::string &name) const;
+  std::pair<bool, const Type &> GetMember(const std::string &name) const;
+  std::pair<bool, const Function &> GetFunction(const std::string &name) const;
   Type CreateType(std::size_t dim = 0) const;
   bool operator==(const Typename &other) const;
   bool operator!=(const Typename &other) const;
@@ -59,6 +61,6 @@ class Typename {
  private:
   TypeInfo type_info_{kUnknown};
   std::string name_{};
-  std::unordered_map<std::string, Type> member_{};
-  std::unordered_map<std::string, Function> function_{};
+  std::unordered_map<std::string, const Type &> member_{};
+  std::unordered_map<std::string, const Function &> function_{};
 };
