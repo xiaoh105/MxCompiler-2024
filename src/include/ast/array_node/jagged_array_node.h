@@ -14,9 +14,9 @@
 class JaggedArrayNode : public ArrayNode {
  public:
   JaggedArrayNode() = delete;
-  JaggedArrayNode(const Position &pos, const std::vector<std::unique_ptr<ArrayNode>> &elements)
+  JaggedArrayNode(const Position &pos, const std::vector<std::shared_ptr<ArrayNode>> &elements)
       : ArrayNode(pos), elements_(elements) {}
 
  private:
-  std::vector<std::unique_ptr<ArrayNode>> elements_;
+  std::vector<std::shared_ptr<ArrayNode>> elements_;
 };
