@@ -15,7 +15,7 @@ class ArrayNode : public ASTNode {
  public:
   ArrayNode() = delete;
   ArrayNode(const Position &pos) : ASTNode(pos) {}
-  [[nodiscard]] const std::shared_ptr<Type> &GetType() const {
+  [[nodiscard]] const std::unique_ptr<Type> &GetType() const {
     if (type_ == nullptr) {
       throw std::runtime_error("Fetching type from Array Node with undetermined type");
     }
@@ -24,5 +24,5 @@ class ArrayNode : public ASTNode {
 
  private:
   // type_ MUST NOT be nullptr since 'null' can't appear in string literals
-  std::shared_ptr<Type> type_{nullptr};
+  std::unique_ptr<Type> type_{nullptr};
 };

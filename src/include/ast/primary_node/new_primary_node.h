@@ -23,14 +23,22 @@ class NewPrimaryNode : public PrimaryNode {
     null_ = false;
     lvalue_ = false;
   }
-  NewPrimaryNode(const Position &pos, const std::string &type_name, std::size_t dim)
-      : PrimaryNode(pos), new_type_(NewType::kNewArray), type_name_(type_name), dim_(dim) {
+  NewPrimaryNode(const Position &pos, const std::string &type_name, std::unique_ptr<ArrayNode> array_literal)
+      : PrimaryNode(pos),
+        new_type_(NewType::kNewArrayLiteral),
+        type_name_(type_name),
+        dim_(1),
+        array_literal_(std::move(array_literal)) {
     null_ = false;
     lvalue_ = false;
   }
   NewPrimaryNode(const Position &pos, const std::string &type_name, std::size_t dim,
-                 const std::vector<std::shared_ptr<ExprNode>> &expr)
-      : PrimaryNode(pos), new_type_(NewType::kNewArrayLiteral), type_name_(type_name), dim_(dim), expression_(expr) {
+                 std::vector<std::unique_ptr<ExprNode>> expr)
+      : PrimaryNode(pos),
+        new_type_(NewType::kNewArray),
+        type_name_(type_name),
+        dim_(dim),
+        expression_(std::move(expr)) {
     null_ = false;
     lvalue_ = false;
   }
@@ -38,7 +46,7 @@ class NewPrimaryNode : public PrimaryNode {
  private:
   NewType new_type_{kUnknown};
   const std::string &type_name_{};
-  std::shared_ptr<ArrayNode> array_literal_{nullptr};
+  std::unique_ptr<ArrayNode> array_literal_{nullptr};
   std::size_t dim_{};
-  std::vector<std::shared_ptr<ExprNode>> expression_;
+  std::vector<std::unique_ptr<ExprNode>> expression_;
 };

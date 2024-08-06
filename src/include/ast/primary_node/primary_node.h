@@ -18,7 +18,7 @@ class PrimaryNode : public ASTNode {
   PrimaryNode(const Position &pos) : ASTNode(pos) {}
   [[nodiscard]] bool IsAssignable() const { return lvalue_; }
   // Return the type of the node, nullptr for 'null'.
-  [[nodiscard]] const std::shared_ptr<Type> &GetType() const {
+  [[nodiscard]] const std::unique_ptr<Type> &GetType() const {
     if (!null_ && type_ == nullptr) {
       throw std::runtime_error("Fetch type from Primary Node whose type is undetermined");
     }
@@ -27,7 +27,7 @@ class PrimaryNode : public ASTNode {
 
  protected:
   // The type of the node, nullptr for 'null'.
-  std::shared_ptr<Type> type_{nullptr};
+  std::unique_ptr<Type> type_{nullptr};
   bool lvalue_{false};
   bool null_{false};
 };

@@ -14,7 +14,7 @@
 class SimpleArrayNode : public ArrayNode {
  public:
   SimpleArrayNode() = delete;
-  SimpleArrayNode(const Position &pos, const std::vector<Type> &elements) : ArrayNode(pos), elements_(elements) {}
+  SimpleArrayNode(const Position &pos, std::vector<Type> elements) : ArrayNode(pos), elements_(std::move(elements)) {}
   [[nodiscard]] const std::vector<Type> &GetElements() const { return elements_; }
 
  private:

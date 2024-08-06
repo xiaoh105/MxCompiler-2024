@@ -14,7 +14,10 @@
 class VarPrimaryNode : public PrimaryNode {
  public:
   VarPrimaryNode() = delete;
-  VarPrimaryNode(const Position &pos, const std::string &name) : PrimaryNode(pos), name_(name) { lvalue_ = true; }
+  VarPrimaryNode(const Position &pos, const std::string &name) : PrimaryNode(pos), name_(name) {
+    lvalue_ = true;
+    null_ = false;
+  }
 
  private:
   const std::string &name_;

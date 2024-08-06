@@ -16,7 +16,7 @@ class LiteralPrimaryNode : public PrimaryNode {
   LiteralPrimaryNode() = delete;
   LiteralPrimaryNode(const Position &pos, const Type &type, bool null) : PrimaryNode(pos) {
     lvalue_ = false;
-    type_ = null ? nullptr : std::make_shared<Type>(type);
+    type_ = null ? nullptr : std::make_unique<Type>(type);
     null_ = null;
   }
 };
