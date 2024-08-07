@@ -9,7 +9,7 @@
 #include "ast/stmt_node/stmt_node.h"
 
 /**
- * AST node for regulating statements in classes
+ * Virtual class for regulating statements in classes
  * Note: In this class (and its deriving classes), there's no special attributes and you don't have to manage anything.
  */
 class ClassStmtNode : public StmtNode {
