@@ -14,9 +14,9 @@
 class ForStmtNode : public StmtNode {
  public:
   ForStmtNode() = delete;
-  ForStmtNode(const Position &pos, std::unique_ptr<StmtNode> initialize_stmt, std::unique_ptr<ExprNode> condition,
+  ForStmtNode(Position pos, std::unique_ptr<StmtNode> initialize_stmt, std::unique_ptr<ExprNode> condition,
               std::unique_ptr<ExprNode> step, std::unique_ptr<StmtNode> loop)
-      : StmtNode(pos),
+      : StmtNode(std::move(pos)),
         initialize_stmt_(std::move(initialize_stmt)),
         condition_expr_(std::move(condition)),
         step_expr(std::move(step)),
@@ -25,6 +25,7 @@ class ForStmtNode : public StmtNode {
   std::unique_ptr<ExprNode> &GetCondition() { return condition_expr_; }
   std::unique_ptr<ExprNode> &GetStep() { return step_expr; }
   std::unique_ptr<StmtNode> &GetLoop() { return loop_stmt; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   std::unique_ptr<StmtNode> initialize_stmt_{nullptr};

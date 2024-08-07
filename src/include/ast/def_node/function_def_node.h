@@ -12,19 +12,20 @@
  * AST node for function definitions
  */
 class FunctionDefNode : public DefNode {
-public:
- FunctionDefNode() = delete;
- FunctionDefNode(const Position &pos, const std::string &function_name, const std::string &return_type,
-                 std::vector<std::pair<std::string, std::string>> arguments, std::unique_ptr<StmtNode> suite)
-     : DefNode(pos),
-       function_name_(function_name),
-       return_type_{return_type},
-       arguments_(std::move(arguments)),
-       function_body_(std::move(suite)) {}
+ public:
+  FunctionDefNode() = delete;
+  FunctionDefNode(Position pos, std::string function_name, std::string return_type,
+                  std::vector<std::pair<std::string, std::string>> arguments, std::unique_ptr<StmtNode> suite)
+      : DefNode(std::move(pos)),
+        function_name_(std::move(function_name)),
+        return_type_(std::move(return_type)),
+        arguments_(std::move(arguments)),
+        function_body_(std::move(suite)) {}
   [[nodiscard]] const std::string &GetFunctionName() const { return function_name_; }
   [[nodiscard]] const std::string &GetReturnType() const { return return_type_; }
   [[nodiscard]] const std::vector<std::pair<std::string, std::string>> &GetArguments() const { return arguments_; }
   std::unique_ptr<StmtNode> &GetFunctionBody() { return function_body_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   const std::string function_name_;

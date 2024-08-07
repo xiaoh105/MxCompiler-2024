@@ -7,15 +7,16 @@
 #pragma once
 
 #include "ast/def_node/def_node.h"
+#include "ast/stmt_node/class_stmt_node/class_stmt_node.h"
 
 class ClassDefNode : public DefNode {
  public:
   ClassDefNode() = delete;
-  ClassDefNode(const Position &pos, const std::string &class_name,
-               std::vector<std::unique_ptr<ClassStmtNode>> class_stmt)
-      : DefNode(pos), class_name_(class_name), class_stmt_(std::move(class_stmt)) {}
+  ClassDefNode(Position pos, std::string class_name, std::vector<std::unique_ptr<ClassStmtNode>> class_stmt)
+      : DefNode(std::move(pos)), class_name_(std::move(class_name)), class_stmt_(std::move(class_stmt)) {}
   [[nodiscard]] const std::string &GetClassName() const { return class_name_; }
   std::vector<std::unique_ptr<ClassStmtNode>> &GetClassStmt() { return class_stmt_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   const std::string class_name_;

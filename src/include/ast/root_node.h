@@ -7,14 +7,17 @@
 #pragma once
 
 #include "ast/ast_node.h"
+#include "ast/def_node/def_node.h"
+#include "ast/stmt_node/stmt_node.h"
 
 class RootNode : public ASTNode {
  public:
   RootNode() = delete;
-  RootNode(const Position &pos, std::unique_ptr<StmtNode> main_func, std::vector<std::unique_ptr<DefNode>> definitions)
-      : ASTNode(pos), main_func_body_(std::move(main_func)), def_nodes_(std::move(definitions)) {}
+  RootNode(Position pos, std::unique_ptr<StmtNode> main_func, std::vector<std::unique_ptr<DefNode>> definitions)
+      : ASTNode(std::move(pos)), main_func_body_(std::move(main_func)), def_nodes_(std::move(definitions)) {}
   std::unique_ptr<StmtNode> &GetMainFunction() { return main_func_body_; }
   std::vector<std::unique_ptr<DefNode>> &GetDefNodes() { return def_nodes_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   std::unique_ptr<StmtNode> main_func_body_{nullptr};

@@ -16,9 +16,10 @@
 class FormatExprNode : public ExprNode {
  public:
   FormatExprNode() = delete;
-  FormatExprNode(const Position &pos, std::vector<std::variant<std::string, std::unique_ptr<ExprNode>>> elements)
-      : ExprNode(pos), elements_(std::move(elements)) {}
+  FormatExprNode(Position pos, std::vector<std::variant<std::string, std::unique_ptr<ExprNode>>> elements)
+      : ExprNode(std::move(pos)), elements_(std::move(elements)) {}
   std::vector<std::variant<std::string, std::unique_ptr<ExprNode>>> &GetElements() { return elements_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   std::vector<std::variant<std::string, std::unique_ptr<ExprNode>>> elements_;

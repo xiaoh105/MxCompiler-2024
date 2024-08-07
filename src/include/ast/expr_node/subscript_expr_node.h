@@ -14,8 +14,11 @@
 class SubscriptExprNode : public ExprNode {
  public:
   SubscriptExprNode() = delete;
-  SubscriptExprNode(const Position &pos, std::unique_ptr<ExprNode> base, std::unique_ptr<ExprNode> index)
-      : ExprNode(pos), base_expr_node_(std::move(base)), index_expr_node_(std::move(index)) {}
+  SubscriptExprNode(Position pos, std::unique_ptr<ExprNode> base, std::unique_ptr<ExprNode> index)
+      : ExprNode(std::move(pos)), base_expr_node_(std::move(base)), index_expr_node_(std::move(index)) {}
+  std::unique_ptr<ExprNode> &GetBaseExpr() { return base_expr_node_; }
+  std::unique_ptr<ExprNode> &GetIndexExpr() { return index_expr_node_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   std::unique_ptr<ExprNode> base_expr_node_{nullptr};

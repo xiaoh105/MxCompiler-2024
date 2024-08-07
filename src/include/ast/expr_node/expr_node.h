@@ -16,7 +16,7 @@
  */
 class ExprNode : public ASTNode {
  public:
-  ExprNode(const Position &position) : ASTNode(position) {}
+  ExprNode(Position position) : ASTNode(std::move(position)) {}
   [[nodiscard]] bool IsAssignable() const { return lvalue_; }
   /// Returns the pointer to the type, nullptr for 'null'
   [[nodiscard]] const Type &GetType() const {

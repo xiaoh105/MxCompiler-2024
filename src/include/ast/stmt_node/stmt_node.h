@@ -15,5 +15,5 @@
 class StmtNode : public ASTNode {
  public:
   StmtNode() = delete;
-  StmtNode(const Position &pos) : ASTNode(pos) {}
+  StmtNode(Position pos) : ASTNode(std::move(pos)) {}
 };

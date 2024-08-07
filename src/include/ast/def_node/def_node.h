@@ -15,5 +15,5 @@
 class DefNode : public ASTNode {
  public:
   DefNode() = delete;
-  DefNode(const Position &pos) : ASTNode(pos) {}
+  DefNode(Position pos) : ASTNode(std::move(pos)) {}
 };

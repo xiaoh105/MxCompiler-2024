@@ -14,9 +14,10 @@
 class SuiteStmtNode : public StmtNode {
  public:
   SuiteStmtNode() = delete;
-  SuiteStmtNode(const Position &pos, std::vector<std::unique_ptr<StmtNode>> statements)
-      : StmtNode(pos), statements_(std::move(statements)) {}
+  SuiteStmtNode(Position pos, std::vector<std::unique_ptr<StmtNode>> statements)
+      : StmtNode(std::move(pos)), statements_(std::move(statements)) {}
   std::vector<std::unique_ptr<StmtNode>> &GetStatements() { return statements_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   std::vector<std::unique_ptr<StmtNode>> statements_;

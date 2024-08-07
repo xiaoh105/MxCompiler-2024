@@ -15,9 +15,10 @@
 class AtomExprNode : public ExprNode {
  public:
   AtomExprNode() = delete;
-  AtomExprNode(const Position &position, std::unique_ptr<PrimaryNode> primary_node)
-      : ExprNode(position), primary_node_(std::move(primary_node)) {}
+  AtomExprNode(Position position, std::unique_ptr<PrimaryNode> primary_node)
+      : ExprNode(std::move(position)), primary_node_(std::move(primary_node)) {}
   std::unique_ptr<PrimaryNode> &GetPrimaryNode() { return primary_node_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   std::unique_ptr<PrimaryNode> primary_node_{nullptr};

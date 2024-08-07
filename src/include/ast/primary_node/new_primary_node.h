@@ -18,25 +18,24 @@ class NewPrimaryNode : public PrimaryNode {
 
  public:
   NewPrimaryNode() = delete;
-  NewPrimaryNode(const Position &pos, const std::string &type_name)
-      : PrimaryNode(pos), new_type_(NewType::kNewVar), type_name_(type_name) {
+  NewPrimaryNode(Position pos, std::string type_name)
+      : PrimaryNode(std::move(pos)), new_type_(NewType::kNewVar), type_name_(std::move(type_name)) {
     null_ = false;
     lvalue_ = false;
   }
-  NewPrimaryNode(const Position &pos, const std::string &type_name, std::unique_ptr<ArrayNode> array_literal)
-      : PrimaryNode(pos),
+  NewPrimaryNode(Position pos, std::string type_name, std::unique_ptr<ArrayNode> array_literal)
+      : PrimaryNode(std::move(pos)),
         new_type_(NewType::kNewArrayLiteral),
-        type_name_(type_name),
+        type_name_(std::move(type_name)),
         dim_(1),
         array_literal_(std::move(array_literal)) {
     null_ = false;
     lvalue_ = false;
   }
-  NewPrimaryNode(const Position &pos, const std::string &type_name, std::size_t dim,
-                 std::vector<std::unique_ptr<ExprNode>> expr)
-      : PrimaryNode(pos),
+  NewPrimaryNode(Position pos, std::string type_name, std::size_t dim, std::vector<std::unique_ptr<ExprNode>> expr)
+      : PrimaryNode(std::move(pos)),
         new_type_(NewType::kNewArray),
-        type_name_(type_name),
+        type_name_(std::move(type_name)),
         dim_(dim),
         expression_(std::move(expr)) {
     null_ = false;
@@ -47,6 +46,7 @@ class NewPrimaryNode : public PrimaryNode {
   std::unique_ptr<ArrayNode> &GetArrayLiteral() { return array_literal_; }
   [[nodiscard]] std::size_t GetDim() const { return dim_; }
   std::vector<std::unique_ptr<ExprNode>> &GetExpressions() { return expression_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   NewType new_type_{kUnknown};

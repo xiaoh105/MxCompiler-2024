@@ -14,9 +14,10 @@
 class LiteralPrimaryNode : public PrimaryNode {
  public:
   LiteralPrimaryNode() = delete;
-  LiteralPrimaryNode(const Position &pos, const Type &type, bool null) : PrimaryNode(pos) {
+  LiteralPrimaryNode(Position pos, const Type &type, bool null) : PrimaryNode(std::move(pos)) {
     lvalue_ = false;
     type_ = null ? nullptr : std::make_unique<Type>(type);
     null_ = null;
   }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 };

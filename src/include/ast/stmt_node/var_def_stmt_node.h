@@ -14,11 +14,15 @@
 class VarDefStmtNode : public StmtNode {
  public:
   VarDefStmtNode() = delete;
-  VarDefStmtNode(const Position &pos, std::vector<std::string> var_name,
+  VarDefStmtNode(Position pos, std::string type_name, std::vector<std::string> var_name,
                  std::vector<std::unique_ptr<ExprNode>> initial_value)
-      : StmtNode(pos), var_name_(std::move(var_name)), initial_value_(std::move(initial_value)) {}
+      : StmtNode(std::move(pos)),
+        type_name_(std::move(type_name)),
+        var_name_(std::move(var_name)),
+        initial_value_(std::move(initial_value)) {}
   [[nodiscard]] const std::vector<std::string> &GetVarName() const { return var_name_; }
   std::vector<std::unique_ptr<ExprNode>> &GetInitialValue() { return initial_value_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   const std::string type_name_;

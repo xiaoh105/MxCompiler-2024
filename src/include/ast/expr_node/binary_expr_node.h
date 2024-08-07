@@ -35,11 +35,15 @@ class BinaryExprNode : public ExprNode {
     kXor
   };
   BinaryExprNode() = delete;
-  BinaryExprNode(const Position &pos, OpType op_type, std::unique_ptr<ExprNode> lhs, std::unique_ptr<ExprNode> rhs)
-      : ExprNode(pos), op_type_(op_type), left_expr_node_(std::move(lhs)), right_expr_node_(std::move(rhs)) {}
+  BinaryExprNode(Position pos, OpType op_type, std::unique_ptr<ExprNode> lhs, std::unique_ptr<ExprNode> rhs)
+      : ExprNode(std::move(pos)),
+        op_type_(op_type),
+        left_expr_node_(std::move(lhs)),
+        right_expr_node_(std::move(rhs)) {}
   std::unique_ptr<ExprNode> &GetLeftNode() { return left_expr_node_; }
   std::unique_ptr<ExprNode> &GetRightNode() { return right_expr_node_; }
   [[nodiscard]] OpType GetOpType() const { return op_type_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   const OpType op_type_{kUnknown};

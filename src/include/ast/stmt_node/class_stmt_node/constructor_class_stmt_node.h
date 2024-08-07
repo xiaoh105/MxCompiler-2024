@@ -11,10 +11,11 @@
 class ConstructorClassStmtNode : public ClassStmtNode {
  public:
   ConstructorClassStmtNode() = delete;
-  ConstructorClassStmtNode(const Position &pos, const std::string type, std::unique_ptr<StmtNode> function_body)
-      : ClassStmtNode(pos), type_(type), function_body_(std::move(function_body)) {}
+  ConstructorClassStmtNode(Position pos, std::string type, std::unique_ptr<StmtNode> function_body)
+      : ClassStmtNode(std::move(pos)), type_(std::move(type)), function_body_(std::move(function_body)) {}
   [[nodiscard]] const std::string &GetType() const { return type_; }
   std::unique_ptr<StmtNode> &GetFunctionBody() { return function_body_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   const std::string type_;

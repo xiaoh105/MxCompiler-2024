@@ -14,10 +14,11 @@
 class WhileStmtNode : public StmtNode {
  public:
   WhileStmtNode() = delete;
-  WhileStmtNode(const Position &pos, std::unique_ptr<ExprNode> condition, std::unique_ptr<StmtNode> loop)
-      : StmtNode(pos), condition_expr_(std::move(condition)), loop_stmt_(std::move(loop)) {}
+  WhileStmtNode(Position pos, std::unique_ptr<ExprNode> condition, std::unique_ptr<StmtNode> loop)
+      : StmtNode(std::move(pos)), condition_expr_(std::move(condition)), loop_stmt_(std::move(loop)) {}
   std::unique_ptr<ExprNode> &GetCondition() { return condition_expr_; }
   std::unique_ptr<StmtNode> &GetLoopStmt() { return loop_stmt_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   std::unique_ptr<ExprNode> condition_expr_{nullptr};

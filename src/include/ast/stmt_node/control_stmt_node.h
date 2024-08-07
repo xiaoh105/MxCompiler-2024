@@ -15,9 +15,9 @@ class ControlStmtNode : public StmtNode {
  public:
   enum class StmtType : int { kUnknown = 0, kBreak, kContinue, kReturn };
   ControlStmtNode() = delete;
-  ControlStmtNode(const Position &pos, StmtType stmt_type) : StmtNode(pos), stmt_type_(stmt_type) {}
-  ControlStmtNode(const Position &pos, StmtType stmt_type, std::unique_ptr<ExprNode> return_expr)
-      : StmtNode(pos), stmt_type_(stmt_type), return_expr_(std::move(return_expr)) {}
+  ControlStmtNode(Position pos, StmtType stmt_type) : StmtNode(std::move(pos)), stmt_type_(stmt_type) {}
+  ControlStmtNode(Position &pos, StmtType stmt_type, std::unique_ptr<ExprNode> return_expr)
+      : StmtNode(std::move(pos)), stmt_type_(stmt_type), return_expr_(std::move(return_expr)) {}
   [[nodiscard]] StmtType GetStmtType() const { return stmt_type_; }
   std::unique_ptr<ExprNode> &GetReturnExpr() {
     if (stmt_type_ != StmtType::kReturn) {
@@ -25,6 +25,7 @@ class ControlStmtNode : public StmtNode {
     }
     return return_expr_;
   }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   const StmtType stmt_type_{kUnknown};

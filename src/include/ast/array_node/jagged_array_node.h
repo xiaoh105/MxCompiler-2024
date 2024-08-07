@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ast/array_node/array_node.h"
+#include "ast/ast_visitor.h"
 
 /**
  * AST node for multi-dimensional array literal.
@@ -14,9 +15,10 @@
 class JaggedArrayNode : public ArrayNode {
  public:
   JaggedArrayNode() = delete;
-  JaggedArrayNode(const Position &pos, std::vector<std::unique_ptr<ArrayNode>> elements)
-      : ArrayNode(pos), elements_(std::move(elements)) {}
+  JaggedArrayNode(Position pos, std::vector<std::unique_ptr<ArrayNode>> elements)
+      : ArrayNode(std::move(pos)), elements_(std::move(elements)) {}
   std::vector<std::unique_ptr<ArrayNode>> &GetElements() { return elements_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   std::vector<std::unique_ptr<ArrayNode>> elements_;

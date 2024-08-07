@@ -6,7 +6,12 @@
  */
 #pragma once
 
+#include <memory>
+
 #include "ast/ast_node.h"
+#include "utils/scope/type.h"
+
+class ASTNode;
 
 /**
  * Virtual class for regulating AST node for array literals.
@@ -14,7 +19,7 @@
 class ArrayNode : public ASTNode {
  public:
   ArrayNode() = delete;
-  ArrayNode(const Position &pos) : ASTNode(pos) {}
+  ArrayNode(Position pos) : ASTNode(std::move(pos)) {}
   [[nodiscard]] const std::unique_ptr<Type> &GetType() const {
     if (type_ == nullptr) {
       throw std::runtime_error("Fetching type from Array Node with undetermined type");

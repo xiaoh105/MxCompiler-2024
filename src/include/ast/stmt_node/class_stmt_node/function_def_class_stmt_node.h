@@ -14,17 +14,22 @@
 class FunctionDefClassStmtNode : public ClassStmtNode {
  public:
   FunctionDefClassStmtNode() = delete;
-  FunctionDefClassStmtNode(const Position &pos, const std::string &name, const std::string &return_type,
+  FunctionDefClassStmtNode(Position pos, std::string name, std::string return_type,
                            std::vector<std::pair<std::string, std::string>> arguments, std::unique_ptr<StmtNode> suite)
-      : ClassStmtNode(pos),
-        name_(name),
-        return_type_(return_type),
+      : ClassStmtNode(std::move(pos)),
+        name_(std::move(name)),
+        return_type_(std::move(return_type)),
         arguments_(std::move(arguments)),
         function_body_(std::move(suite)) {}
+  [[nodiscard]] const std::string &GetFuncName() const { return name_; }
+  [[nodiscard]] const std::string &GetReturnType() const { return return_type_; }
+  [[nodiscard]] const std::vector<std::pair<std::string, std::string>> &GetArguments() const { return arguments_; }
+  std::unique_ptr<StmtNode> &GetFunctionBody() { return function_body_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   const std::string name_;
   const std::string return_type_;
-  std::vector<std::pair<std::string, std::string>> arguments_;
+  const std::vector<std::pair<std::string, std::string>> arguments_;
   std::unique_ptr<StmtNode> function_body_{nullptr};
 };

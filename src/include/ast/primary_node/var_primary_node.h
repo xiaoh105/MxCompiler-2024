@@ -14,12 +14,13 @@
 class VarPrimaryNode : public PrimaryNode {
  public:
   VarPrimaryNode() = delete;
-  VarPrimaryNode(const Position &pos, const std::string &name) : PrimaryNode(pos), name_(name) {
+  VarPrimaryNode(Position pos, std::string name) : PrimaryNode(std::move(pos)), name_(std::move(name)) {
     lvalue_ = true;
     null_ = false;
   }
   [[nodiscard]] const std::string &GetName() const { return name_; }
+  void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
-  const std::string &name_;
+  const std::string name_;
 };

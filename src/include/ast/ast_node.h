@@ -17,9 +17,9 @@ class ASTNode {
 public:
   ASTNode() = delete;
   virtual ~ASTNode() = default;
-  ASTNode(const Position &pos) : position_(pos) {}
+  ASTNode(Position pos) : position_(std::move(pos)) {}
   virtual void accept(ASTVisitor *visitor) = 0;
 
 protected:
-  const Position &position_;
+  const Position position_;
 };

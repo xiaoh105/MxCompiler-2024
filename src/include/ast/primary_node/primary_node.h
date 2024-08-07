@@ -17,7 +17,7 @@
 class PrimaryNode : public ASTNode {
  public:
   PrimaryNode() = delete;
-  PrimaryNode(const Position &pos) : ASTNode(pos) {}
+  PrimaryNode(Position pos) : ASTNode(std::move(pos)) {}
   [[nodiscard]] bool IsAssignable() const { return lvalue_; }
   // Return the type of the node, nullptr for 'null'.
   [[nodiscard]] const std::unique_ptr<Type> &GetType() const {
