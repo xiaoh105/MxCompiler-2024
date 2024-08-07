@@ -5,7 +5,7 @@
 ### AST Design
 - [x] Scope(8/5)
 - [ ] AST Nodes
-    - [ ] Structure(Done: Primary, Array, Expr)
+    - [ ] Structure(Done: Primary, Array, Expr, Stmt)
     - [ ] Set up virtual functions(i.e. `accept(ASTVisitor)`)
     - [ ] AST Builder
 - [x] Error Type and Error Reporting(8/5)
