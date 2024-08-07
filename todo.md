@@ -6,10 +6,12 @@
 - [x] Scope(8/5)
 - [ ] AST Nodes
     - [x] Structure(8/7)
-    - [ ] Set up virtual functions(i.e. `accept(ASTVisitor)`)
+    - [x] Set up virtual functions(i.e. `accept()` & `ASTVisitor`)(8/7)
     - [ ] AST Builder
 - [x] Error Type and Error Reporting(8/5)
   - [x] Position(8/5)
 ### Semantic Check
 - [ ] Symbol Collection
+  - [ ] Type Collector
+  - [ ] Function Collector
 - [ ] Semantic Check
