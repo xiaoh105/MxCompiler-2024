@@ -18,6 +18,7 @@ class VarPrimaryNode : public PrimaryNode {
     lvalue_ = true;
     null_ = false;
   }
+  [[nodiscard]] const std::string &GetName() const { return name_; }
 
  private:
   const std::string &name_;

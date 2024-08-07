@@ -42,10 +42,15 @@ class NewPrimaryNode : public PrimaryNode {
     null_ = false;
     lvalue_ = false;
   }
+  [[nodiscard]] NewType GetNewType() const { return new_type_; }
+  [[nodiscard]] const std::string &GetTypename() const { return type_name_; }
+  std::unique_ptr<ArrayNode> &GetArrayLiteral() { return array_literal_; }
+  [[nodiscard]] std::size_t GetDim() const { return dim_; }
+  std::vector<std::unique_ptr<ExprNode>> &GetExpressions() { return expression_; }
 
  private:
   NewType new_type_{kUnknown};
-  const std::string &type_name_{};
+  const std::string type_name_{};
   std::unique_ptr<ArrayNode> array_literal_{nullptr};
   std::size_t dim_{};
   std::vector<std::unique_ptr<ExprNode>> expression_;
