@@ -16,7 +16,7 @@ class JaggedArrayNode : public ArrayNode {
   JaggedArrayNode() = delete;
   JaggedArrayNode(const Position &pos, std::vector<std::unique_ptr<ArrayNode>> elements)
       : ArrayNode(pos), elements_(std::move(elements)) {}
-  std::vector<std::unique_ptr<ArrayNode>> GetElements() { return elements_; }
+  std::vector<std::unique_ptr<ArrayNode>> &GetElements() { return elements_; }
 
  private:
   std::vector<std::unique_ptr<ArrayNode>> elements_;
