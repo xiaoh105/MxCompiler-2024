@@ -1336,247 +1336,247 @@ size_t MxParser::ExpressionContext::getRuleIndex() const { return MxParser::Rule
 
 void MxParser::ExpressionContext::copyFrom(ExpressionContext *ctx) { ParserRuleContext::copyFrom(ctx); }
 
-//----------------- FormatStmtContext ------------------------------------------------------------------
+//----------------- AtomicExprContext ------------------------------------------------------------------
 
-tree::TerminalNode *MxParser::FormatStmtContext::FormatQuatation() { return getToken(MxParser::FormatQuatation, 0); }
+MxParser::PrimaryContext *MxParser::AtomicExprContext::primary() { return getRuleContext<MxParser::PrimaryContext>(0); }
 
-tree::TerminalNode *MxParser::FormatStmtContext::Quotation() { return getToken(MxParser::Quotation, 0); }
+MxParser::AtomicExprContext::AtomicExprContext(ExpressionContext *ctx) { copyFrom(ctx); }
 
-std::vector<tree::TerminalNode *> MxParser::FormatStmtContext::FormatStringLiteral() {
-  return getTokens(MxParser::FormatStringLiteral);
-}
-
-tree::TerminalNode *MxParser::FormatStmtContext::FormatStringLiteral(size_t i) {
-  return getToken(MxParser::FormatStringLiteral, i);
-}
-
-std::vector<tree::TerminalNode *> MxParser::FormatStmtContext::Dollar() { return getTokens(MxParser::Dollar); }
-
-tree::TerminalNode *MxParser::FormatStmtContext::Dollar(size_t i) { return getToken(MxParser::Dollar, i); }
-
-std::vector<MxParser::ExpressionContext *> MxParser::FormatStmtContext::expression() {
-  return getRuleContexts<MxParser::ExpressionContext>();
-}
-
-MxParser::ExpressionContext *MxParser::FormatStmtContext::expression(size_t i) {
-  return getRuleContext<MxParser::ExpressionContext>(i);
-}
-
-MxParser::FormatStmtContext::FormatStmtContext(ExpressionContext *ctx) { copyFrom(ctx); }
-
-std::any MxParser::FormatStmtContext::accept(tree::ParseTreeVisitor *visitor) {
+std::any MxParser::AtomicExprContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MxVisitor *>(visitor))
-    return parserVisitor->visitFormatStmt(this);
+    return parserVisitor->visitAtomicExpr(this);
   else
     return visitor->visitChildren(this);
 }
-//----------------- AtomicStmtContext ------------------------------------------------------------------
+//----------------- UnaryExprContext ------------------------------------------------------------------
 
-MxParser::PrimaryContext *MxParser::AtomicStmtContext::primary() { return getRuleContext<MxParser::PrimaryContext>(0); }
-
-MxParser::AtomicStmtContext::AtomicStmtContext(ExpressionContext *ctx) { copyFrom(ctx); }
-
-std::any MxParser::AtomicStmtContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<MxVisitor *>(visitor))
-    return parserVisitor->visitAtomicStmt(this);
-  else
-    return visitor->visitChildren(this);
-}
-//----------------- AssignStmtContext ------------------------------------------------------------------
-
-std::vector<MxParser::ExpressionContext *> MxParser::AssignStmtContext::expression() {
-  return getRuleContexts<MxParser::ExpressionContext>();
-}
-
-MxParser::ExpressionContext *MxParser::AssignStmtContext::expression(size_t i) {
-  return getRuleContext<MxParser::ExpressionContext>(i);
-}
-
-tree::TerminalNode *MxParser::AssignStmtContext::Assign() { return getToken(MxParser::Assign, 0); }
-
-MxParser::AssignStmtContext::AssignStmtContext(ExpressionContext *ctx) { copyFrom(ctx); }
-
-std::any MxParser::AssignStmtContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<MxVisitor *>(visitor))
-    return parserVisitor->visitAssignStmt(this);
-  else
-    return visitor->visitChildren(this);
-}
-//----------------- FuncCallStmtContext ------------------------------------------------------------------
-
-tree::TerminalNode *MxParser::FuncCallStmtContext::LeftParen() { return getToken(MxParser::LeftParen, 0); }
-
-tree::TerminalNode *MxParser::FuncCallStmtContext::RightParen() { return getToken(MxParser::RightParen, 0); }
-
-tree::TerminalNode *MxParser::FuncCallStmtContext::Identifier() { return getToken(MxParser::Identifier, 0); }
-
-MxParser::ArgumentsContext *MxParser::FuncCallStmtContext::arguments() {
-  return getRuleContext<MxParser::ArgumentsContext>(0);
-}
-
-tree::TerminalNode *MxParser::FuncCallStmtContext::Dot() { return getToken(MxParser::Dot, 0); }
-
-MxParser::ExpressionContext *MxParser::FuncCallStmtContext::expression() {
+MxParser::ExpressionContext *MxParser::UnaryExprContext::expression() {
   return getRuleContext<MxParser::ExpressionContext>(0);
 }
 
-MxParser::FuncCallStmtContext::FuncCallStmtContext(ExpressionContext *ctx) { copyFrom(ctx); }
+tree::TerminalNode *MxParser::UnaryExprContext::Increment() { return getToken(MxParser::Increment, 0); }
 
-std::any MxParser::FuncCallStmtContext::accept(tree::ParseTreeVisitor *visitor) {
+tree::TerminalNode *MxParser::UnaryExprContext::Decrement() { return getToken(MxParser::Decrement, 0); }
+
+tree::TerminalNode *MxParser::UnaryExprContext::Add() { return getToken(MxParser::Add, 0); }
+
+tree::TerminalNode *MxParser::UnaryExprContext::Sub() { return getToken(MxParser::Sub, 0); }
+
+tree::TerminalNode *MxParser::UnaryExprContext::NotLogic() { return getToken(MxParser::NotLogic, 0); }
+
+tree::TerminalNode *MxParser::UnaryExprContext::Not() { return getToken(MxParser::Not, 0); }
+
+MxParser::UnaryExprContext::UnaryExprContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+std::any MxParser::UnaryExprContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MxVisitor *>(visitor))
-    return parserVisitor->visitFuncCallStmt(this);
+    return parserVisitor->visitUnaryExpr(this);
   else
     return visitor->visitChildren(this);
 }
-//----------------- SubscriptStmtContext ------------------------------------------------------------------
+//----------------- SubscriptExprContext ------------------------------------------------------------------
 
-std::vector<MxParser::ExpressionContext *> MxParser::SubscriptStmtContext::expression() {
+std::vector<MxParser::ExpressionContext *> MxParser::SubscriptExprContext::expression() {
   return getRuleContexts<MxParser::ExpressionContext>();
 }
 
-MxParser::ExpressionContext *MxParser::SubscriptStmtContext::expression(size_t i) {
+MxParser::ExpressionContext *MxParser::SubscriptExprContext::expression(size_t i) {
   return getRuleContext<MxParser::ExpressionContext>(i);
 }
 
-std::vector<tree::TerminalNode *> MxParser::SubscriptStmtContext::LeftBracket() {
+std::vector<tree::TerminalNode *> MxParser::SubscriptExprContext::LeftBracket() {
   return getTokens(MxParser::LeftBracket);
 }
 
-tree::TerminalNode *MxParser::SubscriptStmtContext::LeftBracket(size_t i) { return getToken(MxParser::LeftBracket, i); }
+tree::TerminalNode *MxParser::SubscriptExprContext::LeftBracket(size_t i) { return getToken(MxParser::LeftBracket, i); }
 
-std::vector<tree::TerminalNode *> MxParser::SubscriptStmtContext::RightBracket() {
+std::vector<tree::TerminalNode *> MxParser::SubscriptExprContext::RightBracket() {
   return getTokens(MxParser::RightBracket);
 }
 
-tree::TerminalNode *MxParser::SubscriptStmtContext::RightBracket(size_t i) {
+tree::TerminalNode *MxParser::SubscriptExprContext::RightBracket(size_t i) {
   return getToken(MxParser::RightBracket, i);
 }
 
-MxParser::SubscriptStmtContext::SubscriptStmtContext(ExpressionContext *ctx) { copyFrom(ctx); }
+MxParser::SubscriptExprContext::SubscriptExprContext(ExpressionContext *ctx) { copyFrom(ctx); }
 
-std::any MxParser::SubscriptStmtContext::accept(tree::ParseTreeVisitor *visitor) {
+std::any MxParser::SubscriptExprContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MxVisitor *>(visitor))
-    return parserVisitor->visitSubscriptStmt(this);
+    return parserVisitor->visitSubscriptExpr(this);
   else
     return visitor->visitChildren(this);
 }
-//----------------- UnaryStmtContext ------------------------------------------------------------------
+//----------------- TenaryExprContext ------------------------------------------------------------------
 
-MxParser::ExpressionContext *MxParser::UnaryStmtContext::expression() {
-  return getRuleContext<MxParser::ExpressionContext>(0);
-}
-
-tree::TerminalNode *MxParser::UnaryStmtContext::Increment() { return getToken(MxParser::Increment, 0); }
-
-tree::TerminalNode *MxParser::UnaryStmtContext::Decrement() { return getToken(MxParser::Decrement, 0); }
-
-tree::TerminalNode *MxParser::UnaryStmtContext::Add() { return getToken(MxParser::Add, 0); }
-
-tree::TerminalNode *MxParser::UnaryStmtContext::Sub() { return getToken(MxParser::Sub, 0); }
-
-tree::TerminalNode *MxParser::UnaryStmtContext::NotLogic() { return getToken(MxParser::NotLogic, 0); }
-
-tree::TerminalNode *MxParser::UnaryStmtContext::Not() { return getToken(MxParser::Not, 0); }
-
-MxParser::UnaryStmtContext::UnaryStmtContext(ExpressionContext *ctx) { copyFrom(ctx); }
-
-std::any MxParser::UnaryStmtContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<MxVisitor *>(visitor))
-    return parserVisitor->visitUnaryStmt(this);
-  else
-    return visitor->visitChildren(this);
-}
-//----------------- BinaryStmtContext ------------------------------------------------------------------
-
-std::vector<MxParser::ExpressionContext *> MxParser::BinaryStmtContext::expression() {
+std::vector<MxParser::ExpressionContext *> MxParser::TenaryExprContext::expression() {
   return getRuleContexts<MxParser::ExpressionContext>();
 }
 
-MxParser::ExpressionContext *MxParser::BinaryStmtContext::expression(size_t i) {
+MxParser::ExpressionContext *MxParser::TenaryExprContext::expression(size_t i) {
   return getRuleContext<MxParser::ExpressionContext>(i);
 }
 
-tree::TerminalNode *MxParser::BinaryStmtContext::Mul() { return getToken(MxParser::Mul, 0); }
+tree::TerminalNode *MxParser::TenaryExprContext::Question() { return getToken(MxParser::Question, 0); }
 
-tree::TerminalNode *MxParser::BinaryStmtContext::Div() { return getToken(MxParser::Div, 0); }
+tree::TerminalNode *MxParser::TenaryExprContext::Colon() { return getToken(MxParser::Colon, 0); }
 
-tree::TerminalNode *MxParser::BinaryStmtContext::Mod() { return getToken(MxParser::Mod, 0); }
+MxParser::TenaryExprContext::TenaryExprContext(ExpressionContext *ctx) { copyFrom(ctx); }
 
-tree::TerminalNode *MxParser::BinaryStmtContext::Add() { return getToken(MxParser::Add, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::Sub() { return getToken(MxParser::Sub, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::ShiftLeft() { return getToken(MxParser::ShiftLeft, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::ShiftRight() { return getToken(MxParser::ShiftRight, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::Less() { return getToken(MxParser::Less, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::LessEqual() { return getToken(MxParser::LessEqual, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::Greater() { return getToken(MxParser::Greater, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::GreaterEqual() { return getToken(MxParser::GreaterEqual, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::Equal() { return getToken(MxParser::Equal, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::UnEqual() { return getToken(MxParser::UnEqual, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::And() { return getToken(MxParser::And, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::Xor() { return getToken(MxParser::Xor, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::Or() { return getToken(MxParser::Or, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::AndLogic() { return getToken(MxParser::AndLogic, 0); }
-
-tree::TerminalNode *MxParser::BinaryStmtContext::OrLogic() { return getToken(MxParser::OrLogic, 0); }
-
-MxParser::BinaryStmtContext::BinaryStmtContext(ExpressionContext *ctx) { copyFrom(ctx); }
-
-std::any MxParser::BinaryStmtContext::accept(tree::ParseTreeVisitor *visitor) {
+std::any MxParser::TenaryExprContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MxVisitor *>(visitor))
-    return parserVisitor->visitBinaryStmt(this);
+    return parserVisitor->visitTenaryExpr(this);
   else
     return visitor->visitChildren(this);
 }
-//----------------- MemberStmtContext ------------------------------------------------------------------
+//----------------- MemberExprContext ------------------------------------------------------------------
 
-MxParser::ExpressionContext *MxParser::MemberStmtContext::expression() {
+MxParser::ExpressionContext *MxParser::MemberExprContext::expression() {
   return getRuleContext<MxParser::ExpressionContext>(0);
 }
 
-tree::TerminalNode *MxParser::MemberStmtContext::Dot() { return getToken(MxParser::Dot, 0); }
+tree::TerminalNode *MxParser::MemberExprContext::Dot() { return getToken(MxParser::Dot, 0); }
 
-tree::TerminalNode *MxParser::MemberStmtContext::Identifier() { return getToken(MxParser::Identifier, 0); }
+tree::TerminalNode *MxParser::MemberExprContext::Identifier() { return getToken(MxParser::Identifier, 0); }
 
-MxParser::MemberStmtContext::MemberStmtContext(ExpressionContext *ctx) { copyFrom(ctx); }
+MxParser::MemberExprContext::MemberExprContext(ExpressionContext *ctx) { copyFrom(ctx); }
 
-std::any MxParser::MemberStmtContext::accept(tree::ParseTreeVisitor *visitor) {
+std::any MxParser::MemberExprContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MxVisitor *>(visitor))
-    return parserVisitor->visitMemberStmt(this);
+    return parserVisitor->visitMemberExpr(this);
   else
     return visitor->visitChildren(this);
 }
-//----------------- TenaryStmtContext ------------------------------------------------------------------
+//----------------- BinaryExprContext ------------------------------------------------------------------
 
-std::vector<MxParser::ExpressionContext *> MxParser::TenaryStmtContext::expression() {
+std::vector<MxParser::ExpressionContext *> MxParser::BinaryExprContext::expression() {
   return getRuleContexts<MxParser::ExpressionContext>();
 }
 
-MxParser::ExpressionContext *MxParser::TenaryStmtContext::expression(size_t i) {
+MxParser::ExpressionContext *MxParser::BinaryExprContext::expression(size_t i) {
   return getRuleContext<MxParser::ExpressionContext>(i);
 }
 
-tree::TerminalNode *MxParser::TenaryStmtContext::Question() { return getToken(MxParser::Question, 0); }
+tree::TerminalNode *MxParser::BinaryExprContext::Mul() { return getToken(MxParser::Mul, 0); }
 
-tree::TerminalNode *MxParser::TenaryStmtContext::Colon() { return getToken(MxParser::Colon, 0); }
+tree::TerminalNode *MxParser::BinaryExprContext::Div() { return getToken(MxParser::Div, 0); }
 
-MxParser::TenaryStmtContext::TenaryStmtContext(ExpressionContext *ctx) { copyFrom(ctx); }
+tree::TerminalNode *MxParser::BinaryExprContext::Mod() { return getToken(MxParser::Mod, 0); }
 
-std::any MxParser::TenaryStmtContext::accept(tree::ParseTreeVisitor *visitor) {
+tree::TerminalNode *MxParser::BinaryExprContext::Add() { return getToken(MxParser::Add, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::Sub() { return getToken(MxParser::Sub, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::ShiftLeft() { return getToken(MxParser::ShiftLeft, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::ShiftRight() { return getToken(MxParser::ShiftRight, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::Less() { return getToken(MxParser::Less, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::LessEqual() { return getToken(MxParser::LessEqual, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::Greater() { return getToken(MxParser::Greater, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::GreaterEqual() { return getToken(MxParser::GreaterEqual, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::Equal() { return getToken(MxParser::Equal, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::UnEqual() { return getToken(MxParser::UnEqual, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::And() { return getToken(MxParser::And, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::Xor() { return getToken(MxParser::Xor, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::Or() { return getToken(MxParser::Or, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::AndLogic() { return getToken(MxParser::AndLogic, 0); }
+
+tree::TerminalNode *MxParser::BinaryExprContext::OrLogic() { return getToken(MxParser::OrLogic, 0); }
+
+MxParser::BinaryExprContext::BinaryExprContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+std::any MxParser::BinaryExprContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MxVisitor *>(visitor))
-    return parserVisitor->visitTenaryStmt(this);
+    return parserVisitor->visitBinaryExpr(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- FormatExprContext ------------------------------------------------------------------
+
+tree::TerminalNode *MxParser::FormatExprContext::FormatQuatation() { return getToken(MxParser::FormatQuatation, 0); }
+
+tree::TerminalNode *MxParser::FormatExprContext::Quotation() { return getToken(MxParser::Quotation, 0); }
+
+std::vector<tree::TerminalNode *> MxParser::FormatExprContext::FormatStringLiteral() {
+  return getTokens(MxParser::FormatStringLiteral);
+}
+
+tree::TerminalNode *MxParser::FormatExprContext::FormatStringLiteral(size_t i) {
+  return getToken(MxParser::FormatStringLiteral, i);
+}
+
+std::vector<tree::TerminalNode *> MxParser::FormatExprContext::Dollar() { return getTokens(MxParser::Dollar); }
+
+tree::TerminalNode *MxParser::FormatExprContext::Dollar(size_t i) { return getToken(MxParser::Dollar, i); }
+
+std::vector<MxParser::ExpressionContext *> MxParser::FormatExprContext::expression() {
+  return getRuleContexts<MxParser::ExpressionContext>();
+}
+
+MxParser::ExpressionContext *MxParser::FormatExprContext::expression(size_t i) {
+  return getRuleContext<MxParser::ExpressionContext>(i);
+}
+
+MxParser::FormatExprContext::FormatExprContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+std::any MxParser::FormatExprContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<MxVisitor *>(visitor))
+    return parserVisitor->visitFormatExpr(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- FuncCallExprContext ------------------------------------------------------------------
+
+tree::TerminalNode *MxParser::FuncCallExprContext::LeftParen() { return getToken(MxParser::LeftParen, 0); }
+
+tree::TerminalNode *MxParser::FuncCallExprContext::RightParen() { return getToken(MxParser::RightParen, 0); }
+
+tree::TerminalNode *MxParser::FuncCallExprContext::Identifier() { return getToken(MxParser::Identifier, 0); }
+
+MxParser::ArgumentsContext *MxParser::FuncCallExprContext::arguments() {
+  return getRuleContext<MxParser::ArgumentsContext>(0);
+}
+
+tree::TerminalNode *MxParser::FuncCallExprContext::Dot() { return getToken(MxParser::Dot, 0); }
+
+MxParser::ExpressionContext *MxParser::FuncCallExprContext::expression() {
+  return getRuleContext<MxParser::ExpressionContext>(0);
+}
+
+MxParser::FuncCallExprContext::FuncCallExprContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+std::any MxParser::FuncCallExprContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<MxVisitor *>(visitor))
+    return parserVisitor->visitFuncCallExpr(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- AssignExprContext ------------------------------------------------------------------
+
+std::vector<MxParser::ExpressionContext *> MxParser::AssignExprContext::expression() {
+  return getRuleContexts<MxParser::ExpressionContext>();
+}
+
+MxParser::ExpressionContext *MxParser::AssignExprContext::expression(size_t i) {
+  return getRuleContext<MxParser::ExpressionContext>(i);
+}
+
+tree::TerminalNode *MxParser::AssignExprContext::Assign() { return getToken(MxParser::Assign, 0); }
+
+MxParser::AssignExprContext::AssignExprContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+std::any MxParser::AssignExprContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<MxVisitor *>(visitor))
+    return parserVisitor->visitAssignExpr(this);
   else
     return visitor->visitChildren(this);
 }
@@ -1608,7 +1608,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 21, _ctx)) {
       case 1: {
-        _localctx = _tracker.createInstance<AtomicStmtContext>(_localctx);
+        _localctx = _tracker.createInstance<AtomicExprContext>(_localctx);
         _ctx = _localctx;
         previousContext = _localctx;
 
@@ -1618,7 +1618,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
       }
 
       case 2: {
-        _localctx = _tracker.createInstance<FormatStmtContext>(_localctx);
+        _localctx = _tracker.createInstance<FormatExprContext>(_localctx);
         _ctx = _localctx;
         previousContext = _localctx;
         setState(188);
@@ -1661,11 +1661,11 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
       }
 
       case 3: {
-        _localctx = _tracker.createInstance<FuncCallStmtContext>(_localctx);
+        _localctx = _tracker.createInstance<FuncCallExprContext>(_localctx);
         _ctx = _localctx;
         previousContext = _localctx;
         setState(200);
-        antlrcpp::downCast<FuncCallStmtContext *>(_localctx)->funcName = match(MxParser::Identifier);
+        antlrcpp::downCast<FuncCallExprContext *>(_localctx)->funcName = match(MxParser::Identifier);
         setState(201);
         match(MxParser::LeftParen);
         setState(203);
@@ -1682,7 +1682,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
       }
 
       case 4: {
-        _localctx = _tracker.createInstance<UnaryStmtContext>(_localctx);
+        _localctx = _tracker.createInstance<UnaryExprContext>(_localctx);
         _ctx = _localctx;
         previousContext = _localctx;
         setState(206);
@@ -1701,7 +1701,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
       }
 
       case 5: {
-        _localctx = _tracker.createInstance<UnaryStmtContext>(_localctx);
+        _localctx = _tracker.createInstance<UnaryExprContext>(_localctx);
         _ctx = _localctx;
         previousContext = _localctx;
         setState(208);
@@ -1720,7 +1720,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
       }
 
       case 6: {
-        _localctx = _tracker.createInstance<UnaryStmtContext>(_localctx);
+        _localctx = _tracker.createInstance<UnaryExprContext>(_localctx);
         _ctx = _localctx;
         previousContext = _localctx;
         setState(210);
@@ -1753,7 +1753,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
         _errHandler->sync(this);
         switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 24, _ctx)) {
           case 1: {
-            auto newContext = _tracker.createInstance<BinaryStmtContext>(
+            auto newContext = _tracker.createInstance<BinaryExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -1774,7 +1774,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 2: {
-            auto newContext = _tracker.createInstance<BinaryStmtContext>(
+            auto newContext = _tracker.createInstance<BinaryExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -1797,7 +1797,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 3: {
-            auto newContext = _tracker.createInstance<BinaryStmtContext>(
+            auto newContext = _tracker.createInstance<BinaryExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -1820,7 +1820,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 4: {
-            auto newContext = _tracker.createInstance<BinaryStmtContext>(
+            auto newContext = _tracker.createInstance<BinaryExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -1841,7 +1841,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 5: {
-            auto newContext = _tracker.createInstance<BinaryStmtContext>(
+            auto newContext = _tracker.createInstance<BinaryExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -1864,7 +1864,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 6: {
-            auto newContext = _tracker.createInstance<BinaryStmtContext>(
+            auto newContext = _tracker.createInstance<BinaryExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -1879,7 +1879,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 7: {
-            auto newContext = _tracker.createInstance<BinaryStmtContext>(
+            auto newContext = _tracker.createInstance<BinaryExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -1894,7 +1894,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 8: {
-            auto newContext = _tracker.createInstance<BinaryStmtContext>(
+            auto newContext = _tracker.createInstance<BinaryExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -1909,7 +1909,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 9: {
-            auto newContext = _tracker.createInstance<BinaryStmtContext>(
+            auto newContext = _tracker.createInstance<BinaryExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -1924,7 +1924,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 10: {
-            auto newContext = _tracker.createInstance<BinaryStmtContext>(
+            auto newContext = _tracker.createInstance<BinaryExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -1939,7 +1939,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 11: {
-            auto newContext = _tracker.createInstance<TenaryStmtContext>(
+            auto newContext = _tracker.createInstance<TenaryExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -1958,7 +1958,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 12: {
-            auto newContext = _tracker.createInstance<AssignStmtContext>(
+            auto newContext = _tracker.createInstance<AssignExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -1973,7 +1973,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 13: {
-            auto newContext = _tracker.createInstance<UnaryStmtContext>(
+            auto newContext = _tracker.createInstance<UnaryExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -1994,7 +1994,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 14: {
-            auto newContext = _tracker.createInstance<FuncCallStmtContext>(
+            auto newContext = _tracker.createInstance<FuncCallExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             newContext->classVar = previousContext;
@@ -2005,7 +2005,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
             setState(256);
             match(MxParser::Dot);
             setState(257);
-            antlrcpp::downCast<FuncCallStmtContext *>(_localctx)->funcName = match(MxParser::Identifier);
+            antlrcpp::downCast<FuncCallExprContext *>(_localctx)->funcName = match(MxParser::Identifier);
             setState(258);
             match(MxParser::LeftParen);
             setState(260);
@@ -2022,7 +2022,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 15: {
-            auto newContext = _tracker.createInstance<SubscriptStmtContext>(
+            auto newContext = _tracker.createInstance<SubscriptExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);
@@ -2038,7 +2038,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
                   setState(264);
                   match(MxParser::LeftBracket);
                   setState(265);
-                  antlrcpp::downCast<SubscriptStmtContext *>(_localctx)->index = expression(0);
+                  antlrcpp::downCast<SubscriptExprContext *>(_localctx)->index = expression(0);
                   setState(266);
                   match(MxParser::RightBracket);
                   break;
@@ -2055,7 +2055,7 @@ MxParser::ExpressionContext *MxParser::expression(int precedence) {
           }
 
           case 16: {
-            auto newContext = _tracker.createInstance<MemberStmtContext>(
+            auto newContext = _tracker.createInstance<MemberExprContext>(
                 _tracker.createInstance<ExpressionContext>(parentContext, parentState));
             _localctx = newContext;
             pushNewRecursionContext(newContext, startState, RuleExpression);

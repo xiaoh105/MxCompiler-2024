@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "parser/MxParser.h"
 #include "antlr4-runtime.h"
+#include "parser/MxParser.h"
 
 /**
  * This class defines an abstract visitor for a parse tree
@@ -49,23 +49,23 @@ class MxVisitor : public antlr4::tree::AbstractParseTreeVisitor {
 
   virtual std::any visitContinueStmt(MxParser::ContinueStmtContext *context) = 0;
 
-  virtual std::any visitFormatStmt(MxParser::FormatStmtContext *context) = 0;
+  virtual std::any visitAtomicExpr(MxParser::AtomicExprContext *context) = 0;
 
-  virtual std::any visitAtomicStmt(MxParser::AtomicStmtContext *context) = 0;
+  virtual std::any visitUnaryExpr(MxParser::UnaryExprContext *context) = 0;
 
-  virtual std::any visitAssignStmt(MxParser::AssignStmtContext *context) = 0;
+  virtual std::any visitSubscriptExpr(MxParser::SubscriptExprContext *context) = 0;
 
-  virtual std::any visitFuncCallStmt(MxParser::FuncCallStmtContext *context) = 0;
+  virtual std::any visitTenaryExpr(MxParser::TenaryExprContext *context) = 0;
 
-  virtual std::any visitSubscriptStmt(MxParser::SubscriptStmtContext *context) = 0;
+  virtual std::any visitMemberExpr(MxParser::MemberExprContext *context) = 0;
 
-  virtual std::any visitUnaryStmt(MxParser::UnaryStmtContext *context) = 0;
+  virtual std::any visitBinaryExpr(MxParser::BinaryExprContext *context) = 0;
 
-  virtual std::any visitBinaryStmt(MxParser::BinaryStmtContext *context) = 0;
+  virtual std::any visitFormatExpr(MxParser::FormatExprContext *context) = 0;
 
-  virtual std::any visitMemberStmt(MxParser::MemberStmtContext *context) = 0;
+  virtual std::any visitFuncCallExpr(MxParser::FuncCallExprContext *context) = 0;
 
-  virtual std::any visitTenaryStmt(MxParser::TenaryStmtContext *context) = 0;
+  virtual std::any visitAssignExpr(MxParser::AssignExprContext *context) = 0;
 
   virtual std::any visitSuite(MxParser::SuiteContext *context) = 0;
 

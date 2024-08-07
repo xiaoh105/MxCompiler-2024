@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "parser/MxVisitor.h"
 #include "antlr4-runtime.h"
+#include "parser/MxVisitor.h"
 
 /**
  * This class provides an empty implementation of MxVisitor, which can be
@@ -48,23 +48,23 @@ class MxBaseVisitor : public MxVisitor {
 
   virtual std::any visitContinueStmt(MxParser::ContinueStmtContext *ctx) override { return visitChildren(ctx); }
 
-  virtual std::any visitFormatStmt(MxParser::FormatStmtContext *ctx) override { return visitChildren(ctx); }
+  virtual std::any visitAtomicExpr(MxParser::AtomicExprContext *ctx) override { return visitChildren(ctx); }
 
-  virtual std::any visitAtomicStmt(MxParser::AtomicStmtContext *ctx) override { return visitChildren(ctx); }
+  virtual std::any visitUnaryExpr(MxParser::UnaryExprContext *ctx) override { return visitChildren(ctx); }
 
-  virtual std::any visitAssignStmt(MxParser::AssignStmtContext *ctx) override { return visitChildren(ctx); }
+  virtual std::any visitSubscriptExpr(MxParser::SubscriptExprContext *ctx) override { return visitChildren(ctx); }
 
-  virtual std::any visitFuncCallStmt(MxParser::FuncCallStmtContext *ctx) override { return visitChildren(ctx); }
+  virtual std::any visitTenaryExpr(MxParser::TenaryExprContext *ctx) override { return visitChildren(ctx); }
 
-  virtual std::any visitSubscriptStmt(MxParser::SubscriptStmtContext *ctx) override { return visitChildren(ctx); }
+  virtual std::any visitMemberExpr(MxParser::MemberExprContext *ctx) override { return visitChildren(ctx); }
 
-  virtual std::any visitUnaryStmt(MxParser::UnaryStmtContext *ctx) override { return visitChildren(ctx); }
+  virtual std::any visitBinaryExpr(MxParser::BinaryExprContext *ctx) override { return visitChildren(ctx); }
 
-  virtual std::any visitBinaryStmt(MxParser::BinaryStmtContext *ctx) override { return visitChildren(ctx); }
+  virtual std::any visitFormatExpr(MxParser::FormatExprContext *ctx) override { return visitChildren(ctx); }
 
-  virtual std::any visitMemberStmt(MxParser::MemberStmtContext *ctx) override { return visitChildren(ctx); }
+  virtual std::any visitFuncCallExpr(MxParser::FuncCallExprContext *ctx) override { return visitChildren(ctx); }
 
-  virtual std::any visitTenaryStmt(MxParser::TenaryStmtContext *ctx) override { return visitChildren(ctx); }
+  virtual std::any visitAssignExpr(MxParser::AssignExprContext *ctx) override { return visitChildren(ctx); }
 
   virtual std::any visitSuite(MxParser::SuiteContext *ctx) override { return visitChildren(ctx); }
 

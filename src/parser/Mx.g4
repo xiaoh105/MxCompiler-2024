@@ -46,28 +46,28 @@ statement
     ;
 
 expression
-    : primary                                                               # atomicStmt
-    | 'f"' (FormatStringLiteral | '$' expression '$')* Quotation            # formatStmt
-    | expression (Increment | Decrement)                                    # unaryStmt
-    | funcName=Identifier '(' arguments? ')'                                # funcCallStmt
-    | classVar=expression '.' funcName=Identifier '(' arguments? ')'        # funcCallStmt
-    | expression ('[' index=expression ']')+                                # subscriptStmt
-    | expression '.' Identifier                                             # memberStmt
-    | <assoc=right> (Increment | Decrement) expression                      # unaryStmt
-    | <assoc=right> (Add | Sub) expression                                  # unaryStmt
-    | <assoc=right> (NotLogic | Not) expression                             # unaryStmt
-    | expression (Mul | Div | Mod) expression                               # binaryStmt
-    | expression (Add | Sub) expression                                     # binaryStmt
-    | expression (ShiftLeft | ShiftRight) expression                        # binaryStmt
-    | expression (Less | LessEqual | Greater | GreaterEqual) expression     # binaryStmt
-    | expression (Equal | UnEqual) expression                               # binaryStmt
-    | expression And expression                                             # binaryStmt
-    | expression Xor expression                                             # binaryStmt
-    | expression Or expression                                              # binaryStmt
-    | expression AndLogic expression                                        # binaryStmt
-    | expression OrLogic expression                                         # binaryStmt
-    | <assoc=right> expression '?' expression ':' expression                # tenaryStmt
-    | expression Assign expression                                          # assignStmt
+    : primary                                                               # atomicExpr
+    | 'f"' (FormatStringLiteral | '$' expression '$')* Quotation            # formatExpr
+    | expression (Increment | Decrement)                                    # unaryExpr
+    | funcName=Identifier '(' arguments? ')'                                # funcCallExpr
+    | classVar=expression '.' funcName=Identifier '(' arguments? ')'        # funcCallExpr
+    | expression ('[' index=expression ']')+                                # subscriptExpr
+    | expression '.' Identifier                                             # memberExpr
+    | <assoc=right> (Increment | Decrement) expression                      # unaryExpr
+    | <assoc=right> (Add | Sub) expression                                  # unaryExpr
+    | <assoc=right> (NotLogic | Not) expression                             # unaryExpr
+    | expression (Mul | Div | Mod) expression                               # binaryExpr
+    | expression (Add | Sub) expression                                     # binaryExpr
+    | expression (ShiftLeft | ShiftRight) expression                        # binaryExpr
+    | expression (Less | LessEqual | Greater | GreaterEqual) expression     # binaryExpr
+    | expression (Equal | UnEqual) expression                               # binaryExpr
+    | expression And expression                                             # binaryExpr
+    | expression Xor expression                                             # binaryExpr
+    | expression Or expression                                              # binaryExpr
+    | expression AndLogic expression                                        # binaryExpr
+    | expression OrLogic expression                                         # binaryExpr
+    | <assoc=right> expression '?' expression ':' expression                # tenaryExpr
+    | expression Assign expression                                          # assignExpr
     ;
 
 suite

@@ -408,76 +408,18 @@ class MxParser : public antlr4::Parser {
     virtual size_t getRuleIndex() const override;
   };
 
-  class FormatStmtContext : public ExpressionContext {
+  class AtomicExprContext : public ExpressionContext {
    public:
-    FormatStmtContext(ExpressionContext *ctx);
-
-    antlr4::tree::TerminalNode *FormatQuatation();
-    antlr4::tree::TerminalNode *Quotation();
-    std::vector<antlr4::tree::TerminalNode *> FormatStringLiteral();
-    antlr4::tree::TerminalNode *FormatStringLiteral(size_t i);
-    std::vector<antlr4::tree::TerminalNode *> Dollar();
-    antlr4::tree::TerminalNode *Dollar(size_t i);
-    std::vector<ExpressionContext *> expression();
-    ExpressionContext *expression(size_t i);
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class AtomicStmtContext : public ExpressionContext {
-   public:
-    AtomicStmtContext(ExpressionContext *ctx);
+    AtomicExprContext(ExpressionContext *ctx);
 
     PrimaryContext *primary();
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
-  class AssignStmtContext : public ExpressionContext {
+  class UnaryExprContext : public ExpressionContext {
    public:
-    AssignStmtContext(ExpressionContext *ctx);
-
-    std::vector<ExpressionContext *> expression();
-    ExpressionContext *expression(size_t i);
-    antlr4::tree::TerminalNode *Assign();
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class FuncCallStmtContext : public ExpressionContext {
-   public:
-    FuncCallStmtContext(ExpressionContext *ctx);
-
-    MxParser::ExpressionContext *classVar = nullptr;
-    antlr4::Token *funcName = nullptr;
-    antlr4::tree::TerminalNode *LeftParen();
-    antlr4::tree::TerminalNode *RightParen();
-    antlr4::tree::TerminalNode *Identifier();
-    ArgumentsContext *arguments();
-    antlr4::tree::TerminalNode *Dot();
-    ExpressionContext *expression();
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class SubscriptStmtContext : public ExpressionContext {
-   public:
-    SubscriptStmtContext(ExpressionContext *ctx);
-
-    MxParser::ExpressionContext *index = nullptr;
-    std::vector<ExpressionContext *> expression();
-    ExpressionContext *expression(size_t i);
-    std::vector<antlr4::tree::TerminalNode *> LeftBracket();
-    antlr4::tree::TerminalNode *LeftBracket(size_t i);
-    std::vector<antlr4::tree::TerminalNode *> RightBracket();
-    antlr4::tree::TerminalNode *RightBracket(size_t i);
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class UnaryStmtContext : public ExpressionContext {
-   public:
-    UnaryStmtContext(ExpressionContext *ctx);
+    UnaryExprContext(ExpressionContext *ctx);
 
     ExpressionContext *expression();
     antlr4::tree::TerminalNode *Increment();
@@ -490,9 +432,47 @@ class MxParser : public antlr4::Parser {
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
-  class BinaryStmtContext : public ExpressionContext {
+  class SubscriptExprContext : public ExpressionContext {
    public:
-    BinaryStmtContext(ExpressionContext *ctx);
+    SubscriptExprContext(ExpressionContext *ctx);
+
+    MxParser::ExpressionContext *index = nullptr;
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext *expression(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> LeftBracket();
+    antlr4::tree::TerminalNode *LeftBracket(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> RightBracket();
+    antlr4::tree::TerminalNode *RightBracket(size_t i);
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class TenaryExprContext : public ExpressionContext {
+   public:
+    TenaryExprContext(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext *expression(size_t i);
+    antlr4::tree::TerminalNode *Question();
+    antlr4::tree::TerminalNode *Colon();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class MemberExprContext : public ExpressionContext {
+   public:
+    MemberExprContext(ExpressionContext *ctx);
+
+    ExpressionContext *expression();
+    antlr4::tree::TerminalNode *Dot();
+    antlr4::tree::TerminalNode *Identifier();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class BinaryExprContext : public ExpressionContext {
+   public:
+    BinaryExprContext(ExpressionContext *ctx);
 
     std::vector<ExpressionContext *> expression();
     ExpressionContext *expression(size_t i);
@@ -518,25 +498,45 @@ class MxParser : public antlr4::Parser {
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
-  class MemberStmtContext : public ExpressionContext {
+  class FormatExprContext : public ExpressionContext {
    public:
-    MemberStmtContext(ExpressionContext *ctx);
+    FormatExprContext(ExpressionContext *ctx);
 
-    ExpressionContext *expression();
-    antlr4::tree::TerminalNode *Dot();
-    antlr4::tree::TerminalNode *Identifier();
+    antlr4::tree::TerminalNode *FormatQuatation();
+    antlr4::tree::TerminalNode *Quotation();
+    std::vector<antlr4::tree::TerminalNode *> FormatStringLiteral();
+    antlr4::tree::TerminalNode *FormatStringLiteral(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Dollar();
+    antlr4::tree::TerminalNode *Dollar(size_t i);
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext *expression(size_t i);
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
-  class TenaryStmtContext : public ExpressionContext {
+  class FuncCallExprContext : public ExpressionContext {
    public:
-    TenaryStmtContext(ExpressionContext *ctx);
+    FuncCallExprContext(ExpressionContext *ctx);
+
+    MxParser::ExpressionContext *classVar = nullptr;
+    antlr4::Token *funcName = nullptr;
+    antlr4::tree::TerminalNode *LeftParen();
+    antlr4::tree::TerminalNode *RightParen();
+    antlr4::tree::TerminalNode *Identifier();
+    ArgumentsContext *arguments();
+    antlr4::tree::TerminalNode *Dot();
+    ExpressionContext *expression();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class AssignExprContext : public ExpressionContext {
+   public:
+    AssignExprContext(ExpressionContext *ctx);
 
     std::vector<ExpressionContext *> expression();
     ExpressionContext *expression(size_t i);
-    antlr4::tree::TerminalNode *Question();
-    antlr4::tree::TerminalNode *Colon();
+    antlr4::tree::TerminalNode *Assign();
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
