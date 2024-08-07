@@ -84,7 +84,7 @@ primary
     | Identifier                                 # varPrimary
     | This                                       # thisPrimary
     | New type ('('')')?                         # newPrimary
-    | New type '[]' array                        # newPrimary
+    | New type ('[]')+ array                     # newPrimary
     | New type ('[' expression ']')+ ('[]')*     # newPrimary
     ;
 
