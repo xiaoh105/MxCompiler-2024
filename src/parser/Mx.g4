@@ -40,7 +40,7 @@ statement
     | While '(' expression ')' suite                                            # whileStmt
     | For '(' initializeStmt=statement conditionExpr=expression ';'
       stepExpr=expression ')' statement                                         # forStmt
-    | Return returnExpr=expression ';'                                          # returnStmt
+    | Return (returnExpr=expression)? ';'                                       # returnStmt
     | Break ';'                                                                 # breakStmt
     | Continue ';'                                                              # continueStmt
     ;
