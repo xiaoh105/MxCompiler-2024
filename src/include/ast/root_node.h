@@ -13,13 +13,13 @@
 class RootNode : public ASTNode {
  public:
   RootNode() = delete;
-  RootNode(Position pos, std::unique_ptr<StmtNode> main_func, std::vector<std::unique_ptr<DefNode>> definitions)
+  RootNode(Position pos, std::shared_ptr<StmtNode> main_func, std::vector<std::shared_ptr<DefNode>> definitions)
       : ASTNode(std::move(pos)), main_func_body_(std::move(main_func)), def_nodes_(std::move(definitions)) {}
-  std::unique_ptr<StmtNode> &GetMainFunction() { return main_func_body_; }
-  std::vector<std::unique_ptr<DefNode>> &GetDefNodes() { return def_nodes_; }
+  std::shared_ptr<StmtNode> &GetMainFunction() { return main_func_body_; }
+  std::vector<std::shared_ptr<DefNode>> &GetDefNodes() { return def_nodes_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
-  std::unique_ptr<StmtNode> main_func_body_{nullptr};
-  std::vector<std::unique_ptr<DefNode>> def_nodes_{};
+  std::shared_ptr<StmtNode> main_func_body_{nullptr};
+  std::vector<std::shared_ptr<DefNode>> def_nodes_{};
 };

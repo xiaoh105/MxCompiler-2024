@@ -1,5 +1,5 @@
 /*
-* Mx Compiler
+ * Mx Compiler
  * File Name: ast.h
  * Identification: ./src/include/ast/ast.h
  * Function: Include all the headers in directory 'ast'

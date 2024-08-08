@@ -14,19 +14,19 @@
 class TenaryExprNode : public ExprNode {
  public:
   TenaryExprNode() = delete;
-  TenaryExprNode(Position pos, std::unique_ptr<ExprNode> condition, std::unique_ptr<ExprNode> then_expr,
-                 std::unique_ptr<ExprNode> else_expr)
+  TenaryExprNode(Position pos, std::shared_ptr<ExprNode> condition, std::shared_ptr<ExprNode> then_expr,
+                 std::shared_ptr<ExprNode> else_expr)
       : ExprNode(std::move(pos)),
         condition_expr_(std::move(condition)),
         then_expr_(std::move(then_expr)),
         else_expr_(std::move(else_expr)) {}
-  std::unique_ptr<ExprNode> &GetCondition() { return condition_expr_; }
-  std::unique_ptr<ExprNode> &GetThenExpr() { return then_expr_; }
-  std::unique_ptr<ExprNode> &GetElseExpr() { return else_expr_; }
+  std::shared_ptr<ExprNode> &GetCondition() { return condition_expr_; }
+  std::shared_ptr<ExprNode> &GetThenExpr() { return then_expr_; }
+  std::shared_ptr<ExprNode> &GetElseExpr() { return else_expr_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
-  std::unique_ptr<ExprNode> condition_expr_{nullptr};
-  std::unique_ptr<ExprNode> then_expr_{nullptr};
-  std::unique_ptr<ExprNode> else_expr_{nullptr};
+  std::shared_ptr<ExprNode> condition_expr_{nullptr};
+  std::shared_ptr<ExprNode> then_expr_{nullptr};
+  std::shared_ptr<ExprNode> else_expr_{nullptr};
 };

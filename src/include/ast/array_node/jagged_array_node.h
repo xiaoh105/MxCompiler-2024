@@ -15,11 +15,11 @@
 class JaggedArrayNode : public ArrayNode {
  public:
   JaggedArrayNode() = delete;
-  JaggedArrayNode(Position pos, std::vector<std::unique_ptr<ArrayNode>> elements)
+  JaggedArrayNode(Position pos, std::vector<std::shared_ptr<ArrayNode>> elements)
       : ArrayNode(std::move(pos)), elements_(std::move(elements)) {}
-  std::vector<std::unique_ptr<ArrayNode>> &GetElements() { return elements_; }
+  std::vector<std::shared_ptr<ArrayNode>> &GetElements() { return elements_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
-  std::vector<std::unique_ptr<ArrayNode>> elements_;
+  std::vector<std::shared_ptr<ArrayNode>> elements_;
 };

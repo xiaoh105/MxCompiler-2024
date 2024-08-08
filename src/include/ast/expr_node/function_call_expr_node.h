@@ -14,22 +14,22 @@
 class FunctionCallExprNode : public ExprNode {
  public:
   FunctionCallExprNode() = delete;
-  FunctionCallExprNode(Position pos, std::string name, std::vector<std::unique_ptr<ExprNode>> arguments)
+  FunctionCallExprNode(Position pos, std::string name, std::vector<std::shared_ptr<ExprNode>> arguments)
       : ExprNode(std::move(pos)), function_name_(std::move(name)), arguments_(std::move(arguments)) {}
-  FunctionCallExprNode(Position pos, std::unique_ptr<ExprNode> base, std::string name,
-                       std::vector<std::unique_ptr<ExprNode>> arguments)
+  FunctionCallExprNode(Position pos, std::shared_ptr<ExprNode> base, std::string name,
+                       std::vector<std::shared_ptr<ExprNode>> arguments)
       : ExprNode(std::move(pos)),
         base_expr_node_(std::move(base)),
         function_name_(std::move(name)),
         arguments_(std::move(arguments)) {}
-  std::unique_ptr<ExprNode> &GetBaseExpr() { return base_expr_node_; }
+  std::shared_ptr<ExprNode> &GetBaseExpr() { return base_expr_node_; }
   [[nodiscard]] const std::string &GetFuncName() const { return function_name_; }
-  std::vector<std::unique_ptr<ExprNode>> &GetArguments() { return arguments_; }
+  std::vector<std::shared_ptr<ExprNode>> &GetArguments() { return arguments_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   // Base expression for method calling expressions, nullptr for function calling
-  std::unique_ptr<ExprNode> base_expr_node_{nullptr};
+  std::shared_ptr<ExprNode> base_expr_node_{nullptr};
   const std::string function_name_;
-  std::vector<std::unique_ptr<ExprNode>> arguments_;
+  std::vector<std::shared_ptr<ExprNode>> arguments_;
 };

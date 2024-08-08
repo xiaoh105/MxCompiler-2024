@@ -11,13 +11,13 @@
 class ConstructorClassStmtNode : public ClassStmtNode {
  public:
   ConstructorClassStmtNode() = delete;
-  ConstructorClassStmtNode(Position pos, std::string type, std::unique_ptr<StmtNode> function_body)
+  ConstructorClassStmtNode(Position pos, std::string type, std::shared_ptr<StmtNode> function_body)
       : ClassStmtNode(std::move(pos)), type_(std::move(type)), function_body_(std::move(function_body)) {}
   [[nodiscard]] const std::string &GetType() const { return type_; }
-  std::unique_ptr<StmtNode> &GetFunctionBody() { return function_body_; }
+  std::shared_ptr<StmtNode> &GetFunctionBody() { return function_body_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   const std::string type_;
-  std::unique_ptr<StmtNode> function_body_;
+  std::shared_ptr<StmtNode> function_body_;
 };

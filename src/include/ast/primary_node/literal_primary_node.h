@@ -6,6 +6,8 @@
  */
 #pragma once
 
+#include <variant>
+
 #include "ast/primary_node/primary_node.h"
 
 /**
@@ -25,7 +27,7 @@ class LiteralPrimaryNode : public PrimaryNode {
   LiteralPrimaryNode(Position pos, std::string str)
       : PrimaryNode(std::move(pos)), literal_type_(kString), value_(std::move(str)) {}
   // Constructor when the literal is an array literal
-  LiteralPrimaryNode(Position pos, std::unique_ptr<ArrayNode> array)
+  LiteralPrimaryNode(Position pos, std::shared_ptr<ArrayNode> array)
       : PrimaryNode(std::move(pos)), literal_type_(kArray), value_(std::move(array)) {}
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
@@ -35,5 +37,5 @@ class LiteralPrimaryNode : public PrimaryNode {
     null_ = literal_type_ == kNull;
   }
   const LiteralType literal_type_{kUnknown};
-  std::variant<int, bool, std::string, std::unique_ptr<ArrayNode>> value_{};
+  std::variant<int, bool, std::string, std::shared_ptr<ArrayNode>> value_{};
 };

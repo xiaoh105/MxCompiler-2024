@@ -20,13 +20,13 @@ class PrimaryNode : public ASTNode {
   PrimaryNode(Position pos) : ASTNode(std::move(pos)) {}
   [[nodiscard]] bool IsAssignable() const { return lvalue_; }
   // Return the type of the node, nullptr for 'null'.
-  [[nodiscard]] const std::unique_ptr<Type> &GetType() const {
+  [[nodiscard]] const std::shared_ptr<Type> &GetType() const {
     if (!null_ && type_ == nullptr) {
       throw std::runtime_error("Fetch type from Primary Node whose type is undetermined");
     }
     return type_;
   }
-  void SetType(std::unique_ptr<Type> type) {
+  void SetType(std::shared_ptr<Type> type) {
     if (type_ != nullptr) {
       throw std::runtime_error("Trying to set type to Primary Node that already has a type");
     }
@@ -35,7 +35,7 @@ class PrimaryNode : public ASTNode {
 
  protected:
   // The type of the node, nullptr for 'null'.
-  std::unique_ptr<Type> type_{nullptr};
+  std::shared_ptr<Type> type_{nullptr};
   bool lvalue_{false};
   bool null_{false};
 };

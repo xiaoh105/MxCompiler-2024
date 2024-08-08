@@ -23,7 +23,7 @@ class NewPrimaryNode : public PrimaryNode {
     null_ = false;
     lvalue_ = false;
   }
-  NewPrimaryNode(Position pos, std::string type_name, std::unique_ptr<ArrayNode> array_literal)
+  NewPrimaryNode(Position pos, std::string type_name, std::shared_ptr<ArrayNode> array_literal)
       : PrimaryNode(std::move(pos)),
         new_type_(NewType::kNewArrayLiteral),
         type_name_(std::move(type_name)),
@@ -32,7 +32,7 @@ class NewPrimaryNode : public PrimaryNode {
     null_ = false;
     lvalue_ = false;
   }
-  NewPrimaryNode(Position pos, std::string type_name, std::size_t dim, std::vector<std::unique_ptr<ExprNode>> expr)
+  NewPrimaryNode(Position pos, std::string type_name, std::size_t dim, std::vector<std::shared_ptr<ExprNode>> expr)
       : PrimaryNode(std::move(pos)),
         new_type_(NewType::kNewArray),
         type_name_(std::move(type_name)),
@@ -43,15 +43,15 @@ class NewPrimaryNode : public PrimaryNode {
   }
   [[nodiscard]] NewType GetNewType() const { return new_type_; }
   [[nodiscard]] const std::string &GetTypename() const { return type_name_; }
-  std::unique_ptr<ArrayNode> &GetArrayLiteral() { return array_literal_; }
+  std::shared_ptr<ArrayNode> &GetArrayLiteral() { return array_literal_; }
   [[nodiscard]] std::size_t GetDim() const { return dim_; }
-  std::vector<std::unique_ptr<ExprNode>> &GetExpressions() { return expression_; }
+  std::vector<std::shared_ptr<ExprNode>> &GetExpressions() { return expression_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   NewType new_type_{kUnknown};
   const std::string type_name_{};
-  std::unique_ptr<ArrayNode> array_literal_{nullptr};
+  std::shared_ptr<ArrayNode> array_literal_{nullptr};
   std::size_t dim_{};
-  std::vector<std::unique_ptr<ExprNode>> expression_;
+  std::vector<std::shared_ptr<ExprNode>> expression_;
 };

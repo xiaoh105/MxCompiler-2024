@@ -25,7 +25,7 @@ class ExprNode : public ASTNode {
     }
     return *type_;
   }
-  void SetType(std::unique_ptr<Type> type) {
+  void SetType(std::shared_ptr<Type> type) {
     if (type_ != nullptr) {
       throw std::runtime_error("Trying to set type to a node that already has a type");
     }

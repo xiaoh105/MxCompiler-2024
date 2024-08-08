@@ -14,13 +14,13 @@
 class MemberExprNode : public ExprNode {
  public:
   MemberExprNode() = delete;
-  MemberExprNode(Position pos, std::unique_ptr<ExprNode> expr_node, std::string member_name)
+  MemberExprNode(Position pos, std::shared_ptr<ExprNode> expr_node, std::string member_name)
       : ExprNode(std::move(pos)), expr_node_(std::move(expr_node)), member_name_(std::move(member_name)) {}
-  std::unique_ptr<ExprNode> &GetExprNode() { return expr_node_; }
+  std::shared_ptr<ExprNode> &GetExprNode() { return expr_node_; }
   [[nodiscard]] const std::string &GetMemberName() const { return member_name_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
-  std::unique_ptr<ExprNode> expr_node_{nullptr};
+  std::shared_ptr<ExprNode> expr_node_{nullptr};
   const std::string member_name_;
 };

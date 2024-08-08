@@ -14,11 +14,11 @@
 class ExprStmtNode : public StmtNode {
  public:
   ExprStmtNode() = delete;
-  ExprStmtNode(Position pos, std::unique_ptr<ExprNode> expr_node)
+  ExprStmtNode(Position pos, std::shared_ptr<ExprNode> expr_node)
       : StmtNode(std::move(pos)), expr_node_(std::move(expr_node)) {}
-  std::unique_ptr<ExprNode> &GetExprNode() { return expr_node_; }
+  std::shared_ptr<ExprNode> &GetExprNode() { return expr_node_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
-  std::unique_ptr<ExprNode> expr_node_{nullptr};
+  std::shared_ptr<ExprNode> expr_node_{nullptr};
 };

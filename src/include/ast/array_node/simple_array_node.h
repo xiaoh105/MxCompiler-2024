@@ -15,11 +15,11 @@
 class SimpleArrayNode : public ArrayNode {
  public:
   SimpleArrayNode() = delete;
-  SimpleArrayNode(Position pos, std::vector<std::unique_ptr<LiteralPrimaryNode>> elements)
+  SimpleArrayNode(Position pos, std::vector<std::shared_ptr<LiteralPrimaryNode>> elements)
       : ArrayNode(std::move(pos)), elements_(std::move(elements)) {}
-  std::vector<std::unique_ptr<LiteralPrimaryNode>> &GetElements() { return elements_; }
+  std::vector<std::shared_ptr<LiteralPrimaryNode>> &GetElements() { return elements_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
-  std::vector<std::unique_ptr<LiteralPrimaryNode>> elements_;
+  std::vector<std::shared_ptr<LiteralPrimaryNode>> elements_;
 };

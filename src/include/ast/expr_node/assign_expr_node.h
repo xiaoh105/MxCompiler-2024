@@ -14,13 +14,13 @@
 class AssignExprNode : public ExprNode {
  public:
   AssignExprNode() = delete;
-  AssignExprNode(Position pos, std::unique_ptr<ExprNode> lhs, std::unique_ptr<ExprNode> rhs)
+  AssignExprNode(Position pos, std::shared_ptr<ExprNode> lhs, std::shared_ptr<ExprNode> rhs)
       : ExprNode(std::move(pos)), left_expr_node_(std::move(lhs)), right_expr_node_(std::move(rhs)) {}
-  std::unique_ptr<ExprNode> &GetLeftExprNode() { return left_expr_node_; }
-  std::unique_ptr<ExprNode> &GetRightExprNode() { return right_expr_node_; }
+  std::shared_ptr<ExprNode> &GetLeftExprNode() { return left_expr_node_; }
+  std::shared_ptr<ExprNode> &GetRightExprNode() { return right_expr_node_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
-  std::unique_ptr<ExprNode> left_expr_node_{nullptr};
-  std::unique_ptr<ExprNode> right_expr_node_{nullptr};
+  std::shared_ptr<ExprNode> left_expr_node_{nullptr};
+  std::shared_ptr<ExprNode> right_expr_node_{nullptr};
 };
