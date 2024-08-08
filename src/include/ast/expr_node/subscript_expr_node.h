@@ -14,13 +14,13 @@
 class SubscriptExprNode : public ExprNode {
  public:
   SubscriptExprNode() = delete;
-  SubscriptExprNode(Position pos, std::shared_ptr<ExprNode> base, std::shared_ptr<ExprNode> index)
+  SubscriptExprNode(Position pos, std::shared_ptr<ExprNode> base, std::vector<std::shared_ptr<ExprNode>> index)
       : ExprNode(std::move(pos)), base_expr_node_(std::move(base)), index_expr_node_(std::move(index)) {}
   std::shared_ptr<ExprNode> &GetBaseExpr() { return base_expr_node_; }
-  std::shared_ptr<ExprNode> &GetIndexExpr() { return index_expr_node_; }
+  std::vector<std::shared_ptr<ExprNode>> &GetIndexExpr() { return index_expr_node_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   std::shared_ptr<ExprNode> base_expr_node_{nullptr};
-  std::shared_ptr<ExprNode> index_expr_node_{nullptr};
+  std::vector<std::shared_ptr<ExprNode>> index_expr_node_{nullptr};
 };
