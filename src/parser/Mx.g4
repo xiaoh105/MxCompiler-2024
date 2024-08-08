@@ -38,8 +38,8 @@ statement
     | expression ';'                                                            # exprStmt
     | If '(' expression ')' trueStmt=statement (Else falseStmt=statement)?      # ifStmt
     | While '(' expression ')' suite                                            # whileStmt
-    | For '(' initializeStmt=statement conditionExpr=expression ';'
-      stepExpr=expression ')' statement                                         # forStmt
+    | For '(' initializeStmt=statement (conditionExpr=expression)? ';'
+      (stepExpr=expression)? ')' statement                                      # forStmt
     | Return (returnExpr=expression)? ';'                                       # returnStmt
     | Break ';'                                                                 # breakStmt
     | Continue ';'                                                              # continueStmt
