@@ -7,7 +7,6 @@
 #pragma once
 
 #include "ast/ast_node.h"
-#include "ast/ast_visitor.h"
 #include "ast/root_node.h"
 
 #include "ast/array_node/array_node.h"
