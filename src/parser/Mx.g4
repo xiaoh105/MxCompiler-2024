@@ -46,7 +46,8 @@ statement
     ;
 
 expression
-    : primary                                                               # atomicExpr
+    : '(' expression ')'                                                    # parenExpr
+    | primary                                                               # atomicExpr
     | 'f"' (FormatStringLiteral | '$' expression '$')* Quotation            # formatExpr
     | expression (Increment | Decrement)                                    # unaryExpr
     | funcName=Identifier '(' arguments? ')'                                # funcCallExpr
@@ -79,8 +80,7 @@ arguments
     ;
 
 primary
-    : '(' expression ')'                         # parenPrimary
-    | literal                                    # literalPrimary
+    : literal                                    # literalPrimary
     | Identifier                                 # varPrimary
     | This                                       # thisPrimary
     | New type ('('')')?                         # newPrimary

@@ -541,6 +541,17 @@ class MxParser : public antlr4::Parser {
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class ParenExprContext : public ExpressionContext {
+   public:
+    ParenExprContext(ExpressionContext *ctx);
+
+    antlr4::tree::TerminalNode *LeftParen();
+    ExpressionContext *expression();
+    antlr4::tree::TerminalNode *RightParen();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   ExpressionContext *expression();
   ExpressionContext *expression(int precedence);
   class SuiteContext : public antlr4::ParserRuleContext {
@@ -587,17 +598,6 @@ class MxParser : public antlr4::Parser {
     ThisPrimaryContext(PrimaryContext *ctx);
 
     antlr4::tree::TerminalNode *This();
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class ParenPrimaryContext : public PrimaryContext {
-   public:
-    ParenPrimaryContext(PrimaryContext *ctx);
-
-    antlr4::tree::TerminalNode *LeftParen();
-    ExpressionContext *expression();
-    antlr4::tree::TerminalNode *RightParen();
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

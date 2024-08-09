@@ -66,11 +66,11 @@ class MxBaseVisitor : public MxVisitor {
 
   virtual std::any visitAssignExpr(MxParser::AssignExprContext *ctx) override { return visitChildren(ctx); }
 
+  virtual std::any visitParenExpr(MxParser::ParenExprContext *ctx) override { return visitChildren(ctx); }
+
   virtual std::any visitSuite(MxParser::SuiteContext *ctx) override { return visitChildren(ctx); }
 
   virtual std::any visitArguments(MxParser::ArgumentsContext *ctx) override { return visitChildren(ctx); }
-
-  virtual std::any visitParenPrimary(MxParser::ParenPrimaryContext *ctx) override { return visitChildren(ctx); }
 
   virtual std::any visitLiteralPrimary(MxParser::LiteralPrimaryContext *ctx) override { return visitChildren(ctx); }
 

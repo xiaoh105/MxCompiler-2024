@@ -67,11 +67,11 @@ class MxVisitor : public antlr4::tree::AbstractParseTreeVisitor {
 
   virtual std::any visitAssignExpr(MxParser::AssignExprContext *context) = 0;
 
+  virtual std::any visitParenExpr(MxParser::ParenExprContext *context) = 0;
+
   virtual std::any visitSuite(MxParser::SuiteContext *context) = 0;
 
   virtual std::any visitArguments(MxParser::ArgumentsContext *context) = 0;
-
-  virtual std::any visitParenPrimary(MxParser::ParenPrimaryContext *context) = 0;
 
   virtual std::any visitLiteralPrimary(MxParser::LiteralPrimaryContext *context) = 0;
 
