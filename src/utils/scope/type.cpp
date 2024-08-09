@@ -5,46 +5,47 @@
  * Function: Manage type information for AST.
  */
 
+#include "utils/scope/function.h"
 #include "utils/scope/type.h"
 #include "utils/error/semantic_error.hpp"
 
-Typename GetStringTypename() {
-  Typename kStr("string");
+std::shared_ptr<Typename> GetStringTypename() {
+  std::shared_ptr<Typename> str = std::make_shared<Typename>("string");
   Function length(kIntType, {});
-  kStr.AddFunction("length", length);
+  str->AddFunction("length", length);
   Function substring(kStringType, {kIntType, kIntType});
-  kStr.AddFunction("substring", substring);
+  str->AddFunction("substring", substring);
   Function parse_int(kIntType, {});
-  kStr.AddFunction("parseInt", parse_int);
+  str->AddFunction("parseInt", parse_int);
   Function ord(kIntType, {kIntType});
-  kStr.AddFunction("ord", ord);
-  return kStr;
+  str->AddFunction("ord", ord);
+  return std::move(str);
 }
 
-Typename::Typename(const std::string &name) : name_(name) {
-  if (name == "int") {
+Typename::Typename(std::string name) : name_(std::move(name)) {
+  if (name_ == "int") {
     type_info_ = kInt;
-  } else if (name == "bool") {
+  } else if (name_ == "bool") {
     type_info_ = kBool;
-  } else if (name == "void") {
+  } else if (name_ == "void") {
     type_info_ = kVoid;
-  } else if (name == "string") {
+  } else if (name_ == "string") {
     type_info_ = kString;
   } else {
     type_info_ = kOther;
   }
 }
 
-void Typename::AddMember(const std::string &member_name, const Type &type) {
-  auto result = member_.emplace(member_name, type).second;
+void Typename::AddMember(std::string member_name, Type type) {
+  auto result = member_.emplace(std::move(member_name), std::move(type)).second;
   if (!result) {
     throw UnhandledErr("Add multiple members " + member_name + " for class " + name_ +
                        ", it should be handled in VarDef procedure in classes");
   }
 }
 
-void Typename::AddFunction(const std::string &function_name, const Function &function) {
-  auto result = function_.emplace(function_name, function).second;
+void Typename::AddFunction(std::string function_name, Function function) {
+  auto result = function_.emplace(std::move(function_name), std::move(function)).second;
   if (!result) {
     throw UnhandledErr("Add multiple functions " + function_name + " for class " + name_ +
                        ", it should be handled in FuncDef procedure in classes");
@@ -53,28 +54,30 @@ void Typename::AddFunction(const std::string &function_name, const Function &fun
 
 bool Typename::HasMember(const std::string &name) const { return member_.contains(name); }
 
-std::pair<bool, const Type &> Typename::GetMember(const std::string &name) const {
+std::optional<Type> Typename::GetMember(const std::string &name) const {
   auto it = member_.find(name);
-  return it == member_.end() ? std::pair{false, Type{}} : std::pair{true, it->second};
+  return it == member_.end() ? std::nullopt : std::optional(it->second);
 }
 
 bool Typename::HasFunction(const std::string &name) const { return function_.contains(name); }
 
-std::pair<bool, const Function &> Typename::GetFunction(const std::string &name) const {
+std::optional<Function> Typename::GetFunction(const std::string &name) const {
   auto it = function_.find(name);
-  return it == function_.end() ? std::pair{false, Function{}} : std::pair{true, it->second};
+  return it == function_.end() ? std::nullopt :std::optional(it->second);
 }
-
-Type Typename::CreateType(std::size_t dim) const { return {*this, dim}; }
 
 bool Typename::operator==(const Typename &other) const { return name_ == other.name_; }
 
 bool Typename::operator!=(const Typename &other) const { return name_ != other.name_; }
 
+Type CreateType(std::shared_ptr<Typename> type_name, std::size_t dim) {
+  return {std::move(type_name), dim};
+}
+
 Type::Type() : type_name_({}), dim_(), any_dim_(false) {}
 
-Type::Type(const Typename &type_name, std::size_t dim, bool any_dim)
-    : type_name_(type_name), dim_(dim), any_dim_(any_dim) {}
+Type::Type(std::shared_ptr<Typename> type_name, std::size_t dim, bool any_dim)
+    : type_name_(std::move(type_name)), dim_(dim), any_dim_(any_dim) {}
 
 std::size_t Type::GetDim() const { return dim_; }
 
@@ -85,7 +88,7 @@ void Type::SetDim(std::size_t dim) {
   }
 }
 
-Typename Type::GetTypename() const { return type_name_; }
+const std::shared_ptr<Typename> &Type::GetTypename() const { return type_name_; }
 
 bool Type::operator==(const Type &other) const {
   if (type_name_ != other.type_name_) {

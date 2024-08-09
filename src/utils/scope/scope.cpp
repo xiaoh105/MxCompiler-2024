@@ -28,21 +28,21 @@ GlobalScope::GlobalScope() {
   function_.emplace("toString", to_string);
 }
 
-void GlobalScope::AddType(const std::string &name, const Typename &type, const Position &pos) {
+void GlobalScope::AddType(std::string name, std::shared_ptr<Typename> type, const Position &pos) {
   if (function_.contains(name)) {
     throw MultipleDef(pos);
   }
-  auto result = type_.emplace(name, type).second;
+  auto result = type_.emplace(std::move(name), std::move(type)).second;
   if (!result) {
     throw MultipleDef(pos);
   }
 }
 
-void GlobalScope::AddFunction(const std::string &name, const Function &function, const Position &pos) {
+void GlobalScope::AddFunction(std::string name, Function function, const Position &pos) {
   if (type_.contains(name)) {
     throw MultipleDef(pos);
   }
-  auto result = function_.emplace(name, function).second;
+  auto result = function_.emplace(std::move(name), std::move(function)).second;
   if (!result) {
     throw MultipleDef(pos);
   }
@@ -50,33 +50,27 @@ void GlobalScope::AddFunction(const std::string &name, const Function &function,
 
 bool GlobalScope::HasType(const std::string &name) const { return type_.contains(name); }
 
-std::pair<bool, const Typename &> GlobalScope::GetType(const std::string &name) const {
-  using return_type = std::pair<bool, const Typename &>;
+std::optional<std::shared_ptr<Typename>> GlobalScope::GetType(const std::string &name) {
   auto it = type_.find(name);
-  return it == type_.end() ? return_type{false, {}} : return_type{true, it->second};
+  return it == type_.end() ? std::nullopt : std::optional(it->second);
 }
 
 bool GlobalScope::HasFunction(const std::string &name) const { return function_.contains(name); }
 
-std::pair<bool, const Function &> GlobalScope::GetFunction(const std::string &name) const {
-  using return_type = std::pair<bool, const Function &>;
+std::optional<Function> GlobalScope::GetFunction(const std::string &name) {
   auto it = function_.find(name);
-  return it == function_.end() ? return_type{false, {}} : return_type{true, it->second};
+  return it == function_.end() ? std::nullopt : std::optional(it->second);
 }
 
-Scope::Scope(const GlobalScope &global_scope, std::unique_ptr<Scope> parent_scope)
-    : global_scope_(global_scope), parent_scope_(std::move(parent_scope)) {}
+Scope::Scope(std::unique_ptr<Scope> parent_scope)
+    : parent_scope_(std::move(parent_scope)) {}
 
 Scope::Scope(Scope &&other) noexcept
-    : global_scope_(other.global_scope_),
-      local_(std::move(other.local_)),
+    : local_(std::move(other.local_)),
       parent_scope_(std::move(other.parent_scope_)) {}
 
-void Scope::DefineVar(const std::string &name, const Type &type, const Position &pos) {
-  if (global_scope_.HasFunction(name)) {
-    throw MultipleDef(pos);
-  }
-  auto result = local_.emplace(name, type).second;
+void Scope::DefineVar(std::string name, Type type, const Position &pos) {
+  auto result = local_.emplace(std::move(name), std::move(type)).second;
   if (!result) {
     throw MultipleDef(pos);
   }
@@ -84,13 +78,12 @@ void Scope::DefineVar(const std::string &name, const Type &type, const Position 
 
 bool Scope::HasVar(const std::string &name) const { return local_.contains(name); }
 
-std::pair<bool, const Type &> Scope::GetVar(const std::string &name) const {
-  using return_type = std::pair<bool, const Type &>;
+std::optional<Type> Scope::GetVar(const std::string &name) const {
   auto it = local_.find(name);
   if (it != local_.end()) {
-    return {true, it->second};
+    return it->second;
   }
-  return parent_scope_ == nullptr ? return_type{false, {}} : parent_scope_->GetVar(name);
+  return parent_scope_ == nullptr ? std::nullopt : std::optional(parent_scope_->GetVar(name));
 }
 
 const std::unique_ptr<Scope> &Scope::GetParent() const { return parent_scope_; }

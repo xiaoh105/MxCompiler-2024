@@ -10,10 +10,10 @@
 
 #include "utils/scope/function.h"
 
-Function::Function() : return_type_({}) {}
+Function::Function() : return_type_(kVoidType) {}
 
-Function::Function(const Type &return_type, const std::vector<Type> &args)
-    : return_type_(return_type), arguments_(args) {}
+Function::Function(Type return_type, std::vector<Type> args)
+    : return_type_(std::move(return_type)), arguments_(std::move(args)) {}
 
 std::size_t Function::GetArgNum() const { return arguments_.size(); }
 

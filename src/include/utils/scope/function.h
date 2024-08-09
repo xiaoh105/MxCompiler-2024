@@ -20,12 +20,12 @@ class Type;
 class Function {
  public:
   Function();
-  Function(const Type &return_type, const std::vector<Type> &args);
+  Function(Type return_type, std::vector<Type> args);
   [[nodiscard]] std::size_t GetArgNum() const;
   [[nodiscard]] Type GetArgument(std::size_t index) const;
   [[nodiscard]] const std::vector<Type> &GetArguments() const;
 
  private:
-  const Type &return_type_;
+  const Type return_type_;
   std::vector<Type> arguments_;
 };
