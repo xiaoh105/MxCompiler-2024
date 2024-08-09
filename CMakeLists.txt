@@ -14,7 +14,8 @@ add_executable(MxCompiler src/main.cpp
         src/parser/MxBaseVisitor.cpp
         src/utils/scope/type.cpp
         src/utils/scope/function.cpp
-        src/utils/scope/scope.cpp)
+        src/utils/scope/scope.cpp
+        src/frontend/ast_builder.cpp)
 
 target_include_directories(MxCompiler SYSTEM PUBLIC /usr/include/c++/13.3.0)
 

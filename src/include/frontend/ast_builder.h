@@ -66,27 +66,27 @@ class ASTBuilder : MxBaseVisitor {
   std::any visitSuite(MxParser::SuiteContext *ctx) override;
   // Returns std::vector<std::shared_ptr<ExprNode>>
   std::any visitArguments(MxParser::ArgumentsContext *ctx) override;
-
-  std::any visitParenPrimary(MxParser::ParenPrimaryContext *ctx) override;
-
+  // Returns std::shared_ptr<ExprNode>
+  std::any visitParenExpr(MxParser::ParenExprContext *ctx) override;
+  // Returns std::shared_ptr<PrimaryNode>
   std::any visitLiteralPrimary(MxParser::LiteralPrimaryContext *ctx) override;
-
+  // Returns std::shared_ptr<PrimaryNode>
   std::any visitVarPrimary(MxParser::VarPrimaryContext *ctx) override;
-
+  // Returns std::shared_ptr<PrimaryNode>
   std::any visitThisPrimary(MxParser::ThisPrimaryContext *ctx) override;
-
+  // Returns std::shared_ptr<PrimaryNode>
   std::any visitNewPrimary(MxParser::NewPrimaryContext *ctx) override;
-
+  // Returns std::shared_ptr<ArrayNode>
   std::any visitArray(MxParser::ArrayContext *ctx) override;
-
+  // Returns std::shared_ptr<PrimaryNode>
   std::any visitDecimalLiteral(MxParser::DecimalLiteralContext *ctx) override;
-
+  // Returns std::shared_ptr<PrimaryNode>
   std::any visitBoolLiteral(MxParser::BoolLiteralContext *ctx) override;
-
+  // Returns std::shared_ptr<PrimaryNode>
   std::any visitStringLiteral(MxParser::StringLiteralContext *ctx) override;
-
+  // Returns std::shared_ptr<PrimaryNode>
   std::any visitNullLiteral(MxParser::NullLiteralContext *ctx) override;
-
+  // Returns std::shared_ptr<PrimaryNode>
   std::any visitArrayLiteral(MxParser::ArrayLiteralContext *ctx) override;
   // Returns std::string representing the typename
   std::any visitType(MxParser::TypeContext *ctx) override;

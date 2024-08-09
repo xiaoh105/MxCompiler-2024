@@ -3,10 +3,10 @@
 ### Tree Generation
 - [x] Design the Mx.g4 file.(8/2 completed, 8/4 revised)
 ### AST Design
-- [ ] AST Nodes
+- [x] AST Nodes
     - [x] Structure(8/7)
     - [x] Set up virtual functions(i.e. `accept()` & `ASTVisitor`)(8/7)
-    - [ ] AST Builder(Parts left: Primary/Array Literal Nodes)
+    - [x] AST Builder(8/9)
 - [x] Error Type and Error Reporting(8/5)
   - [x] Position(8/5)
 ### Semantic Check

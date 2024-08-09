@@ -23,11 +23,11 @@ class NewPrimaryNode : public PrimaryNode {
     null_ = false;
     lvalue_ = false;
   }
-  NewPrimaryNode(Position pos, std::string type_name, std::shared_ptr<ArrayNode> array_literal)
+  NewPrimaryNode(Position pos, std::string type_name, std::size_t dim, std::shared_ptr<ArrayNode> array_literal)
       : PrimaryNode(std::move(pos)),
         new_type_(NewType::kNewArrayLiteral),
         type_name_(std::move(type_name)),
-        dim_(1),
+        dim_(dim),
         array_literal_(std::move(array_literal)) {
     null_ = false;
     lvalue_ = false;
