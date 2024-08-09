@@ -88,6 +88,6 @@ class ASTBuilder : MxBaseVisitor {
   std::any visitNullLiteral(MxParser::NullLiteralContext *ctx) override;
   // Returns std::shared_ptr<PrimaryNode>
   std::any visitArrayLiteral(MxParser::ArrayLiteralContext *ctx) override;
-  // Returns std::string representing the typename
+  // Returns TypeType representing the typename and dimension
   std::any visitType(MxParser::TypeContext *ctx) override;
 };

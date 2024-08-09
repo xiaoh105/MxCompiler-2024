@@ -14,13 +14,13 @@
 class VarDefClassStmtNode : public ClassStmtNode {
  public:
   VarDefClassStmtNode() = delete;
-  VarDefClassStmtNode(Position pos, std::string type_name, std::vector<std::string> member_name)
+  VarDefClassStmtNode(Position pos, TypeType type_name, std::vector<std::string> member_name)
       : ClassStmtNode(std::move(pos)), type_name_(std::move(type_name)), member_name_(std::move(member_name)) {}
-  [[nodiscard]] const std::string &GetTypeName() const { return type_name_; }
+  [[nodiscard]] const TypeType &GetTypeName() const { return type_name_; }
   [[nodiscard]] const std::vector<std::string> &GetMemberName() const { return member_name_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
-  const std::string type_name_;
+  const TypeType type_name_;
   std::vector<std::string> member_name_;
 };

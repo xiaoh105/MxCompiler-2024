@@ -43,7 +43,7 @@ std::any ASTBuilder::visitClassDef(MxParser::ClassDefContext *ctx) {
 }
 
 std::any ASTBuilder::visitMemberDefStmt(MxParser::MemberDefStmtContext *ctx) {
-  auto type_name = std::any_cast<std::string>(ctx->memberType->accept(this));
+  auto type_name = std::any_cast<TypeType>(ctx->memberType->accept(this));
   auto name = ctx->Identifier();
   std::vector<std::string> ret_name;
   for (const auto &item : name) {
@@ -60,16 +60,16 @@ std::any ASTBuilder::visitConstructorDefStmt(MxParser::ConstructorDefStmtContext
 }
 
 std::any ASTBuilder::visitFuncDefStmt(MxParser::FuncDefStmtContext *ctx) {
-  auto return_type = ctx->returnType->getText();
+  auto return_type = std::any_cast<TypeType>(ctx->returnType->accept(this));
   auto func_name = ctx->funcName->getText();
   auto arg_type = ctx->type();
   auto arg_name = ctx->Identifier();
-  std::vector<std::pair<std::string, std::string>> arguments;
+  std::vector<std::pair<TypeType, std::string>> arguments;
   if (arg_type.size() != arg_name.size() + 1) {
     throw std::runtime_error("Arg type number does not match arg name number in Method definition");
   }
   for (int i = 0; i < arg_name.size(); ++i) {
-    arguments.emplace_back(arg_type[i + 1]->getText(), arg_name[i]->getText());
+    arguments.emplace_back(std::any_cast<TypeType>(arg_type[i + 1]->accept(this)), arg_name[i]->getText());
   }
   auto func_body = std::any_cast<std::shared_ptr<StmtNode>>(ctx->suite()->accept(this));
   return std::shared_ptr<ClassStmtNode>(new FunctionDefClassStmtNode(
@@ -77,16 +77,16 @@ std::any ASTBuilder::visitFuncDefStmt(MxParser::FuncDefStmtContext *ctx) {
 }
 
 std::any ASTBuilder::visitFuncDef(MxParser::FuncDefContext *ctx) {
-  auto return_type = ctx->returnType->getText();
+  auto return_type = std::any_cast<TypeType>(ctx->returnType->accept(this));
   auto func_name = ctx->funcName->getText();
   auto arg_type = ctx->type();
   auto arg_name = ctx->Identifier();
-  std::vector<std::pair<std::string, std::string>> arguments;
+  std::vector<std::pair<TypeType, std::string>> arguments;
   if (arg_type.size() != arg_name.size() + 1) {
     throw std::runtime_error("Arg type number does not match arg name number in Method definition");
   }
   for (int i = 0; i < arg_name.size(); ++i) {
-    arguments.emplace_back(arg_type[i + 1]->getText(), arg_name[i]->getText());
+    arguments.emplace_back(std::any_cast<TypeType>(arg_type[i + 1]->accept(this)), arg_name[i]->getText());
   }
   auto func_body = std::any_cast<std::shared_ptr<StmtNode>>(ctx->suite()->accept(this));
   return std::shared_ptr<DefNode>(new FunctionDefNode({ctx}, std::move(func_name), std::move(return_type),
@@ -94,7 +94,7 @@ std::any ASTBuilder::visitFuncDef(MxParser::FuncDefContext *ctx) {
 }
 
 std::any ASTBuilder::visitVarDef(MxParser::VarDefContext *ctx) {
-  std::string type_name = ctx->type()->getText();
+  auto type_name = std::any_cast<TypeType>(ctx->type()->accept(this));
   auto var_name = ctx->Identifier();
   auto var_value = ctx->expression();
   int pos = 0;
@@ -115,7 +115,7 @@ std::any ASTBuilder::visitVarDef(MxParser::VarDefContext *ctx) {
 }
 
 std::any ASTBuilder::visitVarDefStmt(MxParser::VarDefStmtContext *ctx) {
-  std::string type_name = ctx->type()->getText();
+  auto type_name = std::any_cast<TypeType>(ctx->type()->accept(this));
   auto var_name = ctx->Identifier();
   auto var_value = ctx->expression();
   int pos = 0;
