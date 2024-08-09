@@ -15,7 +15,7 @@ class ThisPrimaryNode : public PrimaryNode {
  public:
   ThisPrimaryNode() = delete;
   ThisPrimaryNode(Position pos) : PrimaryNode(std::move(pos)) {
-    lvalue_ = true;
+    lvalue_ = false;
     null_ = false;
   }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }

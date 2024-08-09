@@ -26,6 +26,7 @@ class ArrayNode : public ASTNode {
     }
     return type_;
   }
+  void SetType(std::shared_ptr<Type> type) { type_ = std::move(type); }
 
  private:
   // type_ MUST NOT be nullptr since 'null' can't appear in string literals

@@ -18,17 +18,29 @@ class LiteralPrimaryNode : public PrimaryNode {
   enum LiteralType : int { kUnknown = 0, kInt, kBool, kString, kNull, kArray };
   LiteralPrimaryNode() = delete;
   // Constructor when the literal is null
-  LiteralPrimaryNode(Position pos) : PrimaryNode(std::move(pos)), literal_type_(kNull) {}
+  LiteralPrimaryNode(Position pos) : PrimaryNode(std::move(pos)), literal_type_(kNull) { Initialize(); }
   // Constructor when the literal is a decimal number
-  LiteralPrimaryNode(Position pos, int val) : PrimaryNode(std::move(pos)), literal_type_(kInt), value_(val) {}
+  LiteralPrimaryNode(Position pos, int val) : PrimaryNode(std::move(pos)), literal_type_(kInt), value_(val) {
+    Initialize();
+  }
   // Constructor when the literal is a bool
-  LiteralPrimaryNode(Position pos, bool val) : PrimaryNode(std::move(pos)), literal_type_(kBool), value_(val) {}
+  LiteralPrimaryNode(Position pos, bool val) : PrimaryNode(std::move(pos)), literal_type_(kBool), value_(val) {
+    Initialize();
+  }
   // Constructor when the literal is a string
   LiteralPrimaryNode(Position pos, std::string str)
-      : PrimaryNode(std::move(pos)), literal_type_(kString), value_(std::move(str)) {}
+      : PrimaryNode(std::move(pos)), literal_type_(kString), value_(std::move(str)) {
+    Initialize();
+  }
   // Constructor when the literal is an array literal
   LiteralPrimaryNode(Position pos, std::shared_ptr<ArrayNode> array)
-      : PrimaryNode(std::move(pos)), literal_type_(kArray), value_(std::move(array)) {}
+      : PrimaryNode(std::move(pos)), literal_type_(kArray), value_(std::move(array)) {
+    Initialize();
+  }
+  [[nodiscard]] LiteralType GetLiteralType() const { return literal_type_; }
+  [[nodiscard]] const std::variant<int, bool, std::string, std::shared_ptr<ArrayNode>> &GetValue() const {
+    return value_;
+  }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:

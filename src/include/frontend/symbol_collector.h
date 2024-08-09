@@ -47,7 +47,7 @@ class SymbolCollector : public ASTVisitor {
   void visit(ConstructorClassStmtNode *node) final;
   void visit(FunctionDefClassStmtNode *node) final;
   void visit(VarDefClassStmtNode *node) final;
-  Scope scope;
+  Scope scope_;
   GlobalScope global_scope_;
   std::shared_ptr<Typename> current_class_;
 };

@@ -14,9 +14,8 @@
  * AST node for all kinds of 'new' statements
  */
 class NewPrimaryNode : public PrimaryNode {
-  enum class NewType : int { kUnknown = 0, kNewVar, kNewArray, kNewArrayLiteral };
-
  public:
+  enum class NewType : int { kUnknown = 0, kNewVar, kNewArray, kNewArrayLiteral };
   NewPrimaryNode() = delete;
   NewPrimaryNode(Position pos, std::string type_name)
       : PrimaryNode(std::move(pos)), new_type_(NewType::kNewVar), type_name_(std::move(type_name)) {

@@ -45,10 +45,37 @@ class UndefinedIdentifier : public SemanticError {
   UndefinedIdentifier(const Position &pos) : SemanticError("Undefined identifier", pos) {}
 };
 
+/**
+ * Invalid constuctor of a certain class.
+ */
 class InvalidContructor : public SemanticError {
  public:
   InvalidContructor() = delete;
   InvalidContructor(const Position &pos) : SemanticError("Invalid class constructor", pos) {}
+};
+
+/**
+ * Mismatch of operands
+ */
+class TypeMismatch : public SemanticError {
+ public:
+  TypeMismatch() = delete;
+  TypeMismatch(const Position &pos) : SemanticError("Type mismatch", pos) {}
+};
+
+/**
+ * The value/expression used in assign expression is not assignable(i.e. not lvalue)
+ */
+class NotAssignable : public SemanticError {
+ public:
+  NotAssignable() = delete;
+  NotAssignable(const Position &pos) : SemanticError("Value is not assignable", pos) {}
+};
+
+class InvalidMember : public SemanticError {
+ public:
+  InvalidMember() = delete;
+  InvalidMember(const Position &pos) : SemanticError("Class member/method is invalid", pos) {}
 };
 
 /**

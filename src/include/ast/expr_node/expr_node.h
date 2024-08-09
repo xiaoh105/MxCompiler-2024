@@ -18,12 +18,13 @@ class ExprNode : public ASTNode {
  public:
   ExprNode(Position position) : ASTNode(std::move(position)) {}
   [[nodiscard]] bool IsAssignable() const { return lvalue_; }
+  [[nodiscard]] bool IsNull() const { return null_; }
   /// Returns the pointer to the type, nullptr for 'null'
-  [[nodiscard]] const Type &GetType() const {
+  [[nodiscard]] const std::shared_ptr<Type> &GetType() const {
     if (!null_ && type_ == nullptr) {
       throw std::runtime_error("Trying to fetch Type from an ExprNode with undetermined type");
     }
-    return *type_;
+    return type_;
   }
   void SetType(std::shared_ptr<Type> type) {
     if (type_ != nullptr) {

@@ -17,7 +17,8 @@ add_executable(MxCompiler src/main.cpp
         src/utils/scope/scope.cpp
         src/frontend/ast_builder.cpp
         src/frontend/class_collector.cpp
-        src/frontend/symbol_collector.cpp)
+        src/frontend/symbol_collector.cpp
+        src/frontend/semantic_checker.cpp)
 
 target_include_directories(MxCompiler SYSTEM PUBLIC /usr/include/c++/13.3.0)
 

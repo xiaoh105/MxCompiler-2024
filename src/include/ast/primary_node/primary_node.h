@@ -19,6 +19,7 @@ class PrimaryNode : public ASTNode {
   PrimaryNode() = delete;
   PrimaryNode(Position pos) : ASTNode(std::move(pos)) {}
   [[nodiscard]] bool IsAssignable() const { return lvalue_; }
+  [[nodiscard]] bool IsNull() const { return null_; }
   // Return the type of the node, nullptr for 'null'.
   [[nodiscard]] const std::shared_ptr<Type> &GetType() const {
     if (!null_ && type_ == nullptr) {
