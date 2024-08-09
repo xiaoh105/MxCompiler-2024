@@ -5,9 +5,9 @@
  * Function: Manage type information for AST.
  */
 
-#include "utils/scope/function.h"
 #include "utils/scope/type.h"
 #include "utils/error/semantic_error.hpp"
+#include "utils/scope/function.h"
 
 std::shared_ptr<Typename> GetStringTypename() {
   std::shared_ptr<Typename> str = std::make_shared<Typename>("string");
@@ -36,6 +36,8 @@ Typename::Typename(std::string name) : name_(std::move(name)) {
   }
 }
 
+const std::string &Typename::GetName() const { return name_; }
+
 void Typename::AddMember(std::string member_name, Type type) {
   auto result = member_.emplace(std::move(member_name), std::move(type)).second;
   if (!result) {
@@ -63,16 +65,14 @@ bool Typename::HasFunction(const std::string &name) const { return function_.con
 
 std::optional<Function> Typename::GetFunction(const std::string &name) const {
   auto it = function_.find(name);
-  return it == function_.end() ? std::nullopt :std::optional(it->second);
+  return it == function_.end() ? std::nullopt : std::optional(it->second);
 }
 
 bool Typename::operator==(const Typename &other) const { return name_ == other.name_; }
 
 bool Typename::operator!=(const Typename &other) const { return name_ != other.name_; }
 
-Type CreateType(std::shared_ptr<Typename> type_name, std::size_t dim) {
-  return {std::move(type_name), dim};
-}
+Type CreateType(std::shared_ptr<Typename> type_name, std::size_t dim) { return {std::move(type_name), dim}; }
 
 Type::Type() : type_name_({}), dim_(), any_dim_(false) {}
 

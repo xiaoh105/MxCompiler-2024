@@ -4,7 +4,6 @@
  * Identification: ./src/utils/error/semantic_error.hpp
  * Function: Contains all sorts of semantic errors in Mx Compiler.
  */
-
 #pragma once
 
 #include "utils/error/compiler_error.hpp"
@@ -29,12 +28,27 @@ class MultipleDef : public SemanticError {
 };
 
 /**
- * Invalid use of type.(e.g. Declare variable using 'void' or use non-boolean variables as if condition.
+ * Invalid use of type.(e.g. Declare variable using 'void' or use non-boolean variables as if condition.)
  */
 class InvalidType : public SemanticError {
-public:
+ public:
   InvalidType() = delete;
   InvalidType(const Position &pos) : SemanticError("Invalid Type", pos) {}
+};
+
+/**
+ * Use of undefined class/function/variable.
+ */
+class UndefinedIdentifier : public SemanticError {
+ public:
+  UndefinedIdentifier() = delete;
+  UndefinedIdentifier(const Position &pos) : SemanticError("Undefined identifier", pos) {}
+};
+
+class InvalidContructor : public SemanticError {
+ public:
+  InvalidContructor() = delete;
+  InvalidContructor(const Position &pos) : SemanticError("Invalid class constructor", pos) {}
 };
 
 /**

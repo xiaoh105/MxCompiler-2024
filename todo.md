@@ -10,8 +10,8 @@
 - [x] Error Type and Error Reporting(8/5)
   - [x] Position(8/5)
 ### Semantic Check
-- [x] Scope(8/5)
-- [ ] Symbol Collection
-  - [ ] Type Collector
-  - [ ] Function Collector
+- [x] Scope(8/5, 8/9 revised)
+- [x] Symbol Collection(8/9)
+  - [x] Type Collector(8/9)
+  - [x] Function Collector(8/9)
 - [ ] Semantic Check

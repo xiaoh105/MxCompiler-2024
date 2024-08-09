@@ -53,6 +53,7 @@ class Typename {
   explicit Typename(std::string name);
   Typename(const Typename &other) = default;
   Typename(Typename &&other) noexcept = default;
+  const std::string &GetName() const;
   void AddMember(std::string member_name, Type type);
   void AddFunction(std::string function_name, Function function);
   bool HasMember(const std::string &name) const;
