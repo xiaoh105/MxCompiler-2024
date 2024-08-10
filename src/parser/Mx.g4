@@ -18,9 +18,9 @@ classDef
     ;
 
 classStmt
-    : memberType=type Identifier (',' Identifier)* ';'                        # memberDefStmt
-    | classIdentifier=Identifier '(' ')' suite                                # constructorDefStmt
-    | returnType=type funcName=Identifier '(' (type Identifier)* ')' suite    # funcDefStmt
+    : memberType=type Identifier (',' Identifier)* ';'                                               # memberDefStmt
+    | classIdentifier=Identifier '(' ')' suite                                                       # constructorDefStmt
+    | returnType=type funcName=Identifier '(' (type Identifier (',' type Identifier)*)? ')' suite    # funcDefStmt
     ;
 
 funcDef

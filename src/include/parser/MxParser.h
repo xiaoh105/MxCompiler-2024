@@ -222,6 +222,8 @@ class MxParser : public antlr4::Parser {
     TypeContext *type(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Identifier();
     antlr4::tree::TerminalNode *Identifier(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Comma();
+    antlr4::tree::TerminalNode *Comma(size_t i);
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
