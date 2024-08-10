@@ -36,6 +36,7 @@
 #include "ast/primary_node/var_primary_node.h"
 
 #include "ast/stmt_node/control_stmt_node.h"
+#include "ast/stmt_node/empty_stmt_node.h"
 #include "ast/stmt_node/expr_stmt_node.h"
 #include "ast/stmt_node/for_stmt_node.h"
 #include "ast/stmt_node/if_stmt_node.h"

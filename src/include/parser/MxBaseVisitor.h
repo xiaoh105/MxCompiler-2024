@@ -48,6 +48,8 @@ class MxBaseVisitor : public MxVisitor {
 
   virtual std::any visitContinueStmt(MxParser::ContinueStmtContext *ctx) override { return visitChildren(ctx); }
 
+  virtual std::any visitEmptyStmt(MxParser::EmptyStmtContext *ctx) override { return visitChildren(ctx); }
+
   virtual std::any visitAtomicExpr(MxParser::AtomicExprContext *ctx) override { return visitChildren(ctx); }
 
   virtual std::any visitUnaryExpr(MxParser::UnaryExprContext *ctx) override { return visitChildren(ctx); }

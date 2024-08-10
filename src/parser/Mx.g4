@@ -43,6 +43,7 @@ statement
     | Return (returnExpr=expression)? ';'                                       # returnStmt
     | Break ';'                                                                 # breakStmt
     | Continue ';'                                                              # continueStmt
+    | ';'                                                                       # emptyStmt
     ;
 
 expression

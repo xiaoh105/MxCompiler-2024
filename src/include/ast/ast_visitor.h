@@ -27,6 +27,7 @@ class NewPrimaryNode;
 class ThisPrimaryNode;
 class VarPrimaryNode;
 class ControlStmtNode;
+class EmptyStmtNode;
 class ExprStmtNode;
 class ForStmtNode;
 class IfStmtNode;
@@ -63,6 +64,7 @@ class ASTVisitor {
   virtual void visit(ThisPrimaryNode *node) = 0;
   virtual void visit(VarPrimaryNode *node) = 0;
   virtual void visit(ControlStmtNode *node) = 0;
+  virtual void visit(EmptyStmtNode *node) = 0;
   virtual void visit(ExprStmtNode *node) = 0;
   virtual void visit(ForStmtNode *node) = 0;
   virtual void visit(IfStmtNode *node) = 0;

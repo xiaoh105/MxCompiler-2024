@@ -49,6 +49,8 @@ class MxVisitor : public antlr4::tree::AbstractParseTreeVisitor {
 
   virtual std::any visitContinueStmt(MxParser::ContinueStmtContext *context) = 0;
 
+  virtual std::any visitEmptyStmt(MxParser::EmptyStmtContext *context) = 0;
+
   virtual std::any visitAtomicExpr(MxParser::AtomicExprContext *context) = 0;
 
   virtual std::any visitUnaryExpr(MxParser::UnaryExprContext *context) = 0;

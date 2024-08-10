@@ -44,6 +44,8 @@ class ASTBuilder : MxBaseVisitor {
   std::any visitBreakStmt(MxParser::BreakStmtContext *ctx) override;
   // Returns std::shared_ptr<StmtNode>
   std::any visitContinueStmt(MxParser::ContinueStmtContext *ctx) override;
+  // Returns std::shared_ptr<StmtNode>
+  std::any visitEmptyStmt(MxParser::EmptyStmtContext *ctx) override;
   // Returns std::shared_ptr<ExprNode>
   std::any visitAtomicExpr(MxParser::AtomicExprContext *ctx) override;
   // Returns std::shared_ptr<ExprNode>

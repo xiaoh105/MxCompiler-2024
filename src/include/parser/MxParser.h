@@ -367,6 +367,15 @@ class MxParser : public antlr4::Parser {
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class EmptyStmtContext : public StatementContext {
+   public:
+    EmptyStmtContext(StatementContext *ctx);
+
+    antlr4::tree::TerminalNode *Semicolon();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class ReturnStmtContext : public StatementContext {
    public:
     ReturnStmtContext(StatementContext *ctx);
