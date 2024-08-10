@@ -9,68 +9,67 @@ class MxParser : public antlr4::Parser {
  public:
   enum {
     T__0 = 1,
-    T__1 = 2,
-    FormatQuatation = 3,
-    Quotation = 4,
-    True = 5,
-    False = 6,
-    DecimalNumber = 7,
-    StringLiteral = 8,
-    FormatStringLiteral = 9,
-    Null = 10,
-    New = 11,
-    Class = 12,
-    This = 13,
-    If = 14,
-    Else = 15,
-    For = 16,
-    While = 17,
-    Break = 18,
-    Continue = 19,
-    Return = 20,
-    Bool = 21,
-    Int = 22,
-    Void = 23,
-    String = 24,
-    Identifier = 25,
-    Add = 26,
-    Sub = 27,
-    Mul = 28,
-    Div = 29,
-    Mod = 30,
-    Less = 31,
-    LessEqual = 32,
-    Greater = 33,
-    GreaterEqual = 34,
-    Equal = 35,
-    UnEqual = 36,
-    AndLogic = 37,
-    OrLogic = 38,
-    NotLogic = 39,
-    ShiftRight = 40,
-    ShiftLeft = 41,
-    And = 42,
-    Or = 43,
-    Xor = 44,
-    Not = 45,
-    Assign = 46,
-    Increment = 47,
-    Decrement = 48,
-    Dot = 49,
-    LeftParen = 50,
-    RightParen = 51,
-    LeftBracket = 52,
-    RightBracket = 53,
-    LeftBrace = 54,
-    RightBrace = 55,
-    Dollar = 56,
-    Question = 57,
-    Colon = 58,
-    Semicolon = 59,
-    Comma = 60,
-    Whitespace = 61,
-    LineComment = 62,
-    BlockComment = 63
+    FormatQuatation = 2,
+    Quotation = 3,
+    True = 4,
+    False = 5,
+    DecimalNumber = 6,
+    StringLiteral = 7,
+    FormatStringLiteral = 8,
+    Null = 9,
+    New = 10,
+    Class = 11,
+    This = 12,
+    If = 13,
+    Else = 14,
+    For = 15,
+    While = 16,
+    Break = 17,
+    Continue = 18,
+    Return = 19,
+    Bool = 20,
+    Int = 21,
+    Void = 22,
+    String = 23,
+    Identifier = 24,
+    Add = 25,
+    Sub = 26,
+    Mul = 27,
+    Div = 28,
+    Mod = 29,
+    Less = 30,
+    LessEqual = 31,
+    Greater = 32,
+    GreaterEqual = 33,
+    Equal = 34,
+    UnEqual = 35,
+    AndLogic = 36,
+    OrLogic = 37,
+    NotLogic = 38,
+    ShiftRight = 39,
+    ShiftLeft = 40,
+    And = 41,
+    Or = 42,
+    Xor = 43,
+    Not = 44,
+    Assign = 45,
+    Increment = 46,
+    Decrement = 47,
+    Dot = 48,
+    LeftParen = 49,
+    RightParen = 50,
+    LeftBracket = 51,
+    RightBracket = 52,
+    LeftBrace = 53,
+    RightBrace = 54,
+    Dollar = 55,
+    Question = 56,
+    Colon = 57,
+    Semicolon = 58,
+    Comma = 59,
+    Whitespace = 60,
+    LineComment = 61,
+    BlockComment = 62
   };
 
   enum {
@@ -126,6 +125,7 @@ class MxParser : public antlr4::Parser {
     ProgramContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     MainFuncContext *mainFunc();
+    antlr4::tree::TerminalNode *EOF();
     std::vector<ClassDefContext *> classDef();
     ClassDefContext *classDef(size_t i);
     std::vector<FuncDefContext *> funcDef();
@@ -142,6 +142,9 @@ class MxParser : public antlr4::Parser {
    public:
     MainFuncContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Int();
+    antlr4::tree::TerminalNode *LeftParen();
+    antlr4::tree::TerminalNode *RightParen();
     SuiteContext *suite();
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -626,15 +629,15 @@ class MxParser : public antlr4::Parser {
 
     antlr4::tree::TerminalNode *New();
     TypeContext *type();
-    antlr4::tree::TerminalNode *LeftParen();
-    antlr4::tree::TerminalNode *RightParen();
-    ArrayContext *array();
     std::vector<antlr4::tree::TerminalNode *> LeftBracket();
     antlr4::tree::TerminalNode *LeftBracket(size_t i);
     std::vector<ExpressionContext *> expression();
     ExpressionContext *expression(size_t i);
     std::vector<antlr4::tree::TerminalNode *> RightBracket();
     antlr4::tree::TerminalNode *RightBracket(size_t i);
+    ArrayContext *array();
+    antlr4::tree::TerminalNode *LeftParen();
+    antlr4::tree::TerminalNode *RightParen();
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
@@ -727,6 +730,10 @@ class MxParser : public antlr4::Parser {
     antlr4::tree::TerminalNode *String();
     antlr4::tree::TerminalNode *Identifier();
     antlr4::tree::TerminalNode *Void();
+    std::vector<antlr4::tree::TerminalNode *> LeftBracket();
+    antlr4::tree::TerminalNode *LeftBracket(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> RightBracket();
+    antlr4::tree::TerminalNode *RightBracket(size_t i);
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

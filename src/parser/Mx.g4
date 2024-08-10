@@ -6,11 +6,11 @@ grammar Mx;
 }
 
 program
-    : (classDef | funcDef | varDef)* mainFunc (classDef | funcDef | varDef)*
+    : (classDef | funcDef | varDef)* mainFunc (classDef | funcDef | varDef)* EOF
     ;
 
 mainFunc
-    : 'int main()' suite
+    : Int 'main' '(' ')' suite
     ;
 
 classDef
@@ -83,9 +83,9 @@ primary
     : literal                                    # literalPrimary
     | Identifier                                 # varPrimary
     | This                                       # thisPrimary
+    | New type ('[' expression ']')+ ('[' ']')*  # newPrimary
+    | New type ('[' ']')+ array                  # newPrimary
     | New type ('('')')?                         # newPrimary
-    | New type ('[]')+ array                     # newPrimary
-    | New type ('[' expression ']')+ ('[]')*     # newPrimary
     ;
 
 array
@@ -109,7 +109,7 @@ type
     | String
     | Identifier
     | Void
-    | (Int | Bool | String | Identifier)'[]'+
+    | (Int | Bool | String | Identifier) ('[' ']')+
     ;
 
 // Format quatations and Quotations
