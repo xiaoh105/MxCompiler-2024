@@ -335,7 +335,7 @@ class MxParser : public antlr4::Parser {
     antlr4::tree::TerminalNode *LeftParen();
     ExpressionContext *expression();
     antlr4::tree::TerminalNode *RightParen();
-    SuiteContext *suite();
+    StatementContext *statement();
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

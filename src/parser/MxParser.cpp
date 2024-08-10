@@ -208,7 +208,7 @@ void mxParserInitialize() {
       0,   0,   157, 158, 5,   13,  0,   0,   158, 159, 5,   49,  0,   0,   159, 160, 3,   14,  7,   0,   160, 161, 5,
       50,  0,   0,   161, 164, 3,   12,  6,   0,   162, 163, 5,   14,  0,   0,   163, 165, 3,   12,  6,   0,   164, 162,
       1,   0,   0,   0,   164, 165, 1,   0,   0,   0,   165, 196, 1,   0,   0,   0,   166, 167, 5,   16,  0,   0,   167,
-      168, 5,   49,  0,   0,   168, 169, 3,   14,  7,   0,   169, 170, 5,   50,  0,   0,   170, 171, 3,   16,  8,   0,
+      168, 5,   49,  0,   0,   168, 169, 3,   14,  7,   0,   169, 170, 5,   50,  0,   0,   170, 171, 3,   12,  6,   0,
       171, 196, 1,   0,   0,   0,   172, 173, 5,   15,  0,   0,   173, 174, 5,   49,  0,   0,   174, 176, 3,   12,  6,
       0,   175, 177, 3,   14,  7,   0,   176, 175, 1,   0,   0,   0,   176, 177, 1,   0,   0,   0,   177, 178, 1,   0,
       0,   0,   178, 180, 5,   58,  0,   0,   179, 181, 3,   14,  7,   0,   180, 179, 1,   0,   0,   0,   180, 181, 1,
@@ -1063,7 +1063,9 @@ MxParser::ExpressionContext *MxParser::WhileStmtContext::expression() {
 
 tree::TerminalNode *MxParser::WhileStmtContext::RightParen() { return getToken(MxParser::RightParen, 0); }
 
-MxParser::SuiteContext *MxParser::WhileStmtContext::suite() { return getRuleContext<MxParser::SuiteContext>(0); }
+MxParser::StatementContext *MxParser::WhileStmtContext::statement() {
+  return getRuleContext<MxParser::StatementContext>(0);
+}
 
 MxParser::WhileStmtContext::WhileStmtContext(StatementContext *ctx) { copyFrom(ctx); }
 
@@ -1294,7 +1296,7 @@ MxParser::StatementContext *MxParser::statement() {
         setState(169);
         match(MxParser::RightParen);
         setState(170);
-        suite();
+        statement();
         break;
       }
 

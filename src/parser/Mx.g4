@@ -37,7 +37,7 @@ statement
     | suite                                                                     # suiteStmt
     | expression ';'                                                            # exprStmt
     | If '(' expression ')' trueStmt=statement (Else falseStmt=statement)?      # ifStmt
-    | While '(' expression ')' suite                                            # whileStmt
+    | While '(' expression ')' statement                                        # whileStmt
     | For '(' initializeStmt=statement (conditionExpr=expression)? ';'
       (stepExpr=expression)? ')' statement                                      # forStmt
     | Return (returnExpr=expression)? ';'                                       # returnStmt

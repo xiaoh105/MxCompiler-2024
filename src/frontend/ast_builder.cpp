@@ -186,7 +186,7 @@ std::any ASTBuilder::visitIfStmt(MxParser::IfStmtContext *ctx) {
 std::any ASTBuilder::visitWhileStmt(MxParser::WhileStmtContext *ctx) {
   auto condition = ctx->expression();
   auto condition_ret = std::any_cast<std::shared_ptr<ExprNode>>(condition->accept(this));
-  auto suite = ctx->suite();
+  auto suite = ctx->statement();
   auto suite_ret = std::any_cast<std::shared_ptr<StmtNode>>(suite->accept(this));
   return std::shared_ptr<StmtNode>(new WhileStmtNode({ctx}, std::move(condition_ret), std::move(suite_ret)));
 }
