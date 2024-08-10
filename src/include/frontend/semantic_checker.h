@@ -38,6 +38,7 @@ private:
   void visit(ThisPrimaryNode *node) final;
   void visit(VarPrimaryNode *node) final;
   void visit(ControlStmtNode *node) final;
+  void visit(EmptyStmtNode *node) final;
   void visit(ExprStmtNode *node) final;
   void visit(ForStmtNode *node) final;
   void visit(IfStmtNode *node) final;

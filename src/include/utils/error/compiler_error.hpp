@@ -19,14 +19,17 @@ class CompilerError : public std::exception {
  public:
   CompilerError() = delete;
   CompilerError(const std::string &error_type, const std::string &error_detail, const Position &pos)
-      : error_type_(error_type), error_detail_(error_detail), position_(pos) {}
+      : error_type_(error_type), error_detail_(error_detail), position_(pos) {
+    error_msg_ = error_header_ + error_type_ + ": " + error_detail_ + ".\nLine " + position_.ToString();
+  }
   [[nodiscard]] const char *what() const noexcept override {
-    return (error_header_ + error_type_ + ": " + error_detail_ + ":\n" + position_.ToString()).c_str();
+    return error_msg_.c_str();
   }
 
  private:
-  const std::string error_header_{"Error occurred when compiling is running. \n"};
+  const std::string error_header_{"Error occurred when compiler is running. \n"};
   const std::string error_type_;
   const std::string error_detail_;
   const Position position_;
+  std::string error_msg_;
 };

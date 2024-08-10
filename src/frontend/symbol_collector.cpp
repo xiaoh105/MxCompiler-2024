@@ -34,9 +34,6 @@ void SymbolCollector::visit(ClassDefNode *node) {
 
 void SymbolCollector::visit(FunctionDefNode *node) {
   auto &func_name = node->GetFunctionName();
-  if (func_name == "main") {
-    throw MultipleDef(node->GetPos());
-  }
   auto &[ret_name, dim] = node->GetReturnType();
   auto return_typename = global_scope_.GetType(ret_name);
   if (!return_typename.has_value()) {
@@ -57,26 +54,7 @@ void SymbolCollector::visit(FunctionDefNode *node) {
   if (scope_.HasVar(func_name)) {
     throw MultipleDef(node->GetPos());
   }
-  global_scope_.AddFunction(func_name, std::move(func), {node->GetPos()});
-}
-
-void SymbolCollector::visit(VarDefNode *node) {
-  auto &[name, dim] = node->GetTypename();
-  auto type_name = global_scope_.GetType(name);
-  if (!type_name.has_value()) {
-    throw UndefinedIdentifier(node->GetPos());
-  }
-  if (type_name.value()->GetName() == "void") {
-    throw InvalidType(node->GetPos());
-  }
-  auto type = CreateType(std::move(type_name.value()), dim);
-  auto &var_name = node->GetVarName();
-  for (const auto &item : var_name) {
-    if (global_scope_.HasFunction(item)) {
-      throw MultipleDef(node->GetPos());
-    }
-    scope_.DefineVar(name, type, {node->GetPos()});
-  }
+  global_scope_.AddFunction(func_name, func, {node->GetPos()});
 }
 
 void SymbolCollector::visit(ConstructorClassStmtNode *node) {
@@ -117,7 +95,7 @@ void SymbolCollector::visit(FunctionDefClassStmtNode *node) {
     ret_args.push_back(std::move(arg_type));
   }
   Function func(std::move(return_type), std::move(ret_args));
-  current_class_->AddFunction(name, std::move(func));
+  current_class_->AddFunction(name, func);
 }
 
 void SymbolCollector::visit(VarDefClassStmtNode *node) {

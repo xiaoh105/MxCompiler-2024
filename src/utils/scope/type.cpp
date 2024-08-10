@@ -68,6 +68,8 @@ std::optional<Function> Typename::GetFunction(const std::string &name) const {
   return it == function_.end() ? std::nullopt : std::optional(*it->second);
 }
 
+const std::unordered_map<std::string, std::shared_ptr<Type>> &Typename::GetMembers() const { return member_; }
+
 bool Typename::operator==(const Typename &other) const { return name_ == other.name_; }
 
 bool Typename::operator!=(const Typename &other) const { return name_ != other.name_; }

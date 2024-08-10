@@ -15,4 +15,4 @@
   - [x] Type Collector(8/9)
   - [x] Function Collector(8/9)
 - [x] Semantic Check(8/10)
-- [ ] Main Function
+- [ ] Main Function(8/10 done, debugging)
