@@ -39,7 +39,7 @@ Typename::Typename(std::string name) : name_(std::move(name)) {
 const std::string &Typename::GetName() const { return name_; }
 
 void Typename::AddMember(std::string member_name, Type type) {
-  auto result = member_.emplace(std::move(member_name), std::move(type)).second;
+  auto result = member_.emplace(std::move(member_name), std::make_unique<Type>(std::move(type))).second;
   if (!result) {
     throw UnhandledErr("Add multiple members " + member_name + " for class " + name_ +
                        ", it should be handled in VarDef procedure in classes");
@@ -47,7 +47,7 @@ void Typename::AddMember(std::string member_name, Type type) {
 }
 
 void Typename::AddFunction(std::string function_name, Function function) {
-  auto result = function_.emplace(std::move(function_name), std::move(function)).second;
+  auto result = function_.emplace(std::move(function_name), std::make_unique<Function>(std::move(function))).second;
   if (!result) {
     throw UnhandledErr("Add multiple functions " + function_name + " for class " + name_ +
                        ", it should be handled in FuncDef procedure in classes");
@@ -58,14 +58,14 @@ bool Typename::HasMember(const std::string &name) const { return member_.contain
 
 std::optional<Type> Typename::GetMember(const std::string &name) const {
   auto it = member_.find(name);
-  return it == member_.end() ? std::nullopt : std::optional(it->second);
+  return it == member_.end() ? std::nullopt : std::optional(*it->second);
 }
 
 bool Typename::HasFunction(const std::string &name) const { return function_.contains(name); }
 
 std::optional<Function> Typename::GetFunction(const std::string &name) const {
   auto it = function_.find(name);
-  return it == function_.end() ? std::nullopt : std::optional(it->second);
+  return it == function_.end() ? std::nullopt : std::optional(*it->second);
 }
 
 bool Typename::operator==(const Typename &other) const { return name_ == other.name_; }
@@ -84,9 +84,9 @@ std::size_t Type::GetDim() const { return dim_; }
 const std::shared_ptr<Typename> &Type::GetTypename() const { return type_name_; }
 
 bool Type::operator==(const Type &other) const {
-  return type_name_ == other.type_name_ && dim_ == other.dim_;
+  return *type_name_ == *other.type_name_ && dim_ == other.dim_;
 }
 
 bool Type::operator!=(const Type &other) const {
-  return type_name_ != other.type_name_ || dim_ != other.dim_;
+  return *type_name_ != *other.type_name_ || dim_ != other.dim_;
 }

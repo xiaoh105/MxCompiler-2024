@@ -12,8 +12,6 @@
 #include <optional>
 #include <unordered_map>
 
-class Function;
-
 // Enumerate builtin classes and handle Uninitialized situation.
 enum TypeInfo : int { kUnknown = 0, kBool, kInt, kVoid, kString, kOther };
 
@@ -63,8 +61,8 @@ class Typename {
  private:
   TypeInfo type_info_{kUnknown};
   const std::string name_{};
-  std::unordered_map<std::string, const Type &> member_{};
-  std::unordered_map<std::string, const Function &> function_{};
+  std::unordered_map<std::string, std::shared_ptr<Type>> member_{};
+  std::unordered_map<std::string, std::shared_ptr<Function>> function_{};
 };
 
 std::shared_ptr<Typename> GetStringTypename();
