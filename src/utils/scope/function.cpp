@@ -26,3 +26,5 @@ Type Function::GetArgument(std::size_t index) const {
 }
 
 const std::vector<Type> &Function::GetArguments() const { return arguments_; }
+
+const Type &Function::GetReturnType() const { return return_type_; }

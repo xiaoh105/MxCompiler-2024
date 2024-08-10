@@ -72,10 +72,40 @@ class NotAssignable : public SemanticError {
   NotAssignable(const Position &pos) : SemanticError("Value is not assignable", pos) {}
 };
 
+/**
+ * Certain class member/method is undefined.
+ */
 class InvalidMember : public SemanticError {
  public:
   InvalidMember() = delete;
   InvalidMember(const Position &pos) : SemanticError("Class member/method is invalid", pos) {}
+};
+
+/**
+ * Trying to visit the index of a non-array type. (e.g. visit a[0][0][0] with int[][] a)
+ */
+class DimOutOfBound : public SemanticError {
+ public:
+  DimOutOfBound() = delete;
+  DimOutOfBound(const Position &pos) : SemanticError("Array dimension is out of bound", pos) {}
+};
+
+/**
+ * Trying to call a function with mismatched arguments.
+ */
+class InvalidArgs : public SemanticError {
+ public:
+  InvalidArgs() = delete;
+  InvalidArgs(const Position &pos) : SemanticError("Invalid function argument", pos) {}
+};
+
+/**
+ * Invalid control statements(e.g. continue/break outside loop body)
+ */
+class InvalidControlFlow : public SemanticError {
+ public:
+  InvalidControlFlow() = delete;
+  InvalidControlFlow(const Position &pos) : SemanticError("Invalid control flow", pos) {}
 };
 
 /**

@@ -8,14 +8,14 @@
 
 #include "ast/ast.h"
 #include "ast/ast_visitor.h"
-#include "frontend/symbol_collector.h"
 #include "utils/scope/scope.h"
+
+void CheckSemantic(RootNode *node);
 
 class SemanticChecker : public ASTVisitor {
 public:
   SemanticChecker() = delete;
   SemanticChecker(Scope scope, GlobalScope global_scope);
-  void CollectClass(RootNode *node);
   void visit(RootNode *node) override;
 
 private:
@@ -51,5 +51,5 @@ private:
   GlobalScope global_scope_;
   std::shared_ptr<Typename> current_class_{nullptr};
   std::shared_ptr<Type> return_type_{nullptr};
-  bool inside_loop_{false};
+  int inside_loop_{0};
 };

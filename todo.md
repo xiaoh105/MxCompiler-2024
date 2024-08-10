@@ -14,4 +14,5 @@
 - [x] Symbol Collection(8/9)
   - [x] Type Collector(8/9)
   - [x] Function Collector(8/9)
-- [ ] Semantic Check(Done: Primary Nodes, partial Expr Nodes)
+- [x] Semantic Check(8/10)
+- [ ] Main Function

@@ -74,33 +74,19 @@ bool Typename::operator!=(const Typename &other) const { return name_ != other.n
 
 Type CreateType(std::shared_ptr<Typename> type_name, std::size_t dim) { return {std::move(type_name), dim}; }
 
-Type::Type() : type_name_({}), dim_(), any_dim_(false) {}
+Type::Type() : type_name_({}), dim_() {}
 
-Type::Type(std::shared_ptr<Typename> type_name, std::size_t dim, bool any_dim)
-    : type_name_(std::move(type_name)), dim_(dim), any_dim_(any_dim) {}
+Type::Type(std::shared_ptr<Typename> type_name, std::size_t dim)
+    : type_name_(std::move(type_name)), dim_(dim) {}
 
 std::size_t Type::GetDim() const { return dim_; }
-
-void Type::SetDim(std::size_t dim) {
-  if (any_dim_) {
-    any_dim_ = false;
-    dim_ = dim;
-  }
-}
 
 const std::shared_ptr<Typename> &Type::GetTypename() const { return type_name_; }
 
 bool Type::operator==(const Type &other) const {
-  if (type_name_ != other.type_name_) {
-    return false;
-  }
-  if (any_dim_) {
-    return other.any_dim_ || other.dim_ >= 1;
-  }
-  if (other.any_dim_) {
-    return any_dim_ || dim_ >= 1;
-  }
-  return dim_ == other.dim_;
+  return type_name_ == other.type_name_ && dim_ == other.dim_;
 }
 
-bool Type::operator!=(const Type &other) const { return !operator==(other); }
+bool Type::operator!=(const Type &other) const {
+  return type_name_ != other.type_name_ || dim_ != other.dim_;
+}

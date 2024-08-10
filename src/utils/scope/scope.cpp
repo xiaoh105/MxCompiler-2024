@@ -86,7 +86,7 @@ std::optional<Type> Scope::GetVar(const std::string &name) const {
   return parent_scope_ == nullptr ? std::nullopt : std::optional(parent_scope_->GetVar(name));
 }
 
-const std::unique_ptr<Scope> &Scope::GetParent() const { return parent_scope_; }
+std::unique_ptr<Scope> &Scope::GetParent() { return parent_scope_; }
 
 Scope &Scope::operator=(Scope &&other) noexcept {
   if (this == &other) {

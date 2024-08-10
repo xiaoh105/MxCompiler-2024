@@ -42,7 +42,7 @@ class Scope {
   [[nodiscard]] std::optional<Type> GetVar(const std::string &name) const;
   Scope &operator=(const Scope &other) = delete;
   Scope &operator=(Scope &&other) noexcept;
-  [[nodiscard]] const std::unique_ptr<Scope> &GetParent() const;
+  std::unique_ptr<Scope> &GetParent();
 
  private:
   std::unordered_map<std::string, Type> local_;

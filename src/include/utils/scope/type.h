@@ -28,18 +28,15 @@ class Function;
 class Type {
  public:
   Type();
-  Type(std::shared_ptr<Typename> type_name, std::size_t dim = 0, bool any_dim = false);
+  Type(std::shared_ptr<Typename> type_name, std::size_t dim = 0);
   [[nodiscard]] std::size_t GetDim() const;
   [[nodiscard]] const std::shared_ptr<Typename> &GetTypename() const;
-  void SetDim(std::size_t dim);
   bool operator==(const Type &other) const;
   bool operator!=(const Type &other) const;
 
  private:
   const std::shared_ptr<Typename> type_name_;
   std::size_t dim_;
-  /// Array literal '{}' can be an array of any dimension.
-  bool any_dim_;
 };
 
 Type CreateType(std::shared_ptr<Typename> type_name, std::size_t dim = 0);

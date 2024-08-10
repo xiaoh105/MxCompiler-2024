@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "utils/scope/type.h"
@@ -24,6 +23,7 @@ class Function {
   [[nodiscard]] std::size_t GetArgNum() const;
   [[nodiscard]] Type GetArgument(std::size_t index) const;
   [[nodiscard]] const std::vector<Type> &GetArguments() const;
+  [[nodiscard]] const Type &GetReturnType() const;
 
  private:
   const Type return_type_;
