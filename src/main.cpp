@@ -8,11 +8,12 @@
 
 int main() {
   ANTLRInputStream input(std::cin);
+  MxErrorListener error_listener;
   MxLexer lexer(&input);
+  lexer.addErrorListener(&error_listener);
   CommonTokenStream tokens(&lexer);
   tokens.fill();
   MxParser parser(&tokens);
-  MxErrorListener error_listener;
   parser.addErrorListener(&error_listener);
   auto root = parser.program();
   try {
