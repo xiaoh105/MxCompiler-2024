@@ -11,6 +11,7 @@ GlobalScope::GlobalScope() {
   type_.emplace("int", kIntTypename);
   type_.emplace("bool", kBoolTypename);
   type_.emplace("string", kStringTypename);
+  type_.emplace("void", kVoidTypename);
 
   Function print(kVoidType, {kStringType});
   function_.emplace("print", print);
