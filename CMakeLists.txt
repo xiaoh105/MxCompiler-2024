@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 23)
 include_directories(/usr/include/antlr4-runtime)
 include_directories(src/include)
 
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+# set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+
 add_executable(MxCompiler src/main.cpp
         src/parser/MxParser.cpp
         src/parser/MxLexer.cpp
@@ -19,7 +22,5 @@ add_executable(MxCompiler src/main.cpp
         src/frontend/class_collector.cpp
         src/frontend/symbol_collector.cpp
         src/frontend/semantic_checker.cpp)
-
-target_include_directories(MxCompiler SYSTEM PUBLIC /usr/include/c++/13.3.0)
 
 target_link_libraries(MxCompiler antlr4-runtime)

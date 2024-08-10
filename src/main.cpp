@@ -1,23 +1,30 @@
-#include "utils/scope/type.h"
-#include "ast/ast_node.h"
-#include "ast/ast_visitor.h"
-#include "ast/primary_node/literal_primary_node.h"
-#include "ast/primary_node/var_primary_node.h"
-#include "ast/primary_node/this_primary_node.h"
-#include "ast/primary_node/new_primary_node.h"
-#include "ast/array_node/simple_array_node.h"
-#include "ast/array_node/jagged_array_node.h"
-#include "ast/expr_node/atom_expr_node.h"
-#include "ast/expr_node/unary_expr_node.h"
-#include "ast/expr_node/binary_expr_node.h"
-#include "ast/expr_node/tenary_expr_node.h"
-#include "ast/expr_node/assign_expr_node.h"
-#include "ast/expr_node/format_expr_node.h"
-#include "ast/expr_node/member_expr_node.h"
-#include "ast/expr_node/subscript_expr_node.h"
-#include "ast/expr_node/function_call_expr_node.h"
-#include "ast/stmt_node/stmt_node.h"
+#include "ast/ast.h"
+#include "frontend/ast_builder.h"
+#include "frontend/error_listener.h"
+#include "frontend/semantic_checker.h"
+#include "parser/MxLexer.h"
+#include "parser/MxParser.h"
+#include "utils/error/semantic_error.hpp"
 
 int main() {
-
+  ANTLRInputStream input(std::cin);
+  MxLexer lexer(&input);
+  CommonTokenStream tokens(&lexer);
+  tokens.fill();
+  MxParser parser(&tokens);
+  MxErrorListener error_listener;
+  parser.addErrorListener(&error_listener);
+  auto root = parser.program();
+  try {
+    ASTBuilder builder;
+    auto ast_root = std::any_cast<std::shared_ptr<RootNode>>(builder.visitProgram(root));
+    CheckSemantic(ast_root.get());
+  } catch (const SemanticError &err) {
+    std::cerr << err.what() << std::endl;
+    return 1;
+  } catch (std::runtime_error &) {
+    throw;
+  }
+  std::cout << "\033[32mSemantic check passed!\033[0m" << std::endl;
+  return 0;
 }
