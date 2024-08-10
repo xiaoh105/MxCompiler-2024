@@ -112,6 +112,9 @@ void SemanticChecker::visit(NewPrimaryNode *node) {
   if (type == std::nullopt) {
     throw UndefinedIdentifier(node->GetPos());
   }
+  if (*type.value() == *kVoidTypename) {
+    throw InvalidType(node->GetPos());
+  }
   switch (node->GetNewType()) {
     case NewPrimaryNode::NewType::kNewVar: {
       node->SetType(std::make_shared<Type>(CreateType(std::move(type.value()))));
@@ -162,7 +165,8 @@ void SemanticChecker::visit(AssignExprNode *node) {
   }
   auto &left_type = lhs->GetType();
   auto &right_type = rhs->GetType();
-  if ((left_type->GetDim() > 0 || left_type->GetDim() == 0 && *left_type != kIntType && *left_type != kBoolType) && rhs->IsNull()) {
+  if ((left_type->GetDim() > 0 || left_type->GetDim() == 0 && *left_type != kIntType && *left_type != kBoolType) &&
+      rhs->IsNull()) {
     node->SetType(left_type);
     return;
   }
@@ -183,16 +187,38 @@ void SemanticChecker::visit(UnaryExprNode *node) {
   switch (node->GetOpType()) {
     case UnaryExprNode::OpType::kNot:
     case UnaryExprNode::OpType::kPlus:
-    case UnaryExprNode::OpType::kMinus:
-    case UnaryExprNode::OpType::kPreIncrement:
-    case UnaryExprNode::OpType::kPreDecrement:
-    case UnaryExprNode::OpType::kSufIncrement:
-    case UnaryExprNode::OpType::kSufDecrement: {
+    case UnaryExprNode::OpType::kMinus: {
       if (expr->GetType() == nullptr || *expr->GetType() != kIntType) {
         throw TypeMismatch(node->GetPos());
       }
       node->SetType(std::make_shared<Type>(kIntType));
       node->SetAssignable(false);
+      node->SetNull(false);
+      break;
+    }
+    case UnaryExprNode::OpType::kSufIncrement:
+    case UnaryExprNode::OpType::kSufDecrement: {
+      if (expr->GetType() == nullptr || *expr->GetType() != kIntType) {
+        throw TypeMismatch(node->GetPos());
+      }
+      if (!expr->IsAssignable()) {
+        throw NotAssignable(node->GetPos());
+      }
+      node->SetType(std::make_shared<Type>(kIntType));
+      node->SetAssignable(false);
+      node->SetNull(false);
+      break;
+    }
+    case UnaryExprNode::OpType::kPreIncrement:
+    case UnaryExprNode::OpType::kPreDecrement: {
+      if (expr->GetType() == nullptr || *expr->GetType() != kIntType) {
+        throw TypeMismatch(node->GetPos());
+      }
+      if (!expr->IsAssignable()) {
+        throw NotAssignable(node->GetPos());
+      }
+      node->SetType(std::make_shared<Type>(kIntType));
+      node->SetAssignable(true);
       node->SetNull(false);
       break;
     }
@@ -277,13 +303,13 @@ void SemanticChecker::visit(BinaryExprNode *node) {
     }
     case BinaryExprNode::OpType::kEqual:
     case BinaryExprNode::OpType::kNotEqual: {
-      if (left_type == nullptr && (right_type != nullptr && right_type->GetDim() == 0)) {
+      if (left_type == nullptr && right_type != nullptr && (*right_type == kIntType || *right_type == kBoolType)) {
         throw InvalidType(node->GetPos());
       }
-      if (right_type == nullptr && (left_type != nullptr && left_type->GetDim() == 0)) {
+      if (right_type == nullptr && left_type != nullptr && (*left_type == kIntType || *left_type == kBoolType)) {
         throw InvalidType(node->GetPos());
       }
-      if (*left_type != *right_type) {
+      if (left_type != nullptr && right_type != nullptr && *left_type != *right_type) {
         throw TypeMismatch(node->GetPos());
       }
       node->SetType(std::make_shared<Type>(kBoolType));
@@ -488,10 +514,14 @@ void SemanticChecker::visit(IfStmtNode *node) {
   if (condition->GetType() == nullptr || *condition->GetType() != kBoolType) {
     throw InvalidType(node->GetPos());
   }
+  scope_ = {std::make_unique<Scope>(std::move(scope_))};
   node->GetThenStmt()->accept(this);
+  scope_ = std::move(*scope_.GetParent());
+  scope_ = {std::make_unique<Scope>(std::move(scope_))};
   if (auto else_stmt = node->GetElseStmt()) {
     else_stmt->accept(this);
   }
+  scope_ = std::move(*scope_.GetParent());
 }
 
 void SemanticChecker::visit(ExprStmtNode *node) { node->GetExprNode()->accept(this); }
@@ -503,8 +533,10 @@ void SemanticChecker::visit(WhileStmtNode *node) {
   if (condition->GetType() == nullptr || *condition->GetType() != kBoolType) {
     throw InvalidType(node->GetPos());
   }
+  scope_ = {std::make_unique<Scope>(std::move(scope_))};
   node->GetLoopStmt()->accept(this);
   --inside_loop_;
+  scope_ = std::move(*scope_.GetParent());
 }
 
 void SemanticChecker::visit(VarDefStmtNode *node) {
@@ -523,7 +555,7 @@ void SemanticChecker::visit(VarDefStmtNode *node) {
     if (expr[i] != nullptr) {
       expr[i]->accept(this);
       if (expr[i]->GetType() == nullptr) {
-        if (dim == 0) {
+        if (dim == 0 && (type == kIntType && type == kBoolType)) {
           throw TypeMismatch(node->GetPos());
         }
       } else if (*expr[i]->GetType() != type) {
@@ -552,7 +584,10 @@ void SemanticChecker::visit(ControlStmtNode *node) {
         }
       } else {
         expr->accept(this);
-        if (*expr->GetType() != *return_type_) {
+        if (expr->GetType() != nullptr && *expr->GetType() != *return_type_) {
+          throw TypeMismatch(node->GetPos());
+        }
+        if (expr->GetType() == nullptr && (*return_type_ == kIntType || *return_type_ == kBoolType)) {
           throw TypeMismatch(node->GetPos());
         }
       }
@@ -640,7 +675,7 @@ void SemanticChecker::visit(VarDefNode *node) {
     }
     expr[i]->accept(this);
     if (expr[i]->GetType() == nullptr) {
-      if (dim == 0) {
+      if (dim == 0 && (var_type == kIntType || var_type == kBoolType )) {
         throw TypeMismatch(node->GetPos());
       }
     } else if (*expr[i]->GetType() != var_type) {
@@ -651,7 +686,11 @@ void SemanticChecker::visit(VarDefNode *node) {
 
 void SemanticChecker::visit(VarDefClassStmtNode *node) {}
 
-void SemanticChecker::visit(ConstructorClassStmtNode *node) { node->GetFunctionBody()->accept(this); }
+void SemanticChecker::visit(ConstructorClassStmtNode *node) {
+  return_type_ = std::make_shared<Type>(kVoidType);
+  node->GetFunctionBody()->accept(this);
+  return_type_ = nullptr;
+}
 
 void SemanticChecker::visit(FunctionDefClassStmtNode *node) {
   scope_ = {std::make_unique<Scope>(std::move(scope_))};

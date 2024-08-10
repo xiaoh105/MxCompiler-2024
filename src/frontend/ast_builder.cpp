@@ -2,6 +2,7 @@
 
 #include "ast/ast.h"
 #include "frontend/ast_builder.h"
+#include "utils/error/semantic_error.hpp"
 
 std::any ASTBuilder::visitProgram(MxParser::ProgramContext *ctx) {
   struct DefType {
@@ -113,7 +114,7 @@ std::any ASTBuilder::visitVarDef(MxParser::VarDefContext *ctx) {
   std::vector<std::shared_ptr<ExprNode>> ret_val;
   for (const auto &item : var_name) {
     ret_name.push_back(item->getText());
-    if (pos < ret_val.size() && item->getSourceInterval().b + 2 == var_value[pos]->getSourceInterval().a) {
+    if (pos < var_value.size() && item->getSourceInterval().b + 2 == var_value[pos]->getSourceInterval().a) {
       auto ret = std::any_cast<std::shared_ptr<ExprNode>>(var_value[pos]->accept(this));
       ret_val.push_back(std::move(ret));
       ++pos;
@@ -241,10 +242,10 @@ std::any ASTBuilder::visitUnaryExpr(MxParser::UnaryExprContext *ctx) {
   } else if (ctx->NotLogic()) {
     op_type = UnaryExprNode::OpType::kNotLogic;
   } else if (auto increment = ctx->Increment()) {
-    op_type = expr->getSourceInterval().a < increment->getSourceInterval().a ? UnaryExprNode::OpType::kPreIncrement
+    op_type = expr->getSourceInterval().a > increment->getSourceInterval().a ? UnaryExprNode::OpType::kPreIncrement
                                                                              : UnaryExprNode::OpType::kSufIncrement;
   } else if (auto decrement = ctx->Decrement()) {
-    op_type = expr->getSourceInterval().a < decrement->getSourceInterval().a ? UnaryExprNode::OpType::kPreDecrement
+    op_type = expr->getSourceInterval().a > decrement->getSourceInterval().a ? UnaryExprNode::OpType::kPreDecrement
                                                                              : UnaryExprNode::OpType::kSufDecrement;
   } else {
     throw std::runtime_error("No valid operator for unary expr");
@@ -423,6 +424,9 @@ std::any ASTBuilder::visitNewPrimary(MxParser::NewPrimaryContext *ctx) {
     auto ret = std::any_cast<std::shared_ptr<ExprNode>>(item->accept(this));
     index.push_back(std::move(ret));
   }
+  if (ctx->getStart()->getInputStream()->getText(misc::Interval{ctx->stop->getStopIndex() + 1, ctx->stop->getStopIndex() + 1}) == "[") {
+    throw InvalidType(Position{ctx});
+  }
   return std::shared_ptr<PrimaryNode>(new NewPrimaryNode({ctx}, std::move(type_name), l_bracket, std::move(index)));
 }
 
@@ -432,8 +436,8 @@ std::any ASTBuilder::visitBoolLiteral(MxParser::BoolLiteralContext *ctx) {
 }
 
 std::any ASTBuilder::visitDecimalLiteral(MxParser::DecimalLiteralContext *ctx) {
-  auto res = std::stoi(ctx->DecimalNumber()->getText());
-  return std::shared_ptr<PrimaryNode>(new LiteralPrimaryNode({ctx}, res));
+  auto res = std::stoll(ctx->DecimalNumber()->getText());
+  return std::shared_ptr<PrimaryNode>(new LiteralPrimaryNode({ctx}, static_cast<int>(res)));
 }
 
 std::any ASTBuilder::visitNullLiteral(MxParser::NullLiteralContext *ctx) {
