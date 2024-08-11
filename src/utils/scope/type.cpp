@@ -11,9 +11,10 @@
 
 std::shared_ptr<Typename> GetStringTypename() {
   std::shared_ptr<Typename> str = std::make_shared<Typename>("string");
+  Type str_type(str, 0);
   Function length(kIntType, {});
   str->AddFunction("length", length);
-  Function substring(kStringType, {kIntType, kIntType});
+  Function substring(str_type, {kIntType, kIntType});
   str->AddFunction("substring", substring);
   Function parse_int(kIntType, {});
   str->AddFunction("parseInt", parse_int);

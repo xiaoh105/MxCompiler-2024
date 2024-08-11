@@ -448,7 +448,7 @@ void SemanticChecker::visit(FunctionCallExprNode *node) {
   std::shared_ptr<Function> func(nullptr);
   if (base != nullptr) {
     base->accept(this);
-    auto base_type = base->GetType();
+    auto &base_type = base->GetType();
     if (base_type == nullptr) {
       throw InvalidType(node->GetPos());
     }
@@ -464,6 +464,9 @@ void SemanticChecker::visit(FunctionCallExprNode *node) {
     auto func_opt = base_type->GetTypename()->GetFunction(func_name);
     if (func_opt == std::nullopt) {
       throw InvalidMember(node->GetPos());
+    }
+    if (func_opt.value().GetReturnType().GetTypename() == nullptr) {
+      assert(false);
     }
     func = std::make_shared<Function>(std::move(func_opt.value()));
   } else {
@@ -488,7 +491,8 @@ void SemanticChecker::visit(FunctionCallExprNode *node) {
   for (int i = 0; i < arguments.size(); ++i) {
     arguments[i]->accept(this);
     auto type = arguments[i]->GetType();
-    if (type == nullptr || *type != func_args[i]) {
+    if (type == nullptr && (func_args[i] == kIntType || func_args[i] == kBoolType) ||
+        type != nullptr && *type != func_args[i]) {
       throw InvalidArgs(node->GetPos());
     }
   }
@@ -675,7 +679,7 @@ void SemanticChecker::visit(VarDefNode *node) {
     }
     expr[i]->accept(this);
     if (expr[i]->GetType() == nullptr) {
-      if (dim == 0 && (var_type == kIntType || var_type == kBoolType )) {
+      if (dim == 0 && (var_type == kIntType || var_type == kBoolType)) {
         throw TypeMismatch(node->GetPos());
       }
     } else if (*expr[i]->GetType() != var_type) {
