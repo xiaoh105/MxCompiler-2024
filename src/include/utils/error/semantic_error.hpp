@@ -87,7 +87,7 @@ class InvalidMember : public SemanticError {
 class DimOutOfBound : public SemanticError {
  public:
   DimOutOfBound() = delete;
-  DimOutOfBound(const Position &pos) : SemanticError("Dimension Out of Bound", pos) {}
+  DimOutOfBound(const Position &pos) : SemanticError("Dimension Out Of Bound", pos) {}
 };
 
 /**

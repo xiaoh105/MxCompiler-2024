@@ -161,7 +161,11 @@ void SemanticChecker::visit(AssignExprNode *node) {
   lhs->accept(this);
   rhs->accept(this);
   if (!lhs->IsAssignable()) {
+#ifndef OJ
     throw NotAssignable(node->GetPos());
+#else
+    throw InvalidType(node->GetPos());
+#endif
   }
   auto &left_type = lhs->GetType();
   auto &right_type = rhs->GetType();
@@ -493,7 +497,11 @@ void SemanticChecker::visit(FunctionCallExprNode *node) {
     auto type = arguments[i]->GetType();
     if (type == nullptr && (func_args[i] == kIntType || func_args[i] == kBoolType) ||
         type != nullptr && *type != func_args[i]) {
+#ifndef OJ
       throw InvalidArgs(node->GetPos());
+#else
+      throw TypeMismatch(node->GetPos());
+#endif
     }
   }
   node->SetType(std::make_shared<Type>(func->GetReturnType()));
