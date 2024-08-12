@@ -10,10 +10,16 @@ int main() {
   ANTLRInputStream input(std::cin);
   MxErrorListener error_listener;
   MxLexer lexer(&input);
+#ifdef OJ
+  lexer.removeErrorListeners();
+#endif
   lexer.addErrorListener(&error_listener);
   CommonTokenStream tokens(&lexer);
   tokens.fill();
   MxParser parser(&tokens);
+#ifdef OJ
+  parser.removeErrorListeners();
+#endif
   parser.addErrorListener(&error_listener);
   auto root = parser.program();
   try {
