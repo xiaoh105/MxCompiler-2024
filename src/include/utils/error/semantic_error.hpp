@@ -15,7 +15,7 @@ class SemanticError : public CompilerError {
  public:
   SemanticError() = delete;
   SemanticError(const std::string &error_detail, const Position &pos)
-      : CompilerError("Semantic error", error_detail, pos) {}
+      : CompilerError("Semantic Error", error_detail, pos) {}
 };
 
 /**
@@ -42,7 +42,7 @@ class InvalidType : public SemanticError {
 class UndefinedIdentifier : public SemanticError {
  public:
   UndefinedIdentifier() = delete;
-  UndefinedIdentifier(const Position &pos) : SemanticError("Undefined identifier", pos) {}
+  UndefinedIdentifier(const Position &pos) : SemanticError("Undefined Identifier", pos) {}
 };
 
 /**
@@ -51,7 +51,7 @@ class UndefinedIdentifier : public SemanticError {
 class InvalidContructor : public SemanticError {
  public:
   InvalidContructor() = delete;
-  InvalidContructor(const Position &pos) : SemanticError("Invalid class constructor", pos) {}
+  InvalidContructor(const Position &pos) : SemanticError("Invalid Class Constructor", pos) {}
 };
 
 /**
@@ -60,7 +60,7 @@ class InvalidContructor : public SemanticError {
 class TypeMismatch : public SemanticError {
  public:
   TypeMismatch() = delete;
-  TypeMismatch(const Position &pos) : SemanticError("Type mismatch", pos) {}
+  TypeMismatch(const Position &pos) : SemanticError("Type Mismatch", pos) {}
 };
 
 /**
@@ -69,7 +69,7 @@ class TypeMismatch : public SemanticError {
 class NotAssignable : public SemanticError {
  public:
   NotAssignable() = delete;
-  NotAssignable(const Position &pos) : SemanticError("Value is not assignable", pos) {}
+  NotAssignable(const Position &pos) : SemanticError("Value Is Not Assignable", pos) {}
 };
 
 /**
@@ -78,7 +78,7 @@ class NotAssignable : public SemanticError {
 class InvalidMember : public SemanticError {
  public:
   InvalidMember() = delete;
-  InvalidMember(const Position &pos) : SemanticError("Class member/method is invalid", pos) {}
+  InvalidMember(const Position &pos) : SemanticError("Class Member/Method Is Invalid", pos) {}
 };
 
 /**
@@ -87,7 +87,7 @@ class InvalidMember : public SemanticError {
 class DimOutOfBound : public SemanticError {
  public:
   DimOutOfBound() = delete;
-  DimOutOfBound(const Position &pos) : SemanticError("Array dimension is out of bound", pos) {}
+  DimOutOfBound(const Position &pos) : SemanticError("Dimension Out of Bound", pos) {}
 };
 
 /**
@@ -96,7 +96,7 @@ class DimOutOfBound : public SemanticError {
 class InvalidArgs : public SemanticError {
  public:
   InvalidArgs() = delete;
-  InvalidArgs(const Position &pos) : SemanticError("Invalid function argument", pos) {}
+  InvalidArgs(const Position &pos) : SemanticError("Invalid Function Argument", pos) {}
 };
 
 /**
@@ -105,7 +105,7 @@ class InvalidArgs : public SemanticError {
 class InvalidControlFlow : public SemanticError {
  public:
   InvalidControlFlow() = delete;
-  InvalidControlFlow(const Position &pos) : SemanticError("Invalid control flow", pos) {}
+  InvalidControlFlow(const Position &pos) : SemanticError("Invalid Control Flow", pos) {}
 };
 
 /**
