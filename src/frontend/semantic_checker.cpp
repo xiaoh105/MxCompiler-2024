@@ -590,6 +590,7 @@ void SemanticChecker::visit(ControlStmtNode *node) {
     }
     case ControlStmtNode::StmtType::kReturn: {
       auto expr = node->GetReturnExpr();
+      returned_ = true;
       if (expr == nullptr) {
         if (*return_type_ != kVoidType) {
           throw TypeMismatch(node->GetPos());
@@ -658,6 +659,10 @@ void SemanticChecker::visit(FunctionDefNode *node) {
   }
   scope_ = {std::make_unique<Scope>(std::move(scope_))};
   return_type_ = std::make_shared<Type>(func.value().GetReturnType());
+  returned_ = false;
+  if (func_name == "main") {
+    main_func_ = true;
+  }
   for (const auto &arg : node->GetArguments()) {
     auto &[arg_type, arg_name] = arg;
     auto type_name = global_scope_.GetType(arg_type.first);
@@ -668,6 +673,10 @@ void SemanticChecker::visit(FunctionDefNode *node) {
     scope_.DefineVar(arg_name, std::move(type), node->GetPos());
   }
   node->GetFunctionBody()->accept(this);
+  if (*return_type_ != kVoidType && !returned_ && !main_func_) {
+    throw NoReturn(node->GetPos());
+  }
+  main_func_ = false;
   scope_ = std::move(*scope_.GetParent());
 }
 
@@ -710,6 +719,7 @@ void SemanticChecker::visit(FunctionDefClassStmtNode *node) {
   if (func == std::nullopt) {
     throw std::runtime_error("Unidentified method name");
   }
+  returned_ = false;
   for (auto &item : node->GetArguments()) {
     auto &[type_name, var_name] = item;
     auto type_opt = global_scope_.GetType(type_name.first);
@@ -721,6 +731,9 @@ void SemanticChecker::visit(FunctionDefClassStmtNode *node) {
   }
   return_type_ = std::make_shared<Type>(func->GetReturnType());
   node->GetFunctionBody()->accept(this);
+  if (*return_type_ != kVoidType && !returned_) {
+    throw NoReturn(node->GetPos());
+  }
   scope_ = std::move(*scope_.GetParent());
 }
 

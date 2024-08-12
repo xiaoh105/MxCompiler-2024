@@ -73,6 +73,15 @@ class NotAssignable : public SemanticError {
 };
 
 /**
+ * Missing return statement for a function/class method.
+ */
+class NoReturn : public SemanticError {
+ public:
+  NoReturn() = delete;
+  NoReturn(const Position &pos) : SemanticError("Missing Return Statement", pos) {}
+};
+
+/**
  * Certain class member/method is undefined.
  */
 class InvalidMember : public SemanticError {

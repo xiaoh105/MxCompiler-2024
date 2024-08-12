@@ -53,4 +53,6 @@ private:
   std::shared_ptr<Typename> current_class_{nullptr};
   std::shared_ptr<Type> return_type_{nullptr};
   int inside_loop_{0};
+  bool returned_{false};
+  bool main_func_{false};
 };
