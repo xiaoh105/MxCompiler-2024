@@ -21,7 +21,11 @@ int main() {
     auto ast_root = std::any_cast<std::shared_ptr<RootNode>>(builder.visitProgram(root));
     CheckSemantic(ast_root.get());
   } catch (const SemanticError &err) {
+#ifndef OJ
     std::cerr << err.what() << std::endl;
+#else
+    std::cout << err.what() << std::endl;
+#endif
     return 1;
   } catch (std::runtime_error &) {
     throw;
