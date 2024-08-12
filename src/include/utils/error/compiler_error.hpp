@@ -20,7 +20,11 @@ class CompilerError : public std::exception {
   CompilerError() = delete;
   CompilerError(const std::string &error_type, const std::string &error_detail, const Position &pos)
       : error_type_(error_type), error_detail_(error_detail), position_(pos) {
+#ifndef OJ
     error_msg_ = error_header_ + error_type_ + ": " + error_detail_ + ".\nLine " + position_.ToString();
+#else
+    error_msg_ = error_type_;
+#endif
   }
   [[nodiscard]] const char *what() const noexcept override {
     return error_msg_.c_str();

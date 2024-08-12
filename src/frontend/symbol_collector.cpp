@@ -47,7 +47,7 @@ void SymbolCollector::visit(FunctionDefNode *node) {
     if (!arg_typename.has_value()) {
       throw UndefinedIdentifier(node->GetPos());
     }
-    auto arg_type = CreateType(std::move(arg_typename.value()), dim);
+    auto arg_type = CreateType(std::move(arg_typename.value()), arg_dim);
     args.push_back(std::move(arg_type));
   }
   Function func(std::move(return_type), std::move(args));

@@ -661,12 +661,12 @@ class MxParser : public antlr4::Parser {
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LeftBrace();
     antlr4::tree::TerminalNode *RightBrace();
-    std::vector<LiteralContext *> literal();
-    LiteralContext *literal(size_t i);
-    std::vector<antlr4::tree::TerminalNode *> Comma();
-    antlr4::tree::TerminalNode *Comma(size_t i);
     std::vector<ArrayContext *> array();
     ArrayContext *array(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Comma();
+    antlr4::tree::TerminalNode *Comma(size_t i);
+    std::vector<LiteralContext *> literal();
+    LiteralContext *literal(size_t i);
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

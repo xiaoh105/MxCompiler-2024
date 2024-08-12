@@ -26,6 +26,5 @@ int main() {
   } catch (std::runtime_error &) {
     throw;
   }
-  std::cout << "\033[32mSemantic check passed!\033[0m" << std::endl;
   return 0;
 }

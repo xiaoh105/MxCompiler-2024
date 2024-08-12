@@ -271,11 +271,11 @@ void mxParserInitialize() {
       5,   50,  0,   0,   351, 349, 1,   0,   0,   0,   351, 352, 1,   0,   0,   0,   352, 354, 1,   0,   0,   0,   353,
       317, 1,   0,   0,   0,   353, 318, 1,   0,   0,   0,   353, 319, 1,   0,   0,   0,   353, 320, 1,   0,   0,   0,
       353, 337, 1,   0,   0,   0,   353, 347, 1,   0,   0,   0,   354, 21,  1,   0,   0,   0,   355, 356, 5,   53,  0,
-      0,   356, 380, 5,   54,  0,   0,   357, 358, 5,   53,  0,   0,   358, 363, 3,   24,  12,  0,   359, 360, 5,   59,
-      0,   0,   360, 362, 3,   24,  12,  0,   361, 359, 1,   0,   0,   0,   362, 365, 1,   0,   0,   0,   363, 361, 1,
+      0,   356, 380, 5,   54,  0,   0,   357, 358, 5,   53,  0,   0,   358, 363, 3,   22,  11,  0,   359, 360, 5,   59,
+      0,   0,   360, 362, 3,   22,  11,  0,   361, 359, 1,   0,   0,   0,   362, 365, 1,   0,   0,   0,   363, 361, 1,
       0,   0,   0,   363, 364, 1,   0,   0,   0,   364, 366, 1,   0,   0,   0,   365, 363, 1,   0,   0,   0,   366, 367,
-      5,   54,  0,   0,   367, 380, 1,   0,   0,   0,   368, 369, 5,   53,  0,   0,   369, 374, 3,   22,  11,  0,   370,
-      371, 5,   59,  0,   0,   371, 373, 3,   22,  11,  0,   372, 370, 1,   0,   0,   0,   373, 376, 1,   0,   0,   0,
+      5,   54,  0,   0,   367, 380, 1,   0,   0,   0,   368, 369, 5,   53,  0,   0,   369, 374, 3,   24,  12,  0,   370,
+      371, 5,   59,  0,   0,   371, 373, 3,   24,  12,  0,   372, 370, 1,   0,   0,   0,   373, 376, 1,   0,   0,   0,
       374, 372, 1,   0,   0,   0,   374, 375, 1,   0,   0,   0,   375, 377, 1,   0,   0,   0,   376, 374, 1,   0,   0,
       0,   377, 378, 5,   54,  0,   0,   378, 380, 1,   0,   0,   0,   379, 355, 1,   0,   0,   0,   379, 357, 1,   0,
       0,   0,   379, 368, 1,   0,   0,   0,   380, 23,  1,   0,   0,   0,   381, 388, 5,   6,   0,   0,   382, 388, 5,
@@ -2573,6 +2573,16 @@ tree::TerminalNode *MxParser::ArrayContext::LeftBrace() { return getToken(MxPars
 
 tree::TerminalNode *MxParser::ArrayContext::RightBrace() { return getToken(MxParser::RightBrace, 0); }
 
+std::vector<MxParser::ArrayContext *> MxParser::ArrayContext::array() {
+  return getRuleContexts<MxParser::ArrayContext>();
+}
+
+MxParser::ArrayContext *MxParser::ArrayContext::array(size_t i) { return getRuleContext<MxParser::ArrayContext>(i); }
+
+std::vector<tree::TerminalNode *> MxParser::ArrayContext::Comma() { return getTokens(MxParser::Comma); }
+
+tree::TerminalNode *MxParser::ArrayContext::Comma(size_t i) { return getToken(MxParser::Comma, i); }
+
 std::vector<MxParser::LiteralContext *> MxParser::ArrayContext::literal() {
   return getRuleContexts<MxParser::LiteralContext>();
 }
@@ -2580,16 +2590,6 @@ std::vector<MxParser::LiteralContext *> MxParser::ArrayContext::literal() {
 MxParser::LiteralContext *MxParser::ArrayContext::literal(size_t i) {
   return getRuleContext<MxParser::LiteralContext>(i);
 }
-
-std::vector<tree::TerminalNode *> MxParser::ArrayContext::Comma() { return getTokens(MxParser::Comma); }
-
-tree::TerminalNode *MxParser::ArrayContext::Comma(size_t i) { return getToken(MxParser::Comma, i); }
-
-std::vector<MxParser::ArrayContext *> MxParser::ArrayContext::array() {
-  return getRuleContexts<MxParser::ArrayContext>();
-}
-
-MxParser::ArrayContext *MxParser::ArrayContext::array(size_t i) { return getRuleContext<MxParser::ArrayContext>(i); }
 
 size_t MxParser::ArrayContext::getRuleIndex() const { return MxParser::RuleArray; }
 
@@ -2630,7 +2630,7 @@ MxParser::ArrayContext *MxParser::array() {
         setState(357);
         match(MxParser::LeftBrace);
         setState(358);
-        literal();
+        array();
         setState(363);
         _errHandler->sync(this);
         _la = _input->LA(1);
@@ -2638,7 +2638,7 @@ MxParser::ArrayContext *MxParser::array() {
           setState(359);
           match(MxParser::Comma);
           setState(360);
-          literal();
+          array();
           setState(365);
           _errHandler->sync(this);
           _la = _input->LA(1);
@@ -2653,7 +2653,7 @@ MxParser::ArrayContext *MxParser::array() {
         setState(368);
         match(MxParser::LeftBrace);
         setState(369);
-        array();
+        literal();
         setState(374);
         _errHandler->sync(this);
         _la = _input->LA(1);
@@ -2661,7 +2661,7 @@ MxParser::ArrayContext *MxParser::array() {
           setState(370);
           match(MxParser::Comma);
           setState(371);
-          array();
+          literal();
           setState(376);
           _errHandler->sync(this);
           _la = _input->LA(1);

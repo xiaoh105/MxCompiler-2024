@@ -7,7 +7,7 @@ all: build
 
 build:
 	@mkdir -p $(BUILD_DIR)
-	@cd $(BUILD_DIR) && cmake -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) -Wno-dev ..
+	@cd $(BUILD_DIR) && cmake -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) -DENABLE_OJ_MODE=ON -Wno-dev ..
 	@cd $(BUILD_DIR) && $(MAKE) -j$(nproc)
 
 run:

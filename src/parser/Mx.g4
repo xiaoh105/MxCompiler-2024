@@ -91,8 +91,8 @@ primary
 
 array
     : '{' '}'
-    | '{' literal (',' literal)* '}'
     | '{' array (',' array)* '}'
+    | '{' literal (',' literal)* '}'
     ;
 
 literal

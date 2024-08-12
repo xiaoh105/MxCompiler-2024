@@ -3,8 +3,15 @@ project(MxCompiler)
 
 set(CMAKE_CXX_STANDARD 23)
 
+option(ENABLE_OJ_MODE "Enable running mode on the judger" OFF)
+
 include_directories(src/include)
 include_directories(/usr/include/antlr4-runtime)
+
+if (ENABLE_OJ_MODE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
+  add_definitions(-DOJ)
+endif ()
 
 add_executable(MxCompiler src/main.cpp
         src/parser/MxParser.cpp

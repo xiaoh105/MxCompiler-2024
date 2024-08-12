@@ -23,7 +23,7 @@ void SemanticChecker::visit(SimpleArrayNode *node) {
   for (auto &item : elements) {
     item->accept(this);
   }
-  for (int i = 0; i < elements.size() - 1; ++i) {
+  for (int i = 0; i + 1 < elements.size(); ++i) {
     if (elements[i]->GetType() == nullptr || elements[i + 1]->GetType() == nullptr) {
       throw InvalidType(node->GetPos());
     }
@@ -606,7 +606,7 @@ void SemanticChecker::visit(ControlStmtNode *node) {
 void SemanticChecker::visit(ForStmtNode *node) {
   scope_ = {std::make_unique<Scope>(std::move(scope_))};
   node->GetInitializeStmt()->accept(this);
-  auto condition = node->GetCondition();
+  auto &condition = node->GetCondition();
   if (condition) {
     condition->accept(this);
     if (condition->GetType() == nullptr || *condition->GetType() != kBoolType) {

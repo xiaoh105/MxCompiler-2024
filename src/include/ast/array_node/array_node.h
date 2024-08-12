@@ -20,12 +20,7 @@ class ArrayNode : public ASTNode {
  public:
   ArrayNode() = delete;
   ArrayNode(Position pos) : ASTNode(std::move(pos)) {}
-  [[nodiscard]] const std::shared_ptr<Type> &GetType() const {
-    if (type_ == nullptr) {
-      throw std::runtime_error("Fetching type from Array Node with undetermined type");
-    }
-    return type_;
-  }
+  [[nodiscard]] const std::shared_ptr<Type> &GetType() const { return type_; }
   void SetType(std::shared_ptr<Type> type) { type_ = std::move(type); }
 
  private:
