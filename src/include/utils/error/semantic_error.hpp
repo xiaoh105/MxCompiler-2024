@@ -24,7 +24,7 @@ class SemanticError : public CompilerError {
 class MultipleDef : public SemanticError {
  public:
   MultipleDef() = delete;
-  MultipleDef(const Position &pos) : SemanticError("Multiple Definition", pos) {}
+  MultipleDef(const Position &pos) : SemanticError("Multiple Definitions", pos) {}
 };
 
 /**
