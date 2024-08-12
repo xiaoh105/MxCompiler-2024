@@ -23,7 +23,7 @@ class CompilerError : public std::exception {
 #ifndef OJ
     error_msg_ = error_header_ + error_type_ + ": " + error_detail_ + ".\nLine " + position_.ToString();
 #else
-    error_msg_ = error_detail_;
+    error_msg_ = error_detail_ + "\n";
 #endif
   }
   [[nodiscard]] const char *what() const noexcept override {
