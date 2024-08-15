@@ -22,7 +22,7 @@ class ConditionalBrStmt final : public BranchStmt {
       : condition_(std::move(condition)), true_block_(true_block), false_block_(false_block) {}
   void Print() const override {
     std::cout << "br i1 " << condition_->GetName() << ", label " << true_block_.lock()->GetLabel() << ", label "
-              << false_block_.lock()->GetLabel() << ";" << std::endl;
+              << false_block_.lock()->GetLabel() << std::endl;
   }
 
  private:
