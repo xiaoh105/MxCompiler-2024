@@ -5,6 +5,8 @@
  * Function: Manage type information for AST.
  */
 
+#include <ranges>
+
 #include "utils/scope/type.h"
 #include "utils/error/semantic_error.hpp"
 #include "utils/scope/function.h"
@@ -39,6 +41,13 @@ Typename::Typename(std::string name) : name_(std::move(name)) {
 
 const std::string &Typename::GetName() const { return name_; }
 
+void Typename::CreateIndex() {
+  int index = 0;
+  for (const auto &name : std::views::keys(member_)) {
+    index_.emplace(name, index++);
+  }
+}
+
 void Typename::AddMember(std::string member_name, Type type) {
   auto result = member_.emplace(std::move(member_name), std::make_unique<Type>(std::move(type))).second;
   if (!result) {
@@ -61,6 +70,8 @@ std::optional<Type> Typename::GetMember(const std::string &name) const {
   auto it = member_.find(name);
   return it == member_.end() ? std::nullopt : std::optional(*it->second);
 }
+
+int Typename::GetMemberIndex(const std::string &name) const { return index_.at(name); }
 
 bool Typename::HasFunction(const std::string &name) const { return function_.contains(name); }
 

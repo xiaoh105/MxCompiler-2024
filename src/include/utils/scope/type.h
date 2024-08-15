@@ -48,12 +48,14 @@ class Typename {
   explicit Typename(std::string name);
   Typename(const Typename &other) = default;
   Typename(Typename &&other) noexcept = default;
+  void CreateIndex();
   const std::string &GetName() const;
   void AddMember(std::string member_name, Type type);
   void AddFunction(std::string function_name, Function function);
   bool HasMember(const std::string &name) const;
   bool HasFunction(const std::string &name) const;
   std::optional<Type> GetMember(const std::string &name) const;
+  int GetMemberIndex(const std::string &name) const;
   std::optional<Function> GetFunction(const std::string &name) const;
   [[nodiscard]] const std::unordered_map<std::string, std::shared_ptr<Type>> &GetMembers() const;
   bool operator==(const Typename &other) const;
@@ -64,6 +66,7 @@ class Typename {
   const std::string name_{};
   std::unordered_map<std::string, std::shared_ptr<Type>> member_{};
   std::unordered_map<std::string, std::shared_ptr<Function>> function_{};
+  std::unordered_map<std::string, int> index_{};
 };
 
 std::shared_ptr<Typename> GetStringTypename();

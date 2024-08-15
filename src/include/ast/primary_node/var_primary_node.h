@@ -19,8 +19,9 @@ class VarPrimaryNode : public PrimaryNode {
     null_ = false;
   }
   [[nodiscard]] const std::string &GetName() const { return name_; }
+  void Rename(std::string name) { name_ = std::move(name); }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
-  const std::string name_;
+  std::string name_;
 };

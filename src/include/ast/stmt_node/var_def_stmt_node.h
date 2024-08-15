@@ -21,12 +21,12 @@ class VarDefStmtNode : public StmtNode {
         var_name_(std::move(var_name)),
         initial_value_(std::move(initial_value)) {}
   [[nodiscard]] const TypeType &GetType() const { return type_name_; }
-  [[nodiscard]] const std::vector<std::string> &GetVarName() const { return var_name_; }
+  std::vector<std::string> &GetVarName() { return var_name_; }
   std::vector<std::shared_ptr<ExprNode>> &GetInitialValue() { return initial_value_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   const TypeType type_name_;
-  const std::vector<std::string> var_name_;
+  std::vector<std::string> var_name_;
   std::vector<std::shared_ptr<ExprNode>> initial_value_;
 };
