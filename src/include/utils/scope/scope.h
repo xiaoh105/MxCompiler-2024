@@ -40,11 +40,14 @@ class Scope {
   void DefineVar(std::string name, Type type, const Position &pos);
   [[nodiscard]] bool HasVar(const std::string &name) const;
   [[nodiscard]] std::optional<Type> GetVar(const std::string &name) const;
+  [[nodiscard]] int GetIndex(const std::string &name);
   Scope &operator=(const Scope &other) = delete;
   Scope &operator=(Scope &&other) noexcept;
   std::unique_ptr<Scope> &GetParent();
 
  private:
+  std::shared_ptr<std::unordered_map<std::string, int>> index_;
   std::unordered_map<std::string, Type> local_;
+  std::unordered_map<std::string, int> current_index_;
   std::unique_ptr<Scope> parent_scope_;
 };

@@ -96,6 +96,7 @@ void SemanticChecker::visit(VarPrimaryNode *node) {
     throw UndefinedIdentifier(node->GetPos());
   }
   node->SetType(std::make_shared<Type>(std::move(var.value())));
+  node->Rename(name + "." + std::to_string(scope_.GetIndex(name)));
 }
 
 void SemanticChecker::visit(ThisPrimaryNode *node) {
@@ -575,6 +576,7 @@ void SemanticChecker::visit(VarDefStmtNode *node) {
       }
     }
     scope_.DefineVar(var_name[i], type, node->GetPos());
+    var_name[i] += "." + std::to_string(scope_.GetIndex(var_name[i]));
   }
 }
 
@@ -691,6 +693,7 @@ void SemanticChecker::visit(VarDefNode *node) {
   auto &expr = node->GetInitialValue();
   for (int i = 0; i < var_name.size(); ++i) {
     scope_.DefineVar(var_name[i], var_type, node->GetPos());
+    var_name[i] += "." + std::to_string(scope_.GetIndex(var_name[i]));
     if (expr[i] == nullptr) {
       continue;
     }

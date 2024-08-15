@@ -15,4 +15,12 @@
   - [x] Type Collector(8/9)
   - [x] Function Collector(8/9)
 - [x] Semantic Check(8/10)
-- [ ] Main Function(8/10 done, debugging)
+- [x] Main Function(8/10 done, 8/12 Passes OJ tests)
+
+## Codegen
+### AST To IR
+- [ ] IR Node Design
+  - [ ] Structure Design
+  - [ ] Code Frame
+- [ ] IR Generator
+### IR To RISC-V

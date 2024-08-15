@@ -29,6 +29,7 @@ void SymbolCollector::visit(ClassDefNode *node) {
   for (const auto &stmt : node->GetClassStmt()) {
     stmt->accept(this);
   }
+  current_class_->CreateIndex();
   current_class_ = nullptr;
 }
 

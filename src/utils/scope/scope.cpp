@@ -64,13 +64,22 @@ std::optional<Function> GlobalScope::GetFunction(const std::string &name) {
 }
 
 Scope::Scope(std::unique_ptr<Scope> parent_scope)
-    : parent_scope_(std::move(parent_scope)) {}
+    : parent_scope_(std::move(parent_scope)) {
+  if (parent_scope_ == nullptr) {
+    index_ = std::make_shared<std::unordered_map<std::string, int>>(std::unordered_map<std::string, int>{});
+  } else {
+    index_ = parent_scope_->index_;
+  }
+}
 
 Scope::Scope(Scope &&other) noexcept
-    : local_(std::move(other.local_)),
+    : index_(std::move(other.index_)),
+      local_(std::move(other.local_)),
+      current_index_(std::move(other.current_index_)),
       parent_scope_(std::move(other.parent_scope_)) {}
 
 void Scope::DefineVar(std::string name, Type type, const Position &pos) {
+  current_index_.emplace(name, index_->operator[](name)++);
   auto result = local_.emplace(std::move(name), std::move(type)).second;
   if (!result) {
     throw MultipleDef(pos);
@@ -87,13 +96,23 @@ std::optional<Type> Scope::GetVar(const std::string &name) const {
   return parent_scope_ == nullptr ? std::nullopt : std::optional(parent_scope_->GetVar(name));
 }
 
+int Scope::GetIndex(const std::string &name) {
+  auto it = current_index_.find(name);
+  if (it != current_index_.end()) {
+    return it->second;
+  }
+  return parent_scope_->GetIndex(name);
+}
+
 std::unique_ptr<Scope> &Scope::GetParent() { return parent_scope_; }
 
 Scope &Scope::operator=(Scope &&other) noexcept {
   if (this == &other) {
     return *this;
   }
+  index_ = std::move(other.index_);
   local_ = std::move(other.local_);
+  current_index_ = std::move(other.current_index_);
   parent_scope_ = std::move(other.parent_scope_);
   return *this;
 }
