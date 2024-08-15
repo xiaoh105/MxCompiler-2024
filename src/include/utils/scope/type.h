@@ -71,6 +71,8 @@ class Typename {
 
 std::shared_ptr<Typename> GetStringTypename();
 
+std::string GetIRTypename(const Type &type);
+
 const std::shared_ptr<Typename> kIntTypename = std::make_shared<Typename>("int");
 const std::shared_ptr<Typename> kBoolTypename = std::make_shared<Typename>("bool");
 const std::shared_ptr<Typename> kVoidTypename = std::make_shared<Typename>("void");

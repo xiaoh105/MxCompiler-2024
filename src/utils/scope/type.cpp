@@ -104,3 +104,19 @@ bool Type::operator==(const Type &other) const {
 bool Type::operator!=(const Type &other) const {
   return *type_name_ != *other.type_name_ || dim_ != other.dim_;
 }
+
+std::string GetIRTypename(const Type &type) {
+  if (type.GetDim() > 0 || type == kStringType) {
+    return "ptr";
+  }
+  if (type == kIntType) {
+    return "i32";
+  }
+  if (type == kBoolType) {
+    return "i1";
+  }
+  if (type == kVoidType) {
+    return "void";
+  }
+  return "struct." + type.GetTypename()->GetName();
+}

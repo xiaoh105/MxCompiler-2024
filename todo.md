@@ -20,7 +20,11 @@
 ## Codegen
 ### AST To IR
 - [ ] IR Node Design
-  - [ ] Structure Design
   - [ ] Code Frame
+    - [ ] Program
+    - [ ] Function
+    - [ ] Block(Incomplete)
+    - [ ] Stmt(Done: Branch)
+    - [x] Var
 - [ ] IR Generator
 ### IR To RISC-V
