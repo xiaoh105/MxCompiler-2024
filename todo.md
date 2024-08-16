@@ -24,7 +24,7 @@
     - [ ] Program
     - [ ] Function
     - [ ] Block(Incomplete)
-    - [ ] Stmt(Left: `getelementptr`, `icmp`, `call`, TODO: change ptr to more pragmatic pointers)
+    - [x] Stmt
     - [x] Var
 - [ ] IR Generator
 ### IR To RISC-V
