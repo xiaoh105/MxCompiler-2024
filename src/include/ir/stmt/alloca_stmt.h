@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ir/stmt/stmt.h"
+#include "ir/var/register.h"
 
 /**
  * IR node for "alloca" statements

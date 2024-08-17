@@ -6,6 +6,8 @@
  */
 #pragma once
 
+#include <string>
+
 /**
  * IR node for variables and constants
  */

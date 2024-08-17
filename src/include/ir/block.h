@@ -6,6 +6,8 @@
  */
 #pragma once
 
+#include <vector>
+
 #include "ir/stmt/branch_stmt/branch_stmt.h"
 
 /**
