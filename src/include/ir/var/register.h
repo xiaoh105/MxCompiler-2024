@@ -22,6 +22,17 @@ public:
   [[nodiscard]] std::string GetType() const override {
     return GetIRTypename(type_);
   }
+  void DefineGlobal() const {
+    assert(global_ == true);
+    std::cout << GetName << " = global " << GetType() << " ";
+    if (type_ == kIntType) {
+      std::cout << 0 << std::endl;
+    } else if (type_ == kBoolType) {
+      std::cout << "false" << std::endl;
+    } else {
+      std::cout << "null" << std::endl;
+    }
+  }
 
 private:
    const Type type_;

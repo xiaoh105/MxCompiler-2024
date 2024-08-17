@@ -118,5 +118,5 @@ std::string GetIRTypename(const Type &type) {
   if (type == kVoidType) {
     return "void";
   }
-  return "struct." + type.GetTypename()->GetName();
+  return "%struct." + type.GetTypename()->GetName();
 }

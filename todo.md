@@ -19,12 +19,11 @@
 
 ## Codegen
 ### AST To IR
-- [ ] IR Node Design
-  - [ ] Code Frame
-    - [ ] Program
-    - [ ] Function
-    - [ ] Block(Incomplete)
-    - [x] Stmt
-    - [x] Var
+- [x] IR Node Design(8/17)
+  - [x] Program
+  - [x] Function
+  - [x] Block(Incomplete)
+  - [x] Stmt
+  - [x] Var
 - [ ] IR Generator
 ### IR To RISC-V

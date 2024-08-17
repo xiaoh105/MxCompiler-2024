@@ -14,8 +14,18 @@
 class Block {
  public:
   Block() = delete;
-  Block(std::string label, std::vector<std::unique_ptr<Stmt>> stmts, std::unique_ptr<BranchStmt> branch_stmt)
-      : label_(std::move(label)), stmts_(std::move(stmts)), branch_stmt_(std::move(branch_stmt)) {}
+  Block(std::string label) : label_(std::move(label)) {}
+  void Append(std::unique_ptr<Stmt> stmt) {
+    if (branch_stmt_ != nullptr) {
+      return;
+    }
+    auto branch = dynamic_cast<BranchStmt *>(stmt.get());
+    if (branch != nullptr) {
+      branch_stmt_ = std::unique_ptr<BranchStmt>(dynamic_cast<BranchStmt *>(stmt.release()));
+    } else {
+      stmts_.push_back(std::move(stmt));
+    }
+  }
   [[nodiscard]] const std::string &GetLabel() const { return label_; }
   void Print() const {
     std::cout << label_ << ": " << std::endl;
@@ -27,6 +37,6 @@ class Block {
 
  private:
   const std::string label_;
-  const std::vector<std::unique_ptr<Stmt>> stmts_;
-  const std::unique_ptr<BranchStmt> branch_stmt_;
+  std::vector<std::unique_ptr<Stmt>> stmts_;
+  std::unique_ptr<BranchStmt> branch_stmt_;
 };
