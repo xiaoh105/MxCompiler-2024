@@ -39,7 +39,7 @@
   - [x] TODO: Rewrite Type and Get TypeName/DefName functions
   - [ ] TODO: Change AST nodes accordingly
       - [x] TODO: Add "class member" attribute to all VarPrimaryNodes(8/18)
-      - [ ] TODO: Add "value" attribute to all primary and expr nodes for IR builder.
+      - [x] TODO: Add "value" attribute to all primary and expr nodes for IR builder(8/18)
   - [ ] TODO: (Optimize) Add `const` attribute to all AST nodes and calculate them in compile time for better efficiency.
 
 ### IR To RISC-V

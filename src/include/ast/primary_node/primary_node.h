@@ -9,6 +9,8 @@
 #include "ast/ast_node.h"
 #include "utils/scope/type.h"
 
+class Register;
+
 /**
  * AST node for atomic expressions.
  * Note: In this class (and its deriving classes), you need to manage member type_ manually during semantic check,
@@ -33,10 +35,14 @@ class PrimaryNode : public ASTNode {
     }
     type_ = std::move(type);
   }
+  void SetRegister(std::shared_ptr<Register> value) { value_ = std::move(value); }
+  const std::shared_ptr<Register> &GetRegister() const { return value_; }
 
  protected:
   // The type of the node, nullptr for 'null'.
   std::shared_ptr<Type> type_{nullptr};
   bool lvalue_{false};
   bool null_{false};
+
+  std::shared_ptr<Register> value_{nullptr};
 };

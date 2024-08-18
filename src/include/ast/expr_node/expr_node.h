@@ -9,6 +9,8 @@
 #include "ast/ast_node.h"
 #include "utils/scope/type.h"
 
+class Register;
+
 /**
  * Virtual class regulating the behaviour of AST expression nodes
  * Note: In this class (and its deriving classes), you need to manage type_, lvalue_ and null_ manually during semantic
@@ -34,10 +36,14 @@ class ExprNode : public ASTNode {
   }
   void SetAssignable(bool assignable) { lvalue_ = assignable; }
   void SetNull(bool is_null) { null_ = is_null; }
+  void SetRegister(std::shared_ptr<Register> value) { value_ = std::move(value); }
+  const std::shared_ptr<Register> &GetRegister() const { return value_; }
 
  protected:
   // The type of the node, nullptr for 'null' literal
   std::shared_ptr<Type> type_{nullptr};
   bool lvalue_{false};
   bool null_{false};
+
+  std::shared_ptr<Register> value_{nullptr};
 };
