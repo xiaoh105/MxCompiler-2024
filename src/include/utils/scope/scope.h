@@ -34,12 +34,13 @@ class GlobalScope {
 class Scope {
  public:
   Scope() = delete;
-  Scope(std::unique_ptr<Scope> parent_scope = nullptr);
+  Scope(std::unique_ptr<Scope> parent_scope = nullptr, bool is_class = false);
   Scope(const Scope &other) = delete;
   Scope(Scope &&other) noexcept;
   void DefineVar(std::string name, Type type, const Position &pos);
   [[nodiscard]] bool HasVar(const std::string &name) const;
   [[nodiscard]] std::optional<Type> GetVar(const std::string &name) const;
+  [[nodiscard]] bool IsClassMember(const std::string &name) const;
   [[nodiscard]] int GetIndex(const std::string &name);
   Scope &operator=(const Scope &other) = delete;
   Scope &operator=(Scope &&other) noexcept;
@@ -50,4 +51,5 @@ class Scope {
   std::unordered_map<std::string, Type> local_;
   std::unordered_map<std::string, int> current_index_;
   std::unique_ptr<Scope> parent_scope_;
+  bool class_member_{false};
 };

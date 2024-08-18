@@ -20,8 +20,11 @@ class VarPrimaryNode : public PrimaryNode {
   }
   [[nodiscard]] const std::string &GetName() const { return name_; }
   void Rename(std::string name) { name_ = std::move(name); }
+  void SetClassName(std::shared_ptr<Typename> class_name) { class_name_ = std::move(class_name); }
+  std::shared_ptr<Typename> &GetClassName() { return class_name_; }
   void accept(ASTVisitor *visitor) final { visitor->visit(this); }
 
  private:
   std::string name_;
+  std::shared_ptr<Typename> class_name_{nullptr};
 };

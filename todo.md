@@ -37,7 +37,9 @@
   - Since array constants isn't too long, initializing element by element may be better than using array constant
   - Initializing jagged array MUST NOT be done in a C++-style way(e.g. using `memcpy` or think elements in jagged array are all consecutive). It must be done dim by dim.
   - [x] TODO: Rewrite Type and Get TypeName/DefName functions
-  - [ ] TODO: Add "class member" attribute to all VarPrimaryNodes
   - [ ] TODO: Change AST nodes accordingly
-  - [ ] TODO: (Optimize) Add a `const` attribute to all AST nodes and calculate them in compile time for better efficiency.
+      - [x] TODO: Add "class member" attribute to all VarPrimaryNodes(8/18)
+      - [ ] TODO: Add "value" attribute to all primary and expr nodes for IR builder.
+  - [ ] TODO: (Optimize) Add `const` attribute to all AST nodes and calculate them in compile time for better efficiency.
+
 ### IR To RISC-V

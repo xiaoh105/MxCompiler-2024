@@ -63,8 +63,8 @@ std::optional<Function> GlobalScope::GetFunction(const std::string &name) {
   return it == function_.end() ? std::nullopt : std::optional(it->second);
 }
 
-Scope::Scope(std::unique_ptr<Scope> parent_scope)
-    : parent_scope_(std::move(parent_scope)) {
+Scope::Scope(std::unique_ptr<Scope> parent_scope, bool is_class)
+    : parent_scope_(std::move(parent_scope)), class_member_(is_class) {
   if (parent_scope_ == nullptr) {
     index_ = std::make_shared<std::unordered_map<std::string, int>>(std::unordered_map<std::string, int>{});
   } else {
@@ -76,7 +76,8 @@ Scope::Scope(Scope &&other) noexcept
     : index_(std::move(other.index_)),
       local_(std::move(other.local_)),
       current_index_(std::move(other.current_index_)),
-      parent_scope_(std::move(other.parent_scope_)) {}
+      parent_scope_(std::move(other.parent_scope_)),
+      class_member_(other.class_member_) {}
 
 void Scope::DefineVar(std::string name, Type type, const Position &pos) {
   current_index_.emplace(name, index_->operator[](name)++);
@@ -94,6 +95,10 @@ std::optional<Type> Scope::GetVar(const std::string &name) const {
     return it->second;
   }
   return parent_scope_ == nullptr ? std::nullopt : std::optional(parent_scope_->GetVar(name));
+}
+
+bool Scope::IsClassMember(const std::string &name) const {
+  return local_.contains(name) ? class_member_ : parent_scope_->IsClassMember(name);
 }
 
 int Scope::GetIndex(const std::string &name) {

@@ -95,6 +95,9 @@ void SemanticChecker::visit(VarPrimaryNode *node) {
   if (var == std::nullopt) {
     throw UndefinedIdentifier(node->GetPos());
   }
+  if (scope_.IsClassMember(name)) {
+    node->SetClassName(current_class_);
+  }
   node->SetType(std::make_shared<Type>(std::move(var.value())));
   node->Rename(name + "." + std::to_string(scope_.GetIndex(name)));
 }
