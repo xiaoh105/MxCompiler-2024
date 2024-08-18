@@ -113,7 +113,7 @@ std::string GetIRTypename(const Type &type) {
     return "i32";
   }
   if (type == kBoolType) {
-    return "i1";
+    return "i8";
   }
   if (type == kVoidType) {
     return "void";

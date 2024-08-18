@@ -22,8 +22,22 @@
 - [x] IR Node Design(8/17)
   - [x] Program
   - [x] Function
-  - [x] Block(Incomplete)
+  - [x] Block
   - [x] Stmt
   - [x] Var
 - [ ] IR Generator
+  
+
+#### Notes:
+  - Class member must be tagged so that IR knows whether to dereference `this`
+  - Array is represented by a pointer to an i8 array.
+    - Size is stored in the first 4 bytes for efficiency
+    - Elements are cast to i8 with `bitcast`, and are cast back in `GEP` and `load/store`
+    - As a result, `bool` arrays are represented by `i8` array. They're cast to `i1` with `trunk`
+  - Since array constants isn't too long, initializing element by element may be better than using array constant
+  - Initializing jagged array MUST NOT be done in a C++-style way(e.g. using `memcpy` or think elements in jagged array are all consecutive). It must be done dim by dim.
+  - [x] TODO: Rewrite Type and Get TypeName/DefName functions
+  - [ ] TODO: Add "class member" attribute to all VarPrimaryNodes
+  - [ ] TODO: Change AST nodes accordingly
+  - [ ] TODO: (Optimize) Add a `const` attribute to all AST nodes and calculate them in compile time for better efficiency.
 ### IR To RISC-V

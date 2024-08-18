@@ -11,6 +11,7 @@
 #include <string>
 #include <optional>
 #include <unordered_map>
+#include <vector>
 
 // Enumerate builtin classes and handle Uninitialized situation.
 enum TypeInfo : int { kUnknown = 0, kBool, kInt, kVoid, kString, kOther };
