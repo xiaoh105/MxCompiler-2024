@@ -15,9 +15,12 @@ class LoadStmt : public Stmt {
  public:
   LoadStmt() = delete;
   LoadStmt(std::shared_ptr<Register> res, std::shared_ptr<Register> ptr)
-      : result_(std::move(res)), ptr_(std::move(ptr)) {}
+      : result_(std::move(res)), ptr_(std::move(ptr)) {
+    assert(ptr_->GetType().IsPtrOf(result_->GetType()));
+  }
   void Print() const override {
-    std::cout << result_->GetName() << " = load " << result_->GetType() << ", ptr " << ptr_->GetName() << std::endl;
+    std::cout << result_->GetName() << " = load " << result_->GetType().GetElementIRTypename() << ", ptr "
+              << ptr_->GetName() << std::endl;
   }
 
  private:

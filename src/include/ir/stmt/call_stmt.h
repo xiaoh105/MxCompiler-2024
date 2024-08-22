@@ -32,16 +32,17 @@ class CallStmt final : public Stmt {
         if (i != 0) {
           std::cout << ", ";
         }
-        std::cout << arguments_[i]->GetType() << " " << arguments_[i]->GetName();
+        std::cout << arguments_[i]->GetType().GetIRTypename() << " " << arguments_[i]->GetName();
       }
       std::cout << ")" << std::endl;
     } else {
-      std::cout << result_->GetName() << " = call " << function_.lock()->GetReturnType() << " " << function_.lock()->GetName() << "(";
+      std::cout << result_->GetName() << " = call " << function_.lock()->GetReturnType().GetIRTypename() << " "
+                << function_.lock()->GetName() << "(";
       for (int i = 0; i < arguments_.size(); i++) {
         if (i != 0) {
           std::cout << ", ";
         }
-        std::cout << arguments_[i]->GetType() << " " << arguments_[i]->GetName();
+        std::cout << arguments_[i]->GetType().GetIRTypename() << " " << arguments_[i]->GetName();
       }
       std::cout << ")" << std::endl;
     }

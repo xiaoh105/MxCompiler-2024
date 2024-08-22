@@ -19,9 +19,10 @@ class GetElementPtrStmt final : public Stmt {
                     std::vector<std::shared_ptr<Var>> index)
       : result_(std::move(res)), ptr_(std::move(ptr)), index_(std::move(index)) {}
   void Print() const override {
-    std::cout << result_->GetName() << " = getelementptr " << ptr_->GetType() << ", ptr " << ptr_->GetName();
+    std::cout << result_->GetName() << " = getelementptr " << ptr_->GetType().GetElementIRTypename() << ", ptr " << ptr_->GetName();
     for (const auto &item : index_) {
-      std::cout << ", " << item->GetType() << " " << item->GetName();
+      assert(item->GetType() == kIRIntType);
+      std::cout << ", " << item->GetType().GetIRTypename() << " " << item->GetName();
     }
     std::cout << std::endl;
   }

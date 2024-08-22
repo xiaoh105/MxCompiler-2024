@@ -7,10 +7,9 @@
 #pragma once
 
 #include <cassert>
-#include <iostream>
 
+#include "ir/var/constant.h"
 #include "ir/var/var.h"
-#include "utils/scope/type.h"
 
 /**
  * IR node for global and local variables
@@ -18,24 +17,24 @@
 class Register final : public Var {
  public:
   Register() = delete;
-  Register(Type type, std::string name, bool global)
-      : type_(std::move(type)), name_(std::move(name)), global_(global) {}
-  [[nodiscard]] std::string GetName() const override { return (global_ ? "@" : "%") + name_; }
-  [[nodiscard]] std::string GetType() const override { return GetIRTypename(type_); }
-  void DefineGlobal() const {
-    assert(global_ == true);
-    std::cout << GetName() << " = global " << GetType() << " ";
-    if (type_ == kIntType) {
-      std::cout << 0 << std::endl;
-    } else if (type_ == kBoolType) {
-      std::cout << "false" << std::endl;
+  Register(IRType type, std::string name, bool global)
+      : Var(false), type_(std::move(type)), name_((global ? "@" : "%") + std::move(name)), global_(global) {
+    assert(type_.GetBaseType() != kIRVoidBase && type_.GetBaseType() != kIRNullBase);
+    if (type_ == kIRIntType || type_ == kIRBoolType) {
+      init_val_ = std::make_shared<Constant>(0);
     } else {
-      std::cout << "null" << std::endl;
+      init_val_ = std::make_shared<Constant>(nullptr);
     }
   }
+  Register(IRType type, std::string name, bool global, std::shared_ptr<Constant> init_val)
+      : Var(false), type_(std::move(type)), name_(std::move(name)), global_(global), init_val_(std::move(init_val)) {}
+  [[nodiscard]] const std::shared_ptr<Constant> &GetInitVal() const { return init_val_; }
+  [[nodiscard]] std::string GetName() const override { return name_; }
+  [[nodiscard]] IRType GetType() const override { return type_; }
 
  private:
-  const Type type_;
+  const IRType type_;
   const std::string name_;
-  bool global_{false};
+  const bool global_{false};
+  std::shared_ptr<Constant> init_val_{nullptr};
 };

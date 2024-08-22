@@ -49,14 +49,12 @@ class Typename {
   explicit Typename(std::string name);
   Typename(const Typename &other) = default;
   Typename(Typename &&other) noexcept = default;
-  void CreateIndex();
   const std::string &GetName() const;
   void AddMember(std::string member_name, Type type);
   void AddFunction(std::string function_name, Function function);
   bool HasMember(const std::string &name) const;
   bool HasFunction(const std::string &name) const;
   std::optional<Type> GetMember(const std::string &name) const;
-  int GetMemberIndex(const std::string &name) const;
   std::optional<Function> GetFunction(const std::string &name) const;
   [[nodiscard]] const std::unordered_map<std::string, std::shared_ptr<Type>> &GetMembers() const;
   bool operator==(const Typename &other) const;
@@ -77,7 +75,7 @@ std::string GetIRTypename(const Type &type);
 const std::shared_ptr<Typename> kIntTypename = std::make_shared<Typename>("int");
 const std::shared_ptr<Typename> kBoolTypename = std::make_shared<Typename>("bool");
 const std::shared_ptr<Typename> kVoidTypename = std::make_shared<Typename>("void");
-const std::shared_ptr<Typename> kStringTypename = std::move(GetStringTypename());
+const std::shared_ptr<Typename> kStringTypename = GetStringTypename();
 
 const Type kIntType(kIntTypename, 0);
 const Type kBoolType(kBoolTypename, 0);

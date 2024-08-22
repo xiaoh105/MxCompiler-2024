@@ -9,7 +9,7 @@
 #include "ast/ast_node.h"
 #include "utils/scope/type.h"
 
-class Register;
+class Var;
 
 /**
  * AST node for atomic expressions.
@@ -35,8 +35,8 @@ class PrimaryNode : public ASTNode {
     }
     type_ = std::move(type);
   }
-  void SetRegister(std::shared_ptr<Register> value) { value_ = std::move(value); }
-  const std::shared_ptr<Register> &GetRegister() const { return value_; }
+  void SetVar(std::shared_ptr<Var> value) { value_ = std::move(value); }
+  [[nodiscard]] const std::shared_ptr<Var> &GetVar() const { return value_; }
 
  protected:
   // The type of the node, nullptr for 'null'.
@@ -44,5 +44,5 @@ class PrimaryNode : public ASTNode {
   bool lvalue_{false};
   bool null_{false};
 
-  std::shared_ptr<Register> value_{nullptr};
+  std::shared_ptr<Var> value_{nullptr};
 };

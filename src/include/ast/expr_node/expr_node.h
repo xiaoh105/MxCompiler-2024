@@ -9,7 +9,7 @@
 #include "ast/ast_node.h"
 #include "utils/scope/type.h"
 
-class Register;
+class Var;
 
 /**
  * Virtual class regulating the behaviour of AST expression nodes
@@ -36,8 +36,8 @@ class ExprNode : public ASTNode {
   }
   void SetAssignable(bool assignable) { lvalue_ = assignable; }
   void SetNull(bool is_null) { null_ = is_null; }
-  void SetRegister(std::shared_ptr<Register> value) { value_ = std::move(value); }
-  const std::shared_ptr<Register> &GetRegister() const { return value_; }
+  void SetVar(std::shared_ptr<Var> value) { value_ = std::move(value); }
+  [[nodiscard]] const std::shared_ptr<Var> &GetVar() const { return value_; }
 
  protected:
   // The type of the node, nullptr for 'null' literal
@@ -45,5 +45,5 @@ class ExprNode : public ASTNode {
   bool lvalue_{false};
   bool null_{false};
 
-  std::shared_ptr<Register> value_{nullptr};
+  std::shared_ptr<Var> value_{nullptr};
 };

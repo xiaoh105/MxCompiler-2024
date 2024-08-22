@@ -17,9 +17,12 @@ class ICmpStmt final : public Stmt {
   enum class OpType : int { kUnknown = 0, kEq, kNe, kSgt, kSge, kSlt, kSle };
   ICmpStmt() = delete;
   ICmpStmt(std::shared_ptr<Register> res, OpType op_type, std::shared_ptr<Var> lhs, std::shared_ptr<Var> rhs)
-      : result_(std::move(res)), op_type_(op_type), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
+      : result_(std::move(res)), op_type_(op_type), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {
+    assert(result_->GetType() == kIRBoolType);
+    assert(lhs_->GetType() == rhs_->GetType());
+  }
   void Print() const override {
-    std::cout << result_->GetName() << " = icmp " << GetOpName(op_type_) << " " << lhs_->GetType() << " "
+    std::cout << result_->GetName() << " = icmp " << GetOpName(op_type_) << " " << lhs_->GetType().GetIRTypename() << " "
               << lhs_->GetName() << ", " << rhs_->GetName() << std::endl;
   }
 

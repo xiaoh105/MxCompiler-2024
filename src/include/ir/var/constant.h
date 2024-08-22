@@ -14,24 +14,32 @@
  * IR node for constants
  */
 class Constant final : public Var {
-public:
+ public:
   Constant() = delete;
-  explicit Constant(int val) : value_(val), is_int_(true) {}
-  explicit Constant(bool val) : value_(val) {}
-  [[nodiscard]] bool IsInt() const { return is_int_; }
-  [[nodiscard]] bool GetBool() const { return std::get<bool>(value_); }
-  [[nodiscard]] int GetInt() const { return std::get<int>(value_); }
+  explicit Constant(void *) : Var(true), type_(kIRNullType) {}
+  explicit Constant(bool value) : Var(true), type_(kIRBoolType), value_(value) {}
+  explicit Constant(int value) : Var(true), type_(kIRIntType), value_(value) {}
+  explicit Constant(std::string name, std::string val)
+      : Var(true), type_(kIRStringType), name_(std::move(name)), value_(std::move(val)) {}
+  [[nodiscard]] IRType GetType() const override { return type_; }
   [[nodiscard]] std::string GetName() const override {
-    if (is_int_) {
+    if (type_ == kIRIntType) {
       return std::to_string(std::get<int>(value_));
     }
-    return std::to_string(std::get<bool>(value_));
-  }
-  [[nodiscard]] std::string GetType() const override {
-    return is_int_ ? "i32" : "i1";
+    if (type_ == kIRBoolType) {
+      return std::to_string(std::get<bool>(value_));
+    }
+    if (type_ == kIRStringType) {
+      return name_;
+    }
+    if (type_ == kIRNullType) {
+      return "null";
+    }
+    assert(false);
   }
 
-private:
-  const bool is_int_{false};
-  const std::variant<int, bool> value_;
+ private:
+  const IRType type_;
+  const std::string name_;
+  const std::variant<int, bool, std::string> value_;
 };

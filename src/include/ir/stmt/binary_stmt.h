@@ -16,9 +16,11 @@ class BinaryStmt final : public Stmt {
   enum class OpType : int { kUnknown = 0, kAdd, kSub, kMul, kSDiv, kSRem, kShiftL, kShiftR, kAnd, kOr, kXor };
   BinaryStmt() = delete;
   BinaryStmt(std::shared_ptr<Register> res, OpType op, std::shared_ptr<Var> lhs, std::shared_ptr<Var> rhs)
-      : result_(std::move(res)), op_type_(op), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
+      : result_(std::move(res)), op_type_(op), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {
+    assert(lhs_->GetType() == rhs_->GetType());
+  }
   void Print() const override {
-    std::cout << result_->GetName() << " = " << GetOpName(op_type_) << " " << lhs_->GetType() << " " << lhs_->GetName()
+    std::cout << result_->GetName() << " = " << GetOpName(op_type_) << " " << lhs_->GetType().GetIRTypename() << " " << lhs_->GetName()
               << ", " << rhs_->GetName() << std::endl;
   }
 

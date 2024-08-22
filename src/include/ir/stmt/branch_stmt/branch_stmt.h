@@ -11,7 +11,7 @@
 /**
  * Virtual class for branch statements.
  */
-class BranchStmt : Stmt {
+class BranchStmt : public Stmt {
  public:
   BranchStmt() = default;
   void Print() const override = 0;

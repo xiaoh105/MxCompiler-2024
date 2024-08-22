@@ -8,13 +8,19 @@
 
 #include <string>
 
+#include "ir/type/ir_type.h"
+
 /**
  * IR node for variables and constants
  */
 class Var {
  public:
-  Var() = default;
-  virtual ~Var() = 0;
+  Var() = delete;
+  explicit Var(bool is_const) : is_const_(is_const) {};
+  virtual ~Var() = default;
+  [[nodiscard]] virtual IRType GetType() const = 0;
   [[nodiscard]] virtual std::string GetName() const = 0;
-  [[nodiscard]] virtual std::string GetType() const = 0;
+
+ protected:
+  bool is_const_;
 };

@@ -29,17 +29,7 @@
   
 
 #### Notes:
-  - Class member must be tagged so that IR knows whether to dereference `this`
-  - Array is represented by a pointer to an i8 array.
-    - Size is stored in the first 4 bytes for efficiency
-    - Elements are cast to i8 with `bitcast`, and are cast back in `GEP` and `load/store`
-    - As a result, `bool` arrays are represented by `i8` array. They're cast to `i1` with `trunk`
-  - Since array constants isn't too long, initializing element by element may be better than using array constant
-  - Initializing jagged array MUST NOT be done in a C++-style way(e.g. using `memcpy` or think elements in jagged array are all consecutive). It must be done dim by dim.
-  - [x] TODO: Rewrite Type and Get TypeName/DefName functions
-  - [ ] TODO: Change AST nodes accordingly
-      - [x] TODO: Add "class member" attribute to all VarPrimaryNodes(8/18)
-      - [x] TODO: Add "value" attribute to all primary and expr nodes for IR builder(8/18)
-  - [ ] TODO: (Optimize) Add `const` attribute to all AST nodes and calculate them in compile time for better efficiency.
+- Array representation: An array created by `malloc`. Size is 4 bytes before its beginning. Only C lib can access it.
+  - String: An exception. It does not hold an internal size. Instead, it is ended with a `/0`.
 
 ### IR To RISC-V

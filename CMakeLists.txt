@@ -13,6 +13,8 @@ if (ENABLE_OJ_MODE)
   add_definitions(-DOJ)
 endif ()
 
+add_compile_options(-Wall -Wextra -Wpedantic)
+
 add_executable(MxCompiler src/main.cpp
         src/parser/MxParser.cpp
         src/parser/MxLexer.cpp
@@ -25,6 +27,7 @@ add_executable(MxCompiler src/main.cpp
         src/frontend/ast_builder.cpp
         src/frontend/class_collector.cpp
         src/frontend/symbol_collector.cpp
-        src/frontend/semantic_checker.cpp)
+        src/frontend/semantic_checker.cpp
+        src/backend/ir_builder.cpp)
 
 target_link_libraries(MxCompiler antlr4-runtime)

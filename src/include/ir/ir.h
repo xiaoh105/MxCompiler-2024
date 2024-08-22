@@ -23,8 +23,9 @@
 #include "ir/var/var.h"
 #include "ir/var/constant.h"
 #include "ir/var/register.h"
+#include "ir/var/var_manager.h"
+
+#include "ir/type/ir_type.h"
 
 #include "ir/block.h"
 #include "ir/function.h"
-#include "ir/program.h"
-#include "ir/struct.h"

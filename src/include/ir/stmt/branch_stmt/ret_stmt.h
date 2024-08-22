@@ -14,7 +14,7 @@ public:
   RetStmt(std::shared_ptr<Var> ret_val) : ret_val_(std::move(ret_val)) {}
   void Print() const override {
     if (ret_val_ != nullptr) {
-      std::cout << "ret " << ret_val_->GetType() << " " << ret_val_->GetName() << std::endl;
+      std::cout << "ret " << ret_val_->GetType().GetIRTypename() << " " << ret_val_->GetName() << std::endl;
     } else {
       std::cout << "ret void" << std::endl;
     }
