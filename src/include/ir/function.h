@@ -67,7 +67,7 @@ class IRFunction {
     }
     std::cout << "}" << std::endl;
   }
-  std::string AssignName(const std::string &name) { return name + "." + std::to_string(tag_index_[name]++); }
+  std::string AssignTag(const std::string &name) { return name + "." + std::to_string(tag_index_[name]++); }
 
  private:
   const IRType return_type_;
@@ -105,6 +105,14 @@ class FunctionManager {
     functions_.emplace("getInt", std::move(getInt));
     auto toString = std::make_shared<IRFunction>(kIRStringType, "toString",
                                                  std::vector<std::pair<IRType, std::string>>{{kIRIntType, "i"}}, true);
+    auto allocArrayInt =
+        std::make_shared<IRFunction>(kIRIntType.ToPtr(), "builtin.allocArrayInt",
+                                     std::vector<std::pair<IRType, std::string>>{{kIRIntType, "len"}}, true);
+    functions_.emplace("allocArrayInt", std::move(allocArrayInt));
+    auto allocArrayBool =
+        std::make_shared<IRFunction>(kIRBoolType.ToPtr(), "builtin.allocArrayBool",
+                                     std::vector<std::pair<IRType, std::string>>{{kIRIntType, "len"}}, true);
+    functions_.emplace("allocArrayBool", std::move(allocArrayBool));
   }
   void DefineFunction(std::shared_ptr<IRFunction> function) {
     auto res = functions_.emplace(function->GetName(), std::move(function)).second;

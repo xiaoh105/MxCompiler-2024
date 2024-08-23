@@ -13,6 +13,8 @@ int sprintf(char *str, const char *format, ...);
 
 void *malloc(size_t size);
 
+void *calloc(size_t num, size_t size);
+
 void print(const char *str) {
   printf("%s", str);
 }
@@ -45,4 +47,16 @@ const char *toString(int val) {
   char *str = malloc(16);
   sprintf(str, "%d", val);
   return str;
+}
+
+void *builtin_allocArrayInt(size_t len) {
+  int *ptr = calloc(len + 1, 4);
+  ptr[0] = len;
+  return ptr + 1;
+}
+
+void *builtin_allocArrayBool(size_t len) {
+  int *ptr = malloc(len + 4);
+  ptr[0] = len;
+  return ptr + 1;
 }

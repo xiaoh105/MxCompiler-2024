@@ -96,7 +96,7 @@ void SemanticChecker::visit(VarPrimaryNode *node) {
     throw UndefinedIdentifier(node->GetPos());
   }
   if (scope_.IsClassMember(name)) {
-    node->SetClassName(current_class_);
+    node->SetMember();
   }
   node->SetType(std::make_shared<Type>(std::move(var.value())));
   node->Rename(name + "." + std::to_string(scope_.GetIndex(name)));
@@ -720,7 +720,7 @@ void SemanticChecker::visit(ConstructorClassStmtNode *node) {
 }
 
 void SemanticChecker::visit(FunctionDefClassStmtNode *node) {
-  scope_ = {std::make_unique<Scope>(std::move(scope_))};
+  scope_ = {std::make_unique<Scope>(std::move(scope_)), true};
   auto func = current_class_->GetFunction(node->GetFuncName());
   if (func == std::nullopt) {
     throw std::runtime_error("Unidentified method name");

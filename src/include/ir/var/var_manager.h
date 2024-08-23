@@ -45,7 +45,10 @@ public:
     auto ret = std::make_shared<Register>(std::move(type), name, false);
     return local_reg_.emplace(std::move(name), std::move(ret)).first->second;
   }
-  const std::shared_ptr<Register> &FindVar(const std::string &name) {
+  bool HasVar(const std::string &name) {
+    return local_reg_.contains("%" + name) || global_reg_.contains("@" + name);
+  }
+  const std::shared_ptr<Register> &GetVar(const std::string &name) {
     auto it = local_reg_.find("%" + name);
     if (it != local_reg_.end()) {
       return it->second;

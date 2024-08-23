@@ -47,6 +47,11 @@ class IRBaseType {
   [[nodiscard]] virtual bool IsBuiltin() const = 0;
   [[nodiscard]] virtual bool IsTrivial() const = 0;
   virtual void Define() const = 0;
+  virtual void SetConstructor(const std::shared_ptr<IRFunction> &func) { constructor_ = func; }
+  virtual std::weak_ptr<IRFunction> &GetConstructor() { return constructor_; }
+
+private:
+  std::weak_ptr<IRFunction> constructor_;
 };
 
 class IRIntType final : public IRBaseType {
@@ -56,6 +61,9 @@ class IRIntType final : public IRBaseType {
   [[nodiscard]] std::pair<int, IRType> GetMember(const std::string &name) const override { assert(false); }
   [[nodiscard]] bool IsBuiltin() const override { return true; }
   [[nodiscard]] bool IsTrivial() const override { return true; }
+  void SetConstructor(const std::shared_ptr<IRFunction> &func) override {
+    assert(false);
+  }
   void Define() const override {}
 };
 
@@ -66,6 +74,9 @@ class IRBoolType final : public IRBaseType {
   [[nodiscard]] std::pair<int, IRType> GetMember(const std::string &name) const override { assert(false); }
   [[nodiscard]] bool IsBuiltin() const override { return true; }
   [[nodiscard]] bool IsTrivial() const override { return true; }
+  void SetConstructor(const std::shared_ptr<IRFunction> &func) override {
+    assert(false);
+  }
   void Define() const override {}
 };
 
@@ -76,6 +87,9 @@ class IRStringType final : public IRBaseType {
   [[nodiscard]] std::pair<int, IRType> GetMember(const std::string &name) const override { assert(false); }
   [[nodiscard]] bool IsBuiltin() const override { return true; }
   [[nodiscard]] bool IsTrivial() const override { return false; }
+  void SetConstructor(const std::shared_ptr<IRFunction> &func) override {
+    assert(false);
+  }
   void Define() const override {}
 };
 
@@ -86,6 +100,9 @@ class IRNullType final : public IRBaseType {
   [[nodiscard]] std::pair<int, IRType> GetMember(const std::string &name) const override { assert(false); }
   [[nodiscard]] bool IsBuiltin() const override { return true; }
   [[nodiscard]] bool IsTrivial() const override { return false; }
+  void SetConstructor(const std::shared_ptr<IRFunction> &func) override {
+    assert(false);
+  }
   void Define() const override {}
 };
 
@@ -96,13 +113,16 @@ class IRVoidType final : public IRBaseType {
   [[nodiscard]] std::pair<int, IRType> GetMember(const std::string &name) const override { assert(false); }
   [[nodiscard]] bool IsBuiltin() const override { return true; }
   [[nodiscard]] bool IsTrivial() const override { return false; }
+  void SetConstructor(const std::shared_ptr<IRFunction> &func) override {
+    assert(false);
+  }
   void Define() const override {}
 };
 
 class IRCustomType final : public IRBaseType {
  public:
   IRCustomType() = delete;
-  IRCustomType(std::string name) : class_name_(std::move(name)) {}
+  IRCustomType(std::string name) : class_name_("struct." + std::move(name)) {}
   void SetMembers(std::vector<std::pair<std::string, IRType>> member) { member_ = std::move(member); }
   [[nodiscard]] std::string GetIRTypename() const override { return class_name_; }
   [[nodiscard]] std::pair<int, IRType> GetMember(const std::string &name) const override {

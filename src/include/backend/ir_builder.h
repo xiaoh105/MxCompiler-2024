@@ -44,6 +44,8 @@ class IRBuilder final : public ASTVisitor {
   void visit(VarDefClassStmtNode *node) override;
 
  private:
+  std::shared_ptr<Register> CreateArray(std::size_t cur_dim, const std::shared_ptr<IRBaseType> &type,
+                                        const std::vector<std::shared_ptr<ExprNode>> &expr, std::size_t dim);
   std::shared_ptr<IRFunction> cur_func_{nullptr};
   std::shared_ptr<IRFunction> init_func_{nullptr};
   FunctionManager functions_;
