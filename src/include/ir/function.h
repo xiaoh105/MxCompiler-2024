@@ -27,6 +27,7 @@ class IRFunction {
   [[nodiscard]] const std::string &GetName() const { return name_; }
   [[nodiscard]] IRType GetReturnType() const { return return_type_; }
   [[nodiscard]] const std::vector<std::pair<IRType, std::string>> &GetArguments() const { return arguments_; }
+  std::shared_ptr<Block> &GetCurBlock() { return blocks_.back(); }
   void PushBlock(std::shared_ptr<Block> block) {
     assert(!builtin_);
     blocks_.push_back(std::move(block));
@@ -105,14 +106,24 @@ class FunctionManager {
     functions_.emplace("getInt", std::move(getInt));
     auto toString = std::make_shared<IRFunction>(kIRStringType, "toString",
                                                  std::vector<std::pair<IRType, std::string>>{{kIRIntType, "i"}}, true);
+    auto printBool =
+      std::make_shared<IRFunction>(kIRVoidType, "builtin.printBool", std::vector<std::pair<IRType, std::string>>{{kIRBoolType, "val"}}, true);
+    functions_.emplace("builtin.printBool", std::move(printBool));
     auto allocArrayInt =
         std::make_shared<IRFunction>(kIRIntType.ToPtr(), "builtin.allocArrayInt",
                                      std::vector<std::pair<IRType, std::string>>{{kIRIntType, "len"}}, true);
-    functions_.emplace("allocArrayInt", std::move(allocArrayInt));
+    functions_.emplace("builtin.allocArrayInt", std::move(allocArrayInt));
     auto allocArrayBool =
         std::make_shared<IRFunction>(kIRBoolType.ToPtr(), "builtin.allocArrayBool",
                                      std::vector<std::pair<IRType, std::string>>{{kIRIntType, "len"}}, true);
-    functions_.emplace("allocArrayBool", std::move(allocArrayBool));
+    functions_.emplace("builtin.allocArrayBool", std::move(allocArrayBool));
+    auto strcmp =
+      std::make_shared<IRFunction>(kIRIntType, "strcmp", std::vector<std::pair<IRType, std::string>>{{kIRStringType, "str1"}, {kIRStringType, "str2"}}, true);
+    functions_.emplace("strcmp", std::move(strcmp));
+    auto stringConcatenate = std::make_shared<IRFunction>(
+        kIRStringType, "builtin.stringConcatenate",
+        std::vector<std::pair<IRType, std::string>>{{kIRStringType, "str1"}, {kIRStringType, "str2"}}, true);
+    functions_.emplace("builtin.stringConcatenate", std::move(stringConcatenate));
   }
   void DefineFunction(std::shared_ptr<IRFunction> function) {
     auto res = functions_.emplace(function->GetName(), std::move(function)).second;

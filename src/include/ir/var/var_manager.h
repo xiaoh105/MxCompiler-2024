@@ -25,14 +25,6 @@ public:
     }
     return it->second;
   }
-  const std::shared_ptr<Constant> &GetString(const std::string &value) {
-    auto it = string_const_.find(value);
-    if (it == string_const_.end()) {
-      auto ret = std::make_shared<Constant>("@strConst." + std::to_string(string_const_.size()), value);
-      return string_const_.emplace(value, std::move(ret)).first->second;
-    }
-    return it->second;
-  }
   const std::shared_ptr<Register> &CreateVar(IRType type, const std::string &name, bool global) {
     auto ret = std::make_shared<Register>(std::move(type), name, global);
     if (global) {
@@ -54,6 +46,16 @@ public:
       return it->second;
     }
     return global_reg_.find("@" + name)->second;
+  }
+  const std::shared_ptr<Constant> &GetString(const std::string &value) {
+    auto it = string_const_.find(value);
+    if (it == string_const_.end()) {
+      std::string name = "strConst." + std::to_string(string_const_.size());
+      auto var = CreateVar(kIRStringType, name, true);
+      auto ret = std::make_shared<Constant>(std::move(var), value);
+      return string_const_.emplace(value, std::move(ret)).first->second;
+    }
+    return it->second;
   }
   void DefineGlobal() {
     for (const auto &item : std::ranges::views::values(global_reg_)) {

@@ -19,8 +19,8 @@ class Constant final : public Var {
   explicit Constant(void *) : Var(true), type_(kIRNullType) {}
   explicit Constant(bool value) : Var(true), type_(kIRBoolType), value_(value) {}
   explicit Constant(int value) : Var(true), type_(kIRIntType), value_(value) {}
-  explicit Constant(std::string name, std::string val)
-      : Var(true), type_(kIRStringType), name_(std::move(name)), value_(std::move(val)) {}
+  explicit Constant(std::shared_ptr<Var> var, std::string val)
+      : Var(true), type_(kIRStringType), var_(std::move(var)), value_(std::move(val)) {}
   [[nodiscard]] IRType GetType() const override { return type_; }
   [[nodiscard]] std::string GetName() const override {
     if (type_ == kIRIntType) {
@@ -30,16 +30,17 @@ class Constant final : public Var {
       return std::to_string(std::get<bool>(value_));
     }
     if (type_ == kIRStringType) {
-      return name_;
+      return var_->GetName();
     }
     if (type_ == kIRNullType) {
       return "null";
     }
     assert(false);
   }
+  [[nodiscard]] const std::shared_ptr<Var> &GetVar() const { return var_; }
 
  private:
   const IRType type_;
-  const std::string name_;
+  const std::shared_ptr<Var> var_;
   const std::variant<int, bool, std::string> value_;
 };

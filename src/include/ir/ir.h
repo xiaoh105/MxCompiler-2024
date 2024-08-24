@@ -13,6 +13,8 @@
 #include "ir/stmt/gep_stmt.h"
 #include "ir/stmt/icmp_stmt.h"
 #include "ir/stmt/load_stmt.h"
+#include "ir/stmt/phi_stmt.h"
+#include "ir/stmt/select_stmt.h"
 #include "ir/stmt/store_stmt.h"
 
 #include "ir/stmt/branch_stmt/branch_stmt.h"
