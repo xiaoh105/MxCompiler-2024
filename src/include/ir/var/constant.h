@@ -16,11 +16,11 @@
 class Constant final : public Var {
  public:
   Constant() = delete;
-  explicit Constant(void *) : Var(true), type_(kIRNullType) {}
-  explicit Constant(bool value) : Var(true), type_(kIRBoolType), value_(value) {}
-  explicit Constant(int value) : Var(true), type_(kIRIntType), value_(value) {}
+  explicit Constant(void *) : Var(false, true), type_(kIRNullType) {}
+  explicit Constant(bool value) : Var(false, true), type_(kIRBoolType), value_(value) {}
+  explicit Constant(int value) : Var(false, true), type_(kIRIntType), value_(value) {}
   explicit Constant(std::shared_ptr<Var> var, std::string val)
-      : Var(true), type_(kIRStringType), var_(std::move(var)), value_(std::move(val)) {}
+      : Var(false, true), type_(kIRStringType), var_(std::move(var)), value_(std::move(val)) {}
   [[nodiscard]] IRType GetType() const override { return type_; }
   [[nodiscard]] std::string GetName() const override {
     if (type_ == kIRIntType) {

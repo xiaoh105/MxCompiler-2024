@@ -6,6 +6,9 @@
  */
 
 #include "frontend/semantic_checker.h"
+
+#include <complex>
+
 #include "frontend/symbol_collector.h"
 #include "utils/error/semantic_error.hpp"
 
@@ -104,9 +107,10 @@ void SemanticChecker::visit(VarPrimaryNode *node) {
   }
   if (scope_.IsClassMember(name)) {
     node->SetMember();
+  } else {
+    node->Rename(name + "." + std::to_string(scope_.GetIndex(name)));
   }
   node->SetType(std::make_shared<Type>(std::move(var.value())));
-  node->Rename(name + "." + std::to_string(scope_.GetIndex(name)));
 }
 
 void SemanticChecker::visit(ThisPrimaryNode *node) {
@@ -675,14 +679,17 @@ void SemanticChecker::visit(FunctionDefNode *node) {
   if (func_name == "main") {
     main_func_ = true;
   }
-  for (const auto &arg : node->GetArguments()) {
-    auto &[arg_type, arg_name] = arg;
+  auto &func_args = func->GetArgName();
+  auto &args = node->GetArguments();
+  for (int i = 0; i < args.size(); ++i) {
+    auto &[arg_type, arg_name] = args[i];
     auto type_name = global_scope_.GetType(arg_type.first);
     if (type_name == std::nullopt) {
       throw std::runtime_error("Unidentified arg type");
     }
     auto type = CreateType(std::move(type_name.value()), arg_type.second);
     scope_.DefineVar(arg_name, std::move(type), node->GetPos());
+    func_args[i] = arg_name + "." + std::to_string(scope_.GetIndex(arg_name));
   }
   node->GetFunctionBody()->accept(this);
   if (*return_type_ != kVoidType && !returned_ && !main_func_) {

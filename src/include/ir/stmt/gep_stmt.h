@@ -17,11 +17,14 @@ class GetElementPtrStmt final : public Stmt {
   GetElementPtrStmt() = delete;
   GetElementPtrStmt(std::shared_ptr<Register> res, std::shared_ptr<Register> ptr,
                     std::vector<std::shared_ptr<Var>> index)
-      : result_(std::move(res)), ptr_(std::move(ptr)), index_(std::move(index)) {}
+      : result_(std::move(res)), ptr_(std::move(ptr)), index_(std::move(index)) {
+    for (const auto &item : index_) {
+      assert(item->GetType() == kIRIntType);
+    }
+  }
   void Print() const override {
     std::cout << result_->GetName() << " = getelementptr " << ptr_->GetType().GetElementIRTypename() << ", ptr " << ptr_->GetName();
     for (const auto &item : index_) {
-      assert(item->GetType() == kIRIntType);
       std::cout << ", " << item->GetType().GetIRTypename() << " " << item->GetName();
     }
     std::cout << std::endl;

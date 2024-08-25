@@ -25,15 +25,23 @@
   - [x] Block
   - [x] Stmt
   - [x] Var
-- [x] IR Generator(Completed frame)
+- [x] IR Generator(8/25 Completed frame)
 TODO lists:
-  - [ ] Add lvalue/rvalue system to Var.
-  - [ ] Add class functions into FunctionManager
-  - [ ] Remove initializer system for Registers(Since it can't be done with `alloca`)
-    - [ ] Small Optimize: Since it's UB for visiting uninitialized variables, we can remove certain initializations.
-  - [ ] Complete construction of jagged array literal
-  - [ ] Optimize: Add constant system to IR
-  - [ ] Optimize: Replace Mul/Div with multiples of 2 with `<<` and `>>`
+  - Correctnes Issues
+    - [x] Add lvalue/rvalue system to Var.(8/25)
+    - [ ] Add class functions to FunctionManager
+    - [ ] Complete construction of jagged array literal
+    - [x] Add initialization function at the beginning of `main`(8/25)
+    - [x] Add `trunc` for boolean variables(since they use `i8` as their type)(8/25)
+  - Format Issues
+    - [x] Remove initializer system for Registers(Since it can't be done with `alloca`)(8/25)
+      - [ ] Small Optimize: Since it's UB for visiting uninitialized variables, we can remove certain initializations.
+    - [ ] Move index for local variables into `IRFunctions` instead of inside `VarManager`
+  - Optimize Issues
+    - [ ] Optimize: Add constant system to IR
+    - [ ] Optimize: Replace Mul/Div with multiples of 2 with `<<` and `>>`
+    - [ ] Optimize: Mark cmp vars 
+    - [ ] Optimize: Expanding loop for short, constant `new` arrays
 
 #### Notes:
 - Array representation: An array created by `malloc`. Size is 4 bytes before its beginning. Only C lib can access it.

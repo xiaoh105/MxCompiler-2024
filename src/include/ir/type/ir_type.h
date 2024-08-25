@@ -18,6 +18,7 @@ class IRType {
   IRType() = delete;
   IRType(std::shared_ptr<IRBaseType> base, std::size_t dim = 0) : base_(std::move(base)), dim_(dim) {}
   [[nodiscard]] const std::shared_ptr<IRBaseType> &GetBaseType() const { return base_; }
+  [[nodiscard]] std::size_t GetDim() const { return dim_; }
   [[nodiscard]] IRType RemovePtr() const {
     assert(dim_ > 0);
     return {base_, dim_ - 1};

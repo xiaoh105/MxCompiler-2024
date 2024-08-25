@@ -27,7 +27,7 @@ class CallStmt final : public Stmt {
       : result_(std::move(res)), function_(function), arguments_(std::move(args)) {}
   void Print() const override {
     if (result_ == nullptr) {
-      std::cout << "call void " << function_.lock()->GetName() << "(";
+      std::cout << "call void @" << function_.lock()->GetName() << "(";
       for (int i = 0; i < arguments_.size(); i++) {
         if (i != 0) {
           std::cout << ", ";
@@ -36,7 +36,7 @@ class CallStmt final : public Stmt {
       }
       std::cout << ")" << std::endl;
     } else {
-      std::cout << result_->GetName() << " = call " << function_.lock()->GetReturnType().GetIRTypename() << " "
+      std::cout << result_->GetName() << " = call " << function_.lock()->GetReturnType().GetIRTypename() << " @"
                 << function_.lock()->GetName() << "(";
       for (int i = 0; i < arguments_.size(); i++) {
         if (i != 0) {

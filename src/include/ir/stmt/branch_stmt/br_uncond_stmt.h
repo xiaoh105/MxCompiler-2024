@@ -12,13 +12,11 @@
 #include "ir/stmt/branch_stmt/branch_stmt.h"
 
 class UnconditionalBrStmt final : public BranchStmt {
-public:
+ public:
   UnconditionalBrStmt() = delete;
   explicit UnconditionalBrStmt(const std::shared_ptr<Block> &block) : block_(block) {}
-  void Print() const override {
-    std::cout << "br label " << block_.lock()->GetLabel() << std::endl;
-  }
+  void Print() const override { std::cout << "br label %" << block_.lock()->GetLabel() << std::endl; }
 
-private:
+ private:
   std::weak_ptr<Block> block_;
 };

@@ -8,6 +8,7 @@
 
 #include "ir/block.h"
 #include "ir/type/ir_type.h"
+#include "stmt/branch_stmt/br_uncond_stmt.h"
 
 /**
  * IR node for functions
@@ -23,6 +24,8 @@ class IRFunction {
         init_block_(std::make_shared<Block>("entry.0")),
         blocks_({init_block_}) {
     ++tag_index_["entry"];
+    blocks_.push_back(std::make_shared<Block>("entryEnd.0"));
+    ++tag_index_["entryEnd"];
   }
   [[nodiscard]] const std::string &GetName() const { return name_; }
   [[nodiscard]] IRType GetReturnType() const { return return_type_; }
@@ -36,17 +39,24 @@ class IRFunction {
     assert(!builtin_);
     init_block_->Append(std::move(stmt));
   }
+  void LinkInitStmt() {
+    assert(!builtin_);
+    blocks_[0]->Append(std::make_unique<UnconditionalBrStmt>(blocks_[1]));
+  }
   void PushStmt(std::unique_ptr<Stmt> stmt) {
     assert(!builtin_);
     blocks_.back()->Append(std::move(stmt));
   }
   void PrintDeclare() const {
+    if (!builtin_) {
+      return;
+    }
     std::cout << "declare " << return_type_.GetIRTypename() << " @" << name_ << "(";
     for (int i = 0; i < arguments_.size(); i++) {
       if (i > 0) {
         std::cout << ", ";
       }
-      std::cout << arguments_[i].first.GetIRTypename() << " " << arguments_[i].second;
+      std::cout << arguments_[i].first.GetIRTypename();
     }
     std::cout << ")" << std::endl;
   }
@@ -59,7 +69,7 @@ class IRFunction {
       if (i > 0) {
         std::cout << ", ";
       }
-      std::cout << arguments_[i].first.GetIRTypename() << " " << arguments_[i].second;
+      std::cout << arguments_[i].first.GetIRTypename() << " %arg." << arguments_[i].second;
     }
     std::cout << ")" << std::endl;
     std::cout << "{" << std::endl;
@@ -99,7 +109,7 @@ class FunctionManager {
         kIRVoidType, "printlnInt", std::vector<std::pair<IRType, std::string>>{{kIRIntType, "n"}}, true);
     functions_.emplace("printlnInt", std::move(printlnInt));
     auto getString =
-        std::make_shared<IRFunction>(kIRStringType, "getString", std::vector<std::pair<IRType, std::string>>{}, true);
+        std::make_shared<IRFunction>(kIRStringType.ToPtr(), "getString", std::vector<std::pair<IRType, std::string>>{}, true);
     functions_.emplace("getString", std::move(getString));
     auto getInt =
         std::make_shared<IRFunction>(kIRIntType, "getInt", std::vector<std::pair<IRType, std::string>>{}, true);
@@ -107,15 +117,19 @@ class FunctionManager {
     auto toString = std::make_shared<IRFunction>(kIRStringType, "toString",
                                                  std::vector<std::pair<IRType, std::string>>{{kIRIntType, "i"}}, true);
     functions_.emplace("toString", std::move(toString));
-    auto printBool =
-      std::make_shared<IRFunction>(kIRVoidType, "builtin.printBool", std::vector<std::pair<IRType, std::string>>{{kIRBoolType, "val"}}, true);
+    auto getSize = std::make_shared<IRFunction>(
+        kIRIntType, "builtin.getSize", std::vector<std::pair<IRType, std::string>>{{kIRIntType.ToPtr(), "ptr"}}, true);
+    functions_.emplace("builtin.getSize", std::move(getSize));
+    auto printBool = std::make_shared<IRFunction>(
+        kIRVoidType, "builtin.printBool", std::vector<std::pair<IRType, std::string>>{{kIRBoolType, "val"}}, true);
     functions_.emplace("builtin.printBool", std::move(printBool));
     auto allocArray =
         std::make_shared<IRFunction>(kIRIntType.ToPtr(), "builtin.allocArray",
                                      std::vector<std::pair<IRType, std::string>>{{kIRIntType, "len"}}, true);
     functions_.emplace("builtin.allocArray", std::move(allocArray));
-    auto strcmp =
-      std::make_shared<IRFunction>(kIRIntType, "strcmp", std::vector<std::pair<IRType, std::string>>{{kIRStringType, "str1"}, {kIRStringType, "str2"}}, true);
+    auto strcmp = std::make_shared<IRFunction>(
+        kIRIntType, "strcmp",
+        std::vector<std::pair<IRType, std::string>>{{kIRStringType, "str1"}, {kIRStringType, "str2"}}, true);
     functions_.emplace("strcmp", std::move(strcmp));
     auto stringConcatenate = std::make_shared<IRFunction>(
         kIRStringType, "builtin.stringConcatenate",
@@ -123,7 +137,7 @@ class FunctionManager {
     functions_.emplace("builtin.stringConcatenate", std::move(stringConcatenate));
   }
   void DefineFunction(const std::shared_ptr<IRFunction> &function) {
-    auto res = functions_.emplace(function->GetName(), function).second;
+    functions_.emplace(function->GetName(), function).second;
   }
   const std::shared_ptr<IRFunction> &GetFunction(const std::string &name) const { return functions_.at(name); }
   void PrintDeclare() {

@@ -16,7 +16,7 @@ public:
   StoreStmt() = delete;
   StoreStmt(std::shared_ptr<Var> val, std::shared_ptr<Register> ptr)
       : value_(std::move(val)), ptr_(std::move(ptr)) {
-    assert(ptr_->GetType().IsPtrOf(value_->GetType()));
+    assert(ptr_->GetType().IsPtrOf(value_->GetType()) || value_->GetType() == kIRNullType);
   }
   void Print() const override {
     std::cout << "store " << value_->GetType().GetIRTypename() << " " << value_->GetName() << ", ptr " << ptr_->GetName() << std::endl;

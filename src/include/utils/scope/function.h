@@ -22,12 +22,12 @@ class Function {
   Function(Type return_type, std::vector<std::string> arg_name, std::vector<Type> args);
   [[nodiscard]] std::size_t GetArgNum() const;
   [[nodiscard]] Type GetArgument(std::size_t index) const;
-  [[nodiscard]] const std::vector<std::string> &GetArgName() const;
+  std::vector<std::string> &GetArgName();
   [[nodiscard]] const std::vector<Type> &GetArguments() const;
   [[nodiscard]] const Type &GetReturnType() const;
 
  private:
   const Type return_type_;
   std::vector<Type> arguments_;
-  std::vector<std::string> arg_name_;
+  std::shared_ptr<std::vector<std::string>> arg_name_;
 };

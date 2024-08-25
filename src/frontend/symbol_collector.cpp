@@ -50,7 +50,7 @@ void SymbolCollector::visit(FunctionDefNode *node) {
     }
     auto arg_type = CreateType(std::move(arg_typename.value()), arg_dim);
     args.push_back(std::move(arg_type));
-    arg_names.push_back(std::move(arg_name));
+    arg_names.push_back(item.second);
   }
   Function func(std::move(return_type), std::move(arg_names), std::move(args));
   if (scope_.HasVar(func_name)) {

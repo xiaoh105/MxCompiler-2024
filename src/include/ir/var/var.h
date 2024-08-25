@@ -16,11 +16,15 @@
 class Var {
  public:
   Var() = delete;
-  explicit Var(bool is_const) : is_const_(is_const) {};
+  explicit Var(bool lvalue, bool is_const) : lvalue_(lvalue), is_const_(is_const) {};
   virtual ~Var() = default;
   [[nodiscard]] virtual IRType GetType() const = 0;
   [[nodiscard]] virtual std::string GetName() const = 0;
+  void SetConst(bool is_const) { is_const_ = is_const; }
+  [[nodiscard]] bool IsConst() const { return is_const_; }
+  [[nodiscard]] bool IsLValue() const { return lvalue_; }
 
  protected:
   bool is_const_;
+  bool lvalue_;
 };

@@ -26,15 +26,15 @@ public:
     return it->second;
   }
   const std::shared_ptr<Register> &CreateVar(IRType type, const std::string &name, bool global) {
-    auto ret = std::make_shared<Register>(std::move(type), name, global);
+    auto ret = std::make_shared<Register>(std::move(type), name, global, true);
     if (global) {
       return global_reg_.emplace(name, std::move(ret)).first->second;
     }
     return local_reg_.emplace(name, std::move(ret)).first->second;
   }
-  const std::shared_ptr<Register> &CreateTmpVar(IRType type, const std::string &tag) {
-    auto name = tag + "." + std::to_string(var_index_[tag]++);
-    auto ret = std::make_shared<Register>(std::move(type), name, false);
+  const std::shared_ptr<Register> &CreateTmpVar(IRType type, const std::string &tag, bool lvalue = false) {
+    auto name = (tag.empty() ? "" : tag + ".") + std::to_string(var_index_[tag]++);
+    auto ret = std::make_shared<Register>(std::move(type), name, false, lvalue);
     return local_reg_.emplace(std::move(name), std::move(ret)).first->second;
   }
   bool HasVar(const std::string &name) {
@@ -59,7 +59,10 @@ public:
   }
   void DefineGlobal() {
     for (const auto &item : std::ranges::views::values(global_reg_)) {
-      std::cout << item->GetName() << " = global " << item->GetType().GetIRTypename() << " " << item->GetName() << std::endl;
+      if (item->GetName().starts_with("@strConst.")) {
+        continue;
+      }
+      std::cout << item->GetName() << " = global " << item->GetType().RemovePtr().GetIRTypename() << " zeroinitializer" << std::endl;
     }
     for (const auto &[name, item] : string_const_) {
       std::cout << item->GetName() << " = global [" << name.size() + 1 << " x i8] [";
@@ -67,7 +70,7 @@ public:
         if (i != 0) {
           std::cout << ", ";
         }
-        std::cout << (i == name.size() ? "i32 0" : "i32 " + std::to_string(name[i]));
+        std::cout << (i == name.size() ? "i8 0" : "i8 " + std::to_string(name[i]));
       }
       std::cout << "]" << std::endl;
     }

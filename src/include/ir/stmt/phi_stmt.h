@@ -22,7 +22,7 @@ class PhiStmt : public Stmt {
       if (i != 0) {
         std::cout << ", ";
       }
-      std::cout << "[ " << blocks_[i].first->GetName() << ", " << blocks_[i].second.lock()->GetLabel() << " ]";
+      std::cout << "[ " << blocks_[i].first->GetName() << ", %" << blocks_[i].second.lock()->GetLabel() << " ]";
     }
     std::cout << std::endl;
   }

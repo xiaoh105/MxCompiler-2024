@@ -57,6 +57,10 @@ const char *toString(int val) {
   return str;
 }
 
+size_t builtin_getSize(int *ptr) {
+  return *(ptr - 1);
+}
+
 void builtin_printBool(bool val) {
   printf(val ? "true" : "false");
 }
