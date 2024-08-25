@@ -19,7 +19,7 @@ class LoadStmt : public Stmt {
     assert(ptr_->GetType().IsPtrOf(result_->GetType()));
   }
   void Print() const override {
-    std::cout << result_->GetName() << " = load " << result_->GetType().GetElementIRTypename() << ", ptr "
+    std::cout << result_->GetName() << " = load " << result_->GetType().GetIRTypename() << ", ptr "
               << ptr_->GetName() << std::endl;
   }
 

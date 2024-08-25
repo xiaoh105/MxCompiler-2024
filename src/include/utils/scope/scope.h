@@ -23,6 +23,8 @@ class GlobalScope {
   [[nodiscard]] bool HasFunction(const std::string &name) const;
   std::optional<std::shared_ptr<Typename>> GetType(const std::string &name);
   std::optional<Function> GetFunction(const std::string &name);
+  std::unordered_map<std::string, std::shared_ptr<Typename>> &GetTypes();
+  std::unordered_map<std::string, Function> &GetFunctions();
   GlobalScope &operator=(const GlobalScope &other) = delete;
   GlobalScope &operator=(GlobalScope &&other) noexcept = default;
 

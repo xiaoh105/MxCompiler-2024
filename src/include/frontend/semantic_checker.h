@@ -17,6 +17,7 @@ public:
   SemanticChecker() = delete;
   SemanticChecker(Scope scope, GlobalScope global_scope);
   void visit(RootNode *node) override;
+  GlobalScope GetGlobalScope();
 
 private:
   void visit(JaggedArrayNode *node) final;

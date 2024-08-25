@@ -106,17 +106,14 @@ class FunctionManager {
     functions_.emplace("getInt", std::move(getInt));
     auto toString = std::make_shared<IRFunction>(kIRStringType, "toString",
                                                  std::vector<std::pair<IRType, std::string>>{{kIRIntType, "i"}}, true);
+    functions_.emplace("toString", std::move(toString));
     auto printBool =
       std::make_shared<IRFunction>(kIRVoidType, "builtin.printBool", std::vector<std::pair<IRType, std::string>>{{kIRBoolType, "val"}}, true);
     functions_.emplace("builtin.printBool", std::move(printBool));
-    auto allocArrayInt =
-        std::make_shared<IRFunction>(kIRIntType.ToPtr(), "builtin.allocArrayInt",
+    auto allocArray =
+        std::make_shared<IRFunction>(kIRIntType.ToPtr(), "builtin.allocArray",
                                      std::vector<std::pair<IRType, std::string>>{{kIRIntType, "len"}}, true);
-    functions_.emplace("builtin.allocArrayInt", std::move(allocArrayInt));
-    auto allocArrayBool =
-        std::make_shared<IRFunction>(kIRBoolType.ToPtr(), "builtin.allocArrayBool",
-                                     std::vector<std::pair<IRType, std::string>>{{kIRIntType, "len"}}, true);
-    functions_.emplace("builtin.allocArrayBool", std::move(allocArrayBool));
+    functions_.emplace("builtin.allocArray", std::move(allocArray));
     auto strcmp =
       std::make_shared<IRFunction>(kIRIntType, "strcmp", std::vector<std::pair<IRType, std::string>>{{kIRStringType, "str1"}, {kIRStringType, "str2"}}, true);
     functions_.emplace("strcmp", std::move(strcmp));
@@ -125,9 +122,8 @@ class FunctionManager {
         std::vector<std::pair<IRType, std::string>>{{kIRStringType, "str1"}, {kIRStringType, "str2"}}, true);
     functions_.emplace("builtin.stringConcatenate", std::move(stringConcatenate));
   }
-  void DefineFunction(std::shared_ptr<IRFunction> function) {
-    auto res = functions_.emplace(function->GetName(), std::move(function)).second;
-    assert(res);
+  void DefineFunction(const std::shared_ptr<IRFunction> &function) {
+    auto res = functions_.emplace(function->GetName(), function).second;
   }
   const std::shared_ptr<IRFunction> &GetFunction(const std::string &name) const { return functions_.at(name); }
   void PrintDeclare() {

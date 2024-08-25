@@ -17,8 +17,7 @@ class AllocaStmt final : public Stmt {
   AllocaStmt() = delete;
   AllocaStmt(std::shared_ptr<Register> res) : result_(std::move(res)) {}
   void Print() const override {
-    std::cout << result_->GetName() << " = alloca " << result_->GetType().GetIRTypename() << " "
-              << result_->GetInitVal() << std::endl;
+    std::cout << result_->GetName() << " = alloca " << result_->GetType().GetElementIRTypename() << std::endl;
   }
 
  private:

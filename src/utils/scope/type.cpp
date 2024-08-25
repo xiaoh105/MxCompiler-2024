@@ -14,13 +14,13 @@
 std::shared_ptr<Typename> GetStringTypename() {
   std::shared_ptr<Typename> str = std::make_shared<Typename>("string");
   Type str_type(str, 0);
-  Function length(kIntType, {});
+  Function length(kIntType, {}, {});
   str->AddFunction("length", length);
-  Function substring(str_type, {kIntType, kIntType});
+  Function substring(str_type, std::vector<std::string>{"begin", "end"}, {kIntType, kIntType});
   str->AddFunction("substring", substring);
-  Function parse_int(kIntType, {});
+  Function parse_int(kIntType, {}, {});
   str->AddFunction("parseInt", parse_int);
-  Function ord(kIntType, {kIntType});
+  Function ord(kIntType, std::vector<std::string>{"index"}, {kIntType});
   str->AddFunction("ord", ord);
   return std::move(str);
 }

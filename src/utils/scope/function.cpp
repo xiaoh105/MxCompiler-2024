@@ -12,8 +12,8 @@
 
 Function::Function() : return_type_(kVoidType) {}
 
-Function::Function(Type return_type, std::vector<Type> args)
-    : return_type_(std::move(return_type)), arguments_(std::move(args)) {}
+Function::Function(Type return_type, std::vector<std::string> arg_name, std::vector<Type> args)
+    : return_type_(std::move(return_type)), arg_name_(std::move(arg_name)), arguments_(std::move(args)) {}
 
 std::size_t Function::GetArgNum() const { return arguments_.size(); }
 
@@ -24,6 +24,8 @@ Type Function::GetArgument(std::size_t index) const {
   }
   return arguments_[index];
 }
+
+const std::vector<std::string> &Function::GetArgName() const { return arg_name_; }
 
 const std::vector<Type> &Function::GetArguments() const { return arguments_; }
 

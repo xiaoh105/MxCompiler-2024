@@ -1,4 +1,36 @@
 #include "backend/ir_builder.h"
+#include "frontend/semantic_checker.h"
+#include "frontend/symbol_collector.h"
+
+void GenerateIR(RootNode *root) {
+  auto [scope, global_scope] = CollectSymbol(root);
+  SemanticChecker checker(std::move(scope), std::move(global_scope));
+  checker.visit(root);
+  IRBuilder builder(std::move(checker.GetGlobalScope()));
+  builder.visit(root);
+  builder.classes_.Define();
+  builder.functions_.PrintDeclare();
+  builder.functions_.PrintDefine();
+}
+
+IRBuilder::IRBuilder(GlobalScope global_scope) {
+  classes_.AddType(global_scope.GetTypes());
+  for (const auto &func : global_scope.GetFunctions()) {
+    auto ast_ret_type = func.second.GetReturnType();
+    auto ret_base = classes_.GetType(ast_ret_type.GetTypename()->GetName());
+    auto ret_type = IRType{ret_base, ast_ret_type.GetDim() + (ret_base->IsTrivial() ? 0 : 1)};
+    std::vector<std::pair<IRType, std::string>> args;
+    auto &ast_args = func.second.GetArguments();
+    auto &ast_arg_name = func.second.GetArgName();
+    for (int i = 0; i < ast_args.size(); ++i) {
+      auto arg_base = classes_.GetType(ast_args[i].GetTypename()->GetName());
+      auto arg_type = IRType{arg_base, ast_args[i].GetDim() + (arg_base->IsTrivial() ? 0 : 1)};
+      args.emplace_back(std::move(arg_type), ast_arg_name[i]);
+    }
+    auto ret = std::make_shared<IRFunction>(std::move(ret_type), func.first, std::move(args), false);
+    functions_.DefineFunction(ret);
+  }
+}
 
 std::shared_ptr<Var> IRBuilder::ToRightVal(const std::shared_ptr<Var> &var) {
   auto var_const = std::dynamic_pointer_cast<Constant>(var);
@@ -8,11 +40,55 @@ std::shared_ptr<Var> IRBuilder::ToRightVal(const std::shared_ptr<Var> &var) {
   if (var->GetType() == kIRStringType) {
     return var;
   }
+  if (var->GetType() == kIRIntType) {
+    return var;
+  }
   auto var_reg = std::dynamic_pointer_cast<Register>(var);
   auto value = vars_.CreateTmpVar(var->GetType().RemovePtr(), "");
   cur_func_->PushStmt(std::make_unique<LoadStmt>(value, var_reg));
   return value;
 }
+
+void IRBuilder::visit(SimpleArrayNode *node) {
+  auto base = classes_.GetType(node->GetType()->GetTypename()->GetName());
+  auto &elements = node->GetElements();
+  if (base != kIRStringBase) {
+    auto res = vars_.CreateTmpVar({base, 1}, "");
+    cur_func_->PushStmt(
+        std::make_unique<CallStmt>(res, functions_.GetFunction("builtin.allocArray"),
+                                   std::vector<std::shared_ptr<Var>>{vars_.GetInt(static_cast<int>(elements.size()))}));
+    for (int i = 0; i < elements.size(); ++i) {
+      if (base == kIRIntBase) {
+        auto ptr = vars_.CreateTmpVar({base, 1}, "");
+        cur_func_->PushStmt(
+            std::make_unique<GetElementPtrStmt>(ptr, res, std::vector<std::shared_ptr<Var>>{vars_.GetInt(i)}));
+        int val = std::get<int>(std::dynamic_pointer_cast<LiteralPrimaryNode>(elements[i])->GetValue());
+        cur_func_->PushStmt(std::make_unique<StoreStmt>(vars_.GetInt(val), ptr));
+      } else {
+        auto ptr = vars_.CreateTmpVar({base, 1}, "");
+        cur_func_->PushStmt(
+            std::make_unique<GetElementPtrStmt>(ptr, res, std::vector<std::shared_ptr<Var>>{vars_.GetInt(i)}));
+        bool val = std::get<bool>(std::dynamic_pointer_cast<LiteralPrimaryNode>(elements[i])->GetValue());
+        cur_func_->PushStmt(std::make_unique<StoreStmt>(vars_.GetBool(val), ptr));
+      }
+    }
+  } else {
+    auto res = vars_.CreateTmpVar({base, 2}, "");
+    cur_func_->PushStmt(
+        std::make_unique<CallStmt>(res, functions_.GetFunction("builtin.allocArray"),
+                                   std::vector<std::shared_ptr<Var>>{vars_.GetInt(static_cast<int>(elements.size()))}));
+    for (int i = 0; i < elements.size(); ++i) {
+      auto ptr = vars_.CreateTmpVar({base, 2}, "");
+      cur_func_->PushStmt(
+          std::make_unique<GetElementPtrStmt>(ptr, res, std::vector<std::shared_ptr<Var>>{vars_.GetInt(i)}));
+      std::string str = std::get<std::string>(std::dynamic_pointer_cast<LiteralPrimaryNode>(elements[i])->GetValue());
+      auto val = vars_.GetString(str)->GetVar();
+      cur_func_->PushStmt(std::make_unique<StoreStmt>(val, ptr));
+    }
+  }
+}
+
+void IRBuilder::visit(JaggedArrayNode *node) { assert(false); }
 
 void IRBuilder::visit(LiteralPrimaryNode *node) {
   switch (node->GetLiteralType()) {
@@ -61,14 +137,10 @@ void IRBuilder::visit(VarPrimaryNode *node) {
 
 std::shared_ptr<Register> IRBuilder::CreateArray(std::size_t cur_dim, const std::shared_ptr<IRBaseType> &type,
                                                  const std::vector<std::shared_ptr<ExprNode>> &expr, std::size_t dim) {
-  auto tmp_var = vars_.CreateTmpVar({type, dim - cur_dim}, "arrayTmp");
+  auto tmp_var = vars_.CreateTmpVar({type, dim - cur_dim + 1}, "arrayTmp");
   expr[cur_dim]->accept(this);
   auto &cur_len = expr[cur_dim]->GetVar();
-  if (cur_dim + 1 == dim && type == kIRBoolBase) {
-    cur_func_->PushStmt(std::make_unique<CallStmt>(functions_.GetFunction("builtin.allocArrayBool"), std::vector{{cur_len}}));
-    return tmp_var;
-  }
-  cur_func_->PushStmt(std::make_unique<CallStmt>(functions_.GetFunction("builtin.allocArrayInt"), std::vector{{cur_len}}));
+  cur_func_->PushStmt(std::make_unique<CallStmt>(functions_.GetFunction("builtin.allocArray"), std::vector{{cur_len}}));
   if (cur_dim + 1 == expr.size()) {
     return tmp_var;
   }
@@ -94,7 +166,7 @@ std::shared_ptr<Register> IRBuilder::CreateArray(std::size_t cur_dim, const std:
 void IRBuilder::visit(NewPrimaryNode *node) {
   if (node->GetNewType() == NewPrimaryNode::NewType::kNewVar) {
     auto type = classes_.GetType(node->GetTypename());
-    auto tmp_var = vars_.CreateTmpVar(IRType(type, node->GetType()->GetDim() + 1), "newTmp");
+    auto tmp_var = vars_.CreateTmpVar(IRType(type, node->GetType()->GetDim() + (type->IsTrivial() ? 1 : 2)), "newTmp");
     auto constructor = type->GetConstructor();
     if (constructor.use_count() > 0) {
       cur_func_->PushStmt(std::make_unique<CallStmt>(constructor.lock(), std::vector<std::shared_ptr<Var>>{tmp_var}));
@@ -122,8 +194,8 @@ void IRBuilder::visit(AssignExprNode *node) {
   auto &rhs = node->GetRightExprNode();
   lhs->accept(this);
   rhs->accept(this);
-  auto l_var = std::dynamic_pointer_cast<Register>(node->GetVar());
-  auto &r_var = node->GetVar();
+  auto l_var = std::dynamic_pointer_cast<Register>(lhs->GetVar());
+  auto &r_var = rhs->GetVar();
   auto r_value = ToRightVal(r_var);
   cur_func_->PushStmt(std::make_unique<StoreStmt>(r_value, l_var));
   node->SetVar(l_var);
@@ -276,8 +348,8 @@ void IRBuilder::visit(BinaryExprNode *node) {
         op = BinaryStmt::OpType::kAdd;
         cur_func_->PushStmt(std::make_unique<BinaryStmt>(res, op, l_var, r_var));
       } else {
-        cur_func_->PushStmt(
-            std::make_unique<CallStmt>(res, functions_.GetFunction("builtin.stringConcatenate"), std::vector{l_var, r_var}));
+        cur_func_->PushStmt(std::make_unique<CallStmt>(res, functions_.GetFunction("builtin.stringConcatenate"),
+                                                       std::vector{l_var, r_var}));
       }
       node->SetVar(std::move(res));
       break;
@@ -423,17 +495,20 @@ void IRBuilder::visit(FunctionCallExprNode *node) {
   auto base_expr = node->GetBaseExpr();
   auto &args = node->GetArguments();
   std::vector<std::shared_ptr<Var>> arg_var;
+  std::string func_name = node->GetFuncName();
   if (base_expr != nullptr) {
     base_expr->accept(this);
     auto this_ptr = ToRightVal(base_expr->GetVar());
     arg_var.push_back(std::move(this_ptr));
+    func_name = this_ptr->GetType().GetBaseType()->GetIRTypename() + "." + node->GetFuncName();
   }
   for (const auto &arg : args) {
     arg->accept(this);
     auto arg_val = ToRightVal(arg->GetVar());
     arg_var.push_back(std::move(arg_val));
   }
-  auto res = vars_.CreateTmpVar(kIRBoolType, "");
+  auto &func = functions_.GetFunction(func_name);
+  auto res = vars_.CreateTmpVar(func->GetReturnType(), "");
   cur_func_->PushStmt(std::make_unique<CallStmt>(res, functions_.GetFunction(node->GetFuncName()), std::move(arg_var)));
   node->SetVar(res);
 }
@@ -442,9 +517,10 @@ void IRBuilder::visit(MemberExprNode *node) {
   auto &expr = node->GetExprNode();
   expr->accept(this);
   auto expr_val = std::dynamic_pointer_cast<Register>(ToRightVal(expr->GetVar()));
-  auto &[index, member_type] = expr_val->GetType().GetBaseType()->GetMember(node->GetMemberName());
+  auto [index, member_type] = expr_val->GetType().GetBaseType()->GetMember(node->GetMemberName());
   auto res = vars_.CreateTmpVar(member_type, "member");
-  cur_func_->PushStmt(std::make_unique<GetElementPtrStmt>(res, expr_val, std::vector<std::shared_ptr<Var>>{vars_.GetInt(0), vars_.GetInt(index)}));
+  cur_func_->PushStmt(std::make_unique<GetElementPtrStmt>(
+      res, expr_val, std::vector<std::shared_ptr<Var>>{vars_.GetInt(0), vars_.GetInt(index)}));
   node->SetVar(res);
 }
 
@@ -477,7 +553,8 @@ void IRBuilder::visit(FormatExprNode *node) {
         auto tmp = ToRightVal(expr->GetVar());
         res = vars_.CreateTmpVar(tmp->GetType(), "");
         if (tmp->GetType() == kIRBoolType) {
-          cur_func_->PushStmt(std::make_unique<CallStmt>(res, functions_.GetFunction("builtin.printBool"), std::vector{tmp}));
+          cur_func_->PushStmt(
+              std::make_unique<CallStmt>(res, functions_.GetFunction("builtin.printBool"), std::vector{tmp}));
         } else {
           cur_func_->PushStmt(std::make_unique<CallStmt>(res, functions_.GetFunction("toString"), std::vector{tmp}));
         }
@@ -493,14 +570,199 @@ void IRBuilder::visit(FormatExprNode *node) {
         auto tmp = ToRightVal(expr->GetVar());
         rhs = vars_.CreateTmpVar(tmp->GetType(), "");
         if (tmp->GetType() == kIRBoolType) {
-          cur_func_->PushStmt(std::make_unique<CallStmt>(rhs, functions_.GetFunction("builtin.printBool"), std::vector{tmp}));
+          cur_func_->PushStmt(
+              std::make_unique<CallStmt>(rhs, functions_.GetFunction("builtin.printBool"), std::vector{tmp}));
         } else {
           cur_func_->PushStmt(std::make_unique<CallStmt>(rhs, functions_.GetFunction("toString"), std::vector{tmp}));
         }
       }
       res = vars_.CreateTmpVar(kIRStringType, "");
-      cur_func_->PushStmt(std::make_unique<CallStmt>(rhs, functions_.GetFunction("builtin.stringConcatenate"), std::vector<std::shared_ptr<Var>>{lhs, rhs}));
+      cur_func_->PushStmt(std::make_unique<CallStmt>(rhs, functions_.GetFunction("builtin.stringConcatenate"),
+                                                     std::vector<std::shared_ptr<Var>>{lhs, rhs}));
     }
   }
   node->SetVar(res);
+}
+
+void IRBuilder::visit(EmptyStmtNode *node) {}
+
+void IRBuilder::visit(ExprStmtNode *node) { node->GetExprNode()->accept(this); }
+
+void IRBuilder::visit(IfStmtNode *node) {
+  auto &cond = node->GetCondition();
+  cond->accept(this);
+  auto cond_val = cond->GetVar();
+  auto then_block = std::make_shared<Block>(cur_func_->AssignTag("ifThen"));
+  auto else_block = std::make_shared<Block>(cur_func_->AssignTag("ifElse"));
+  auto end_block = std::make_shared<Block>(cur_func_->AssignTag("ifEnd"));
+  cur_func_->PushStmt(std::make_unique<ConditionalBrStmt>(cond_val, then_block, else_block));
+  cur_func_->PushBlock(then_block);
+  node->GetThenStmt()->accept(this);
+  cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(end_block));
+  cur_func_->PushBlock(else_block);
+  node->GetElseStmt()->accept(this);
+  cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(end_block));
+  cur_func_->PushBlock(end_block);
+}
+
+void IRBuilder::visit(SuiteStmtNode *node) {
+  for (const auto &stmt : node->GetStatements()) {
+    stmt->accept(this);
+  }
+}
+
+void IRBuilder::visit(ControlStmtNode *node) {
+  switch (node->GetStmtType()) {
+    case ControlStmtNode::StmtType::kContinue: {
+      cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(loop_step_));
+      break;
+    }
+    case ControlStmtNode::StmtType::kBreak: {
+      cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(loop_end_));
+      break;
+    }
+    case ControlStmtNode::StmtType::kReturn: {
+      auto &expr = node->GetReturnExpr();
+      if (expr == nullptr) {
+        cur_func_->PushStmt(std::make_unique<RetStmt>());
+      } else {
+        expr->accept(this);
+        auto ret_val = ToRightVal(expr->GetVar());
+        cur_func_->PushStmt(std::make_unique<RetStmt>(ret_val));
+      }
+      break;
+    }
+    case ControlStmtNode::StmtType::kUnknown: {
+      assert(false);
+    }
+  }
+}
+
+void IRBuilder::visit(WhileStmtNode *node) {
+  auto &cond = node->GetCondition();
+  auto &stmts = node->GetLoopStmt();
+  auto loop_cond = std::make_shared<Block>(cur_func_->AssignTag("loopCond"));
+  auto loop_body = std::make_shared<Block>(cur_func_->AssignTag("loopBody"));
+  auto loop_end = std::make_shared<Block>(cur_func_->AssignTag("loopEnd"));
+  cur_func_->PushBlock(loop_cond);
+  cond->accept(this);
+  auto cond_var = ToRightVal(cond->GetVar());
+  cur_func_->PushStmt(std::make_unique<ConditionalBrStmt>(cond_var, loop_body, loop_end));
+  cur_func_->PushBlock(loop_body);
+  loop_step_ = loop_cond;
+  loop_end_ = loop_end;
+  stmts->accept(this);
+  cur_func_->PushBlock(loop_end);
+  loop_step_ = nullptr;
+  loop_end_ = nullptr;
+}
+
+void IRBuilder::visit(ForStmtNode *node) {
+  node->GetInitializeStmt()->accept(this);
+  auto &cond = node->GetCondition();
+  auto &body = node->GetLoop();
+  auto &step = node->GetStep();
+  auto cond_block = std::make_shared<Block>(cur_func_->AssignTag("loopCond"));
+  auto body_block = std::make_shared<Block>(cur_func_->AssignTag("loopBody"));
+  auto step_block = std::make_shared<Block>(cur_func_->AssignTag("loopStep"));
+  auto end_block = std::make_shared<Block>(cur_func_->AssignTag("loopEnd"));
+  if (cond != nullptr) {
+    cur_func_->PushBlock(cond_block);
+    cond->accept(this);
+    auto cond_var = ToRightVal(cond->GetVar());
+    cur_func_->PushStmt(std::make_unique<ConditionalBrStmt>(cond_var, body_block, end_block));
+  }
+  cur_func_->PushBlock(body_block);
+  body->accept(this);
+  cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(step_block));
+  cur_func_->PushBlock(step_block);
+  step->accept(this);
+  if (cond != nullptr) {
+    cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(cond_block));
+  } else {
+    cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(body_block));
+  }
+  cur_func_->PushBlock(end_block);
+}
+
+void IRBuilder::visit(VarDefStmtNode *node) {
+  auto base = classes_.GetType(node->GetType().first);
+  auto dim = base->IsTrivial() ? node->GetType().second + 1 : node->GetType().second + 2;
+  IRType type(std::move(base), dim);
+  auto &var_name = node->GetVarName();
+  auto &initializer = node->GetInitialValue();
+  for (int i = 0; i < var_name.size(); ++i) {
+    auto reg = vars_.CreateVar(type, var_name[i], false);
+    cur_func_->PushInitStmt(std::make_unique<AllocaStmt>(reg));
+    auto &expr = initializer[i];
+    if (expr != nullptr) {
+      expr->accept(this);
+      auto var = ToRightVal(expr->GetVar());
+      cur_func_->PushStmt(std::make_unique<StoreStmt>(var, reg));
+    }
+  }
+}
+
+void IRBuilder::visit(VarDefNode *node) {
+  auto base = classes_.GetType(node->GetTypename().first);
+  auto dim = base->IsTrivial() ? node->GetTypename().second + 1 : node->GetTypename().second + 2;
+  IRType type(std::move(base), dim);
+  auto &var_name = node->GetVarName();
+  auto &initializer = node->GetInitialValue();
+  cur_func_ = init_func_;
+  for (int i = 0; i < var_name.size(); ++i) {
+    auto reg = vars_.CreateVar(type, var_name[i], true);
+    cur_func_->PushInitStmt(std::make_unique<AllocaStmt>(reg));
+    auto &expr = initializer[i];
+    if (expr != nullptr) {
+      expr->accept(this);
+      auto var = ToRightVal(expr->GetVar());
+      cur_func_->PushStmt(std::make_unique<StoreStmt>(var, reg));
+    }
+  }
+  cur_func_ = nullptr;
+}
+
+void IRBuilder::visit(FunctionDefNode *node) {
+  cur_func_ = functions_.GetFunction(node->GetFunctionName());
+  for (const auto &arg : cur_func_->GetArguments()) {
+    vars_.CreateVar(arg.first, arg.second, false);
+  }
+  node->GetFunctionBody()->accept(this);
+  cur_func_ = nullptr;
+}
+
+void IRBuilder::visit(ClassDefNode *node) {
+  auto base = classes_.GetType(node->GetClassName());
+  cur_type_ = base;
+  for (const auto &stmt : node->GetClassStmt()) {
+    stmt->accept(this);
+  }
+  cur_type_ = nullptr;
+}
+
+void IRBuilder::visit(VarDefClassStmtNode *node) {}
+
+void IRBuilder::visit(ConstructorClassStmtNode *node) {
+  auto &constructor = cur_type_->GetConstructor();
+  cur_func_ = constructor.lock();
+  vars_.CreateVar({cur_type_, 1}, "this", false);
+  node->GetFunctionBody()->accept(this);
+  cur_func_ = nullptr;
+}
+
+void IRBuilder::visit(FunctionDefClassStmtNode *node) {
+  auto &func = functions_.GetFunction(cur_type_->GetIRTypename() + "." + cur_func_->GetName());
+  cur_func_ = func;
+  for (const auto &arg : cur_func_->GetArguments()) {
+    vars_.CreateVar(arg.first, arg.second, false);
+  }
+  node->GetFunctionBody()->accept(this);
+  cur_func_ = nullptr;
+}
+
+void IRBuilder::visit(RootNode *node) {
+  for (const auto &def : node->GetDefNodes()) {
+    def->accept(this);
+  }
 }

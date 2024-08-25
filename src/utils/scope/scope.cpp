@@ -13,19 +13,19 @@ GlobalScope::GlobalScope() {
   type_.emplace("string", kStringTypename);
   type_.emplace("void", kVoidTypename);
 
-  Function print(kVoidType, {kStringType});
+  Function print(kVoidType, std::vector<std::string>{"str"}, {kStringType});
   function_.emplace("print", print);
-  Function println(kVoidType, {kStringType});
+  Function println(kVoidType, std::vector<std::string>{"str"}, {kStringType});
   function_.emplace("println", println);
-  Function print_int(kVoidType, {kIntType});
+  Function print_int(kVoidType, std::vector<std::string>{"val"}, {kIntType});
   function_.emplace("printInt", print_int);
-  Function println_int(kVoidType, {kIntType});
+  Function println_int(kVoidType, std::vector<std::string>{"val"}, {kIntType});
   function_.emplace("printlnInt", println_int);
-  Function get_string(kStringType, {});
+  Function get_string(kStringType, {}, {});
   function_.emplace("getString", get_string);
-  Function get_int(kIntType, {});
+  Function get_int(kIntType, {}, {});
   function_.emplace("getInt", get_int);
-  Function to_string(kStringType, {kIntType});
+  Function to_string(kStringType, std::vector<std::string>{"val"}, {kIntType});
   function_.emplace("toString", to_string);
 }
 
@@ -56,12 +56,16 @@ std::optional<std::shared_ptr<Typename>> GlobalScope::GetType(const std::string 
   return it == type_.end() ? std::nullopt : std::optional(it->second);
 }
 
+std::unordered_map<std::string, std::shared_ptr<Typename>> &GlobalScope::GetTypes() { return type_; }
+
 bool GlobalScope::HasFunction(const std::string &name) const { return function_.contains(name); }
 
 std::optional<Function> GlobalScope::GetFunction(const std::string &name) {
   auto it = function_.find(name);
   return it == function_.end() ? std::nullopt : std::optional(it->second);
 }
+
+std::unordered_map<std::string, Function> &GlobalScope::GetFunctions() { return function_; }
 
 Scope::Scope(std::unique_ptr<Scope> parent_scope, bool is_class)
     : parent_scope_(std::move(parent_scope)), class_member_(is_class) {

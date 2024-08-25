@@ -25,8 +25,15 @@
   - [x] Block
   - [x] Stmt
   - [x] Var
-- [ ] IR Generator
-  
+- [x] IR Generator(Completed frame)
+TODO lists:
+  - [ ] Add lvalue/rvalue system to Var.
+  - [ ] Add class functions into FunctionManager
+  - [ ] Remove initializer system for Registers(Since it can't be done with `alloca`)
+    - [ ] Small Optimize: Since it's UB for visiting uninitialized variables, we can remove certain initializations.
+  - [ ] Complete construction of jagged array literal
+  - [ ] Optimize: Add constant system to IR
+  - [ ] Optimize: Replace Mul/Div with multiples of 2 with `<<` and `>>`
 
 #### Notes:
 - Array representation: An array created by `malloc`. Size is 4 bytes before its beginning. Only C lib can access it.

@@ -61,14 +61,8 @@ void builtin_printBool(bool val) {
   printf(val ? "true" : "false");
 }
 
-void *builtin_allocArrayInt(size_t len) {
+void *builtin_allocArray(size_t len) {
   int *ptr = calloc(len + 1, 4);
-  ptr[0] = len;
-  return ptr + 1;
-}
-
-void *builtin_allocArrayBool(size_t len) {
-  int *ptr = malloc(len + 4);
   ptr[0] = len;
   return ptr + 1;
 }

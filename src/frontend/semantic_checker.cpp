@@ -18,6 +18,10 @@ void CheckSemantic(RootNode *node) {
 SemanticChecker::SemanticChecker(Scope scope, GlobalScope global_scope)
     : scope_(std::move(scope)), global_scope_(std::move(global_scope)) {}
 
+GlobalScope SemanticChecker::GetGlobalScope() {
+  return std::move(global_scope_);
+}
+
 void SemanticChecker::visit(SimpleArrayNode *node) {
   auto elements = node->GetElements();
   for (auto &item : elements) {
@@ -55,6 +59,9 @@ void SemanticChecker::visit(JaggedArrayNode *node) {
         }
       }
     }
+  }
+  for (const auto &element : elements) {
+    element->SetType(type);
   }
   node->SetType(std::make_shared<Type>(CreateType(type->GetTypename(), type->GetDim() + 1)));
 }

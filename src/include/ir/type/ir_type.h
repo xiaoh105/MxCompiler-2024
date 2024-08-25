@@ -50,7 +50,7 @@ class IRBaseType {
   virtual void SetConstructor(const std::shared_ptr<IRFunction> &func) { constructor_ = func; }
   virtual std::weak_ptr<IRFunction> &GetConstructor() { return constructor_; }
 
-private:
+ private:
   std::weak_ptr<IRFunction> constructor_;
 };
 
@@ -61,9 +61,7 @@ class IRIntType final : public IRBaseType {
   [[nodiscard]] std::pair<int, IRType> GetMember(const std::string &name) const override { assert(false); }
   [[nodiscard]] bool IsBuiltin() const override { return true; }
   [[nodiscard]] bool IsTrivial() const override { return true; }
-  void SetConstructor(const std::shared_ptr<IRFunction> &func) override {
-    assert(false);
-  }
+  void SetConstructor(const std::shared_ptr<IRFunction> &func) override { assert(false); }
   void Define() const override {}
 };
 
@@ -74,9 +72,7 @@ class IRBoolType final : public IRBaseType {
   [[nodiscard]] std::pair<int, IRType> GetMember(const std::string &name) const override { assert(false); }
   [[nodiscard]] bool IsBuiltin() const override { return true; }
   [[nodiscard]] bool IsTrivial() const override { return true; }
-  void SetConstructor(const std::shared_ptr<IRFunction> &func) override {
-    assert(false);
-  }
+  void SetConstructor(const std::shared_ptr<IRFunction> &func) override { assert(false); }
   void Define() const override {}
 };
 
@@ -87,9 +83,7 @@ class IRStringType final : public IRBaseType {
   [[nodiscard]] std::pair<int, IRType> GetMember(const std::string &name) const override { assert(false); }
   [[nodiscard]] bool IsBuiltin() const override { return true; }
   [[nodiscard]] bool IsTrivial() const override { return false; }
-  void SetConstructor(const std::shared_ptr<IRFunction> &func) override {
-    assert(false);
-  }
+  void SetConstructor(const std::shared_ptr<IRFunction> &func) override { assert(false); }
   void Define() const override {}
 };
 
@@ -100,9 +94,7 @@ class IRNullType final : public IRBaseType {
   [[nodiscard]] std::pair<int, IRType> GetMember(const std::string &name) const override { assert(false); }
   [[nodiscard]] bool IsBuiltin() const override { return true; }
   [[nodiscard]] bool IsTrivial() const override { return false; }
-  void SetConstructor(const std::shared_ptr<IRFunction> &func) override {
-    assert(false);
-  }
+  void SetConstructor(const std::shared_ptr<IRFunction> &func) override { assert(false); }
   void Define() const override {}
 };
 
@@ -113,9 +105,7 @@ class IRVoidType final : public IRBaseType {
   [[nodiscard]] std::pair<int, IRType> GetMember(const std::string &name) const override { assert(false); }
   [[nodiscard]] bool IsBuiltin() const override { return true; }
   [[nodiscard]] bool IsTrivial() const override { return false; }
-  void SetConstructor(const std::shared_ptr<IRFunction> &func) override {
-    assert(false);
-  }
+  void SetConstructor(const std::shared_ptr<IRFunction> &func) override { assert(false); }
   void Define() const override {}
 };
 
@@ -151,11 +141,11 @@ class IRCustomType final : public IRBaseType {
   std::vector<std::pair<std::string, IRType>> member_;
 };
 
-const std::shared_ptr<IRBaseType> kIRIntBase = std::make_shared<IRIntType>(IRIntType());
-const std::shared_ptr<IRBaseType> kIRBoolBase = std::make_shared<IRBoolType>(IRBoolType());
-const std::shared_ptr<IRBaseType> kIRStringBase = std::make_shared<IRStringType>(IRStringType());
-const std::shared_ptr<IRBaseType> kIRVoidBase = std::make_shared<IRVoidType>(IRVoidType());
-const std::shared_ptr<IRBaseType> kIRNullBase = std::make_shared<IRNullType>(IRNullType());
+const std::shared_ptr<IRBaseType> kIRIntBase = std::make_shared<IRIntType>();
+const std::shared_ptr<IRBaseType> kIRBoolBase = std::make_shared<IRBoolType>();
+const std::shared_ptr<IRBaseType> kIRStringBase = std::make_shared<IRStringType>();
+const std::shared_ptr<IRBaseType> kIRVoidBase = std::make_shared<IRVoidType>();
+const std::shared_ptr<IRBaseType> kIRNullBase = std::make_shared<IRNullType>();
 
 const IRType kIRIntType(kIRIntBase);
 const IRType kIRBoolType(kIRBoolBase);
@@ -172,7 +162,10 @@ class ClassManager {
     class_["null"] = kIRNullBase;
     class_["void"] = kIRVoidBase;
   }
-  std::shared_ptr<IRBaseType> GetType(const std::string &name) { return class_[name]; }
+  std::shared_ptr<IRBaseType> GetType(const std::string &name) {
+    assert(class_.contains(name));
+    return class_[name];
+  }
   IRType CreateType(const std::string &name, std::size_t dim = 0) {
     if ((name == "null" || name == "void") && dim == 0) {
       assert(false);
@@ -187,9 +180,15 @@ class ClassManager {
   }
   void AddType(const std::unordered_map<std::string, std::shared_ptr<Typename>> &type_name) {
     for (const auto &name : std::views::keys(type_name)) {
+      if (name == "int" || name == "bool" || name == "void" || name == "string") {
+        continue;
+      }
       class_[name] = std::make_shared<IRCustomType>(name);
     }
     for (const auto &type : type_name) {
+      if (type.first == "int" || type.first == "bool" || type.first == "void" || type.first == "string") {
+        continue;
+      }
       auto cur_type = std::dynamic_pointer_cast<IRCustomType>(class_[type.first]);
       std::vector<std::pair<std::string, IRType>> members;
       for (const auto &member : type.second->GetMembers()) {
@@ -218,6 +217,4 @@ inline std::string IRType::GetElementIRTypename() const {
   return dim_ - 1 == 0 ? base_->GetIRTypename() : "ptr";
 }
 
-inline bool IRType::IsPtrOf(const IRType &other) const {
-  return base_ == other.base_ && dim_ == other.dim_ + 1;
-}
+inline bool IRType::IsPtrOf(const IRType &other) const { return base_ == other.base_ && dim_ == other.dim_ + 1; }

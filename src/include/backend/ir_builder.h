@@ -10,8 +10,14 @@
 #include "ast/ast_visitor.h"
 #include "ir/ir.h"
 
+class GlobalScope;
+
+void GenerateIR(RootNode *root);
+
 class IRBuilder final : public ASTVisitor {
+  friend void GenerateIR(RootNode *root);
  public:
+  IRBuilder(GlobalScope global_scope);
   void visit(RootNode *node) override;
   void visit(JaggedArrayNode *node) override;
   void visit(SimpleArrayNode *node) override;
@@ -52,4 +58,8 @@ class IRBuilder final : public ASTVisitor {
   FunctionManager functions_;
   VarManager vars_;
   ClassManager classes_;
+
+  std::shared_ptr<Block> loop_step_{nullptr};
+  std::shared_ptr<Block> loop_end_{nullptr};
+  std::shared_ptr<IRBaseType> cur_type_{nullptr};
 };

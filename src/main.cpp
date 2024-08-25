@@ -6,6 +6,11 @@
 #include "parser/MxParser.h"
 #include "utils/error/semantic_error.hpp"
 
+#include "ir/type/ir_type.h"
+#include "ir/var/var_manager.h"
+
+#include "backend/ir_builder.h"
+
 int main() {
   ANTLRInputStream input(std::cin);
   MxErrorListener error_listener;
@@ -25,7 +30,7 @@ int main() {
   try {
     ASTBuilder builder;
     auto ast_root = std::any_cast<std::shared_ptr<RootNode>>(builder.visitProgram(root));
-    CheckSemantic(ast_root.get());
+    GenerateIR(ast_root.get());
   } catch (const SemanticError &err) {
 #ifndef OJ
     std::cerr << err.what() << std::endl;
@@ -36,5 +41,6 @@ int main() {
   } catch (std::runtime_error &) {
     throw;
   }
+  std::cout << "\033[32mSemantic check passed!\033[0m" << std::endl;
   return 0;
 }

@@ -41,6 +41,7 @@ void SymbolCollector::visit(FunctionDefNode *node) {
   }
   auto return_type = CreateType(std::move(return_typename.value()), dim);
   std::vector<Type> args;
+  std::vector<std::string> arg_names;
   for (const auto &item : node->GetArguments()) {
     auto [arg_name, arg_dim] = item.first;
     auto arg_typename = global_scope_.GetType(arg_name);
@@ -49,8 +50,9 @@ void SymbolCollector::visit(FunctionDefNode *node) {
     }
     auto arg_type = CreateType(std::move(arg_typename.value()), arg_dim);
     args.push_back(std::move(arg_type));
+    arg_names.push_back(std::move(arg_name));
   }
-  Function func(std::move(return_type), std::move(args));
+  Function func(std::move(return_type), std::move(arg_names), std::move(args));
   if (scope_.HasVar(func_name)) {
     throw MultipleDef(node->GetPos());
   }
@@ -65,7 +67,7 @@ void SymbolCollector::visit(ConstructorClassStmtNode *node) {
   if (current_class_->HasFunction(name)) {
     throw MultipleDef(node->GetPos());
   }
-  Function constructor(kVoidType, {});
+  Function constructor(kVoidType, std::vector<std::string>{"this"}, {});
   current_class_->AddFunction(name, std::move(constructor));
 }
 
@@ -85,6 +87,7 @@ void SymbolCollector::visit(FunctionDefClassStmtNode *node) {
   auto return_type = CreateType(std::move(return_typename.value()), return_dim);
   auto &args = node->GetArguments();
   std::vector<Type> ret_args;
+  std::vector<std::string> ret_names;
   for (const auto &item : args) {
     auto &[arg_name, arg_dim] = item.first;
     auto arg_typename = global_scope_.GetType(arg_name);
@@ -93,8 +96,9 @@ void SymbolCollector::visit(FunctionDefClassStmtNode *node) {
     }
     auto arg_type = CreateType(std::move(arg_typename.value()), arg_dim);
     ret_args.push_back(std::move(arg_type));
+    ret_names.push_back(arg_name);
   }
-  Function func(std::move(return_type), std::move(ret_args));
+  Function func(std::move(return_type), std::move(ret_names), std::move(ret_args));
   current_class_->AddFunction(name, func);
 }
 

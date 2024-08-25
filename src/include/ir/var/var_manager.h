@@ -38,20 +38,20 @@ public:
     return local_reg_.emplace(std::move(name), std::move(ret)).first->second;
   }
   bool HasVar(const std::string &name) {
-    return local_reg_.contains("%" + name) || global_reg_.contains("@" + name);
+    return local_reg_.contains(name) || global_reg_.contains(name);
   }
   const std::shared_ptr<Register> &GetVar(const std::string &name) {
-    auto it = local_reg_.find("%" + name);
+    auto it = local_reg_.find(name);
     if (it != local_reg_.end()) {
       return it->second;
     }
-    return global_reg_.find("@" + name)->second;
+    return global_reg_.find(name)->second;
   }
   const std::shared_ptr<Constant> &GetString(const std::string &value) {
     auto it = string_const_.find(value);
     if (it == string_const_.end()) {
       std::string name = "strConst." + std::to_string(string_const_.size());
-      auto var = CreateVar(kIRStringType, name, true);
+      auto var = CreateVar(kIRStringType.ToPtr(), name, true);
       auto ret = std::make_shared<Constant>(std::move(var), value);
       return string_const_.emplace(value, std::move(ret)).first->second;
     }

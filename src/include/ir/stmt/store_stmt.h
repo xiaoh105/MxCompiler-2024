@@ -19,7 +19,7 @@ public:
     assert(ptr_->GetType().IsPtrOf(value_->GetType()));
   }
   void Print() const override {
-    std::cout << "store " << value_->GetType().GetElementIRTypename() << " " << value_->GetName() << ", ptr " << ptr_->GetName() << std::endl;
+    std::cout << "store " << value_->GetType().GetIRTypename() << " " << value_->GetName() << ", ptr " << ptr_->GetName() << std::endl;
   }
 
 private:
