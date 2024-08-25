@@ -31,7 +31,28 @@ IRBuilder::IRBuilder(GlobalScope global_scope) {
     auto ret = std::make_shared<IRFunction>(std::move(ret_type), func.first, std::move(args), false);
     functions_.DefineFunction(ret);
   }
-  init_func_ = std::make_unique<IRFunction>(kIRVoidType, "global.init", std::vector<std::pair<IRType, std::string>>{}, false);
+  for (const auto &type : global_scope.GetTypes()) {
+    auto this_type = IRType{classes_.GetType(type.first), 1};
+    for (const auto &func : type.second->GetFunctions()) {
+      auto ast_ret_type = func.second->GetReturnType();
+      auto ret_base = classes_.GetType(ast_ret_type.GetTypename()->GetName());
+      auto ret_type = IRType{ret_base, ast_ret_type.GetDim() + (ret_base->IsTrivial() ? 0 : 1)};
+      std::vector<std::pair<IRType, std::string>> args;
+      args.emplace_back(this_type, "this");
+      auto &ast_args = func.second->GetArguments();
+      auto &ast_arg_name = func.second->GetArgName();
+      for (int i = 0; i < ast_args.size(); ++i) {
+        auto arg_base = classes_.GetType(ast_args[i].GetTypename()->GetName());
+        auto arg_type = IRType{arg_base, ast_args[i].GetDim() + (arg_base->IsTrivial() ? 0 : 1)};
+        args.emplace_back(std::move(arg_type), ast_arg_name[i]);
+      }
+      auto ret = std::make_shared<IRFunction>(
+          std::move(ret_type), this_type.GetBaseType()->GetIRTypename() + "." + func.first, std::move(args), false);
+      functions_.DefineFunction(ret);
+    }
+  }
+  init_func_ =
+      std::make_unique<IRFunction>(kIRVoidType, "global.init", std::vector<std::pair<IRType, std::string>>{}, false);
   functions_.DefineFunction(init_func_);
 }
 
@@ -119,7 +140,8 @@ void IRBuilder::visit(VarPrimaryNode *node) {
       node->SetVar(vars_.GetVar(node->GetName()));
     } else {
       auto type = classes_.GetType(node->GetType()->GetTypename()->GetName());
-      auto ret = vars_.CreateVar(IRType(type, node->GetType()->GetDim() + type->IsTrivial() ? 0 : 1), node->GetName(), false);
+      auto ret =
+          vars_.CreateVar(IRType(type, node->GetType()->GetDim() + type->IsTrivial() ? 0 : 1), node->GetName(), false);
       auto this_ptr = vars_.GetVar("this");
       auto index = type->GetMember(node->GetName()).first;
       cur_func_->PushStmt(std::make_unique<GetElementPtrStmt>(
@@ -137,7 +159,8 @@ std::shared_ptr<Register> IRBuilder::CreateArray(std::size_t cur_dim, const std:
   auto tmp_var = vars_.CreateTmpVar({type, dim - cur_dim}, "arrayTmp");
   expr[cur_dim]->accept(this);
   auto cur_len = ToRightVal(expr[cur_dim]->GetVar());
-  cur_func_->PushStmt(std::make_unique<CallStmt>(tmp_var, functions_.GetFunction("builtin.allocArray"), std::vector{{cur_len}}));
+  cur_func_->PushStmt(
+      std::make_unique<CallStmt>(tmp_var, functions_.GetFunction("builtin.allocArray"), std::vector{{cur_len}}));
   if (cur_dim + 1 == expr.size()) {
     return tmp_var;
   }
@@ -367,7 +390,8 @@ void IRBuilder::visit(BinaryExprNode *node) {
         auto func_ret = vars_.CreateTmpVar(kIRIntType, "");
         cur_func_->PushStmt(
             std::make_unique<CallStmt>(func_ret, functions_.GetFunction("strcmp"), std::vector{l_var, r_var}));
-        cur_func_->PushStmt(std::make_unique<ICmpStmt>(res, zext_cnt_++, ICmpStmt::OpType::kEq, func_ret, vars_.GetInt(0)));
+        cur_func_->PushStmt(
+            std::make_unique<ICmpStmt>(res, zext_cnt_++, ICmpStmt::OpType::kEq, func_ret, vars_.GetInt(0)));
       }
       node->SetVar(std::move(res));
       break;
@@ -380,7 +404,8 @@ void IRBuilder::visit(BinaryExprNode *node) {
         auto func_ret = vars_.CreateTmpVar(kIRIntType, "");
         cur_func_->PushStmt(
             std::make_unique<CallStmt>(func_ret, functions_.GetFunction("strcmp"), std::vector{l_var, r_var}));
-        cur_func_->PushStmt(std::make_unique<ICmpStmt>(res, zext_cnt_++, ICmpStmt::OpType::kNe, func_ret, vars_.GetInt(0)));
+        cur_func_->PushStmt(
+            std::make_unique<ICmpStmt>(res, zext_cnt_++, ICmpStmt::OpType::kNe, func_ret, vars_.GetInt(0)));
       }
       node->SetVar(std::move(res));
       break;
@@ -393,7 +418,8 @@ void IRBuilder::visit(BinaryExprNode *node) {
         auto func_ret = vars_.CreateTmpVar(kIRIntType, "");
         cur_func_->PushStmt(
             std::make_unique<CallStmt>(func_ret, functions_.GetFunction("strcmp"), std::vector{l_var, r_var}));
-        cur_func_->PushStmt(std::make_unique<ICmpStmt>(res, zext_cnt_++, ICmpStmt::OpType::kSgt, func_ret, vars_.GetInt(0)));
+        cur_func_->PushStmt(
+            std::make_unique<ICmpStmt>(res, zext_cnt_++, ICmpStmt::OpType::kSgt, func_ret, vars_.GetInt(0)));
       }
       node->SetVar(std::move(res));
       break;
@@ -406,7 +432,8 @@ void IRBuilder::visit(BinaryExprNode *node) {
         auto func_ret = vars_.CreateTmpVar(kIRIntType, "");
         cur_func_->PushStmt(
             std::make_unique<CallStmt>(func_ret, functions_.GetFunction("strcmp"), std::vector{l_var, r_var}));
-        cur_func_->PushStmt(std::make_unique<ICmpStmt>(res, zext_cnt_++, ICmpStmt::OpType::kSge, func_ret, vars_.GetInt(0)));
+        cur_func_->PushStmt(
+            std::make_unique<ICmpStmt>(res, zext_cnt_++, ICmpStmt::OpType::kSge, func_ret, vars_.GetInt(0)));
       }
       node->SetVar(std::move(res));
       break;
@@ -419,7 +446,8 @@ void IRBuilder::visit(BinaryExprNode *node) {
         auto func_ret = vars_.CreateTmpVar(kIRIntType, "");
         cur_func_->PushStmt(
             std::make_unique<CallStmt>(func_ret, functions_.GetFunction("strcmp"), std::vector{l_var, r_var}));
-        cur_func_->PushStmt(std::make_unique<ICmpStmt>(res, zext_cnt_++, ICmpStmt::OpType::kSlt, func_ret, vars_.GetInt(0)));
+        cur_func_->PushStmt(
+            std::make_unique<ICmpStmt>(res, zext_cnt_++, ICmpStmt::OpType::kSlt, func_ret, vars_.GetInt(0)));
       }
       node->SetVar(std::move(res));
       break;
@@ -432,7 +460,8 @@ void IRBuilder::visit(BinaryExprNode *node) {
         auto func_ret = vars_.CreateTmpVar(kIRIntType, "");
         cur_func_->PushStmt(
             std::make_unique<CallStmt>(func_ret, functions_.GetFunction("strcmp"), std::vector{l_var, r_var}));
-        cur_func_->PushStmt(std::make_unique<ICmpStmt>(res, zext_cnt_++, ICmpStmt::OpType::kSle, func_ret, vars_.GetInt(0)));
+        cur_func_->PushStmt(
+            std::make_unique<ICmpStmt>(res, zext_cnt_++, ICmpStmt::OpType::kSle, func_ret, vars_.GetInt(0)));
       }
       node->SetVar(std::move(res));
       break;
@@ -505,9 +534,10 @@ void IRBuilder::visit(FunctionCallExprNode *node) {
     base_expr->accept(this);
     auto this_ptr = ToRightVal(base_expr->GetVar());
     if (this_ptr->GetType().GetBaseType()->IsTrivial() && this_ptr->GetType().GetDim() >= 1 ||
-      !this_ptr->GetType().GetBaseType()->IsTrivial() && this_ptr->GetType().GetDim() >= 2) {
+        !this_ptr->GetType().GetBaseType()->IsTrivial() && this_ptr->GetType().GetDim() >= 2) {
       auto res = vars_.CreateTmpVar(kIRIntType, "");
-      cur_func_->PushStmt(std::make_unique<CallStmt>(res, functions_.GetFunction("builtin.getSize"), std::vector{this_ptr}));
+      cur_func_->PushStmt(
+          std::make_unique<CallStmt>(res, functions_.GetFunction("builtin.getSize"), std::vector{this_ptr}));
       node->SetVar(res);
       return;
     }
@@ -521,10 +551,11 @@ void IRBuilder::visit(FunctionCallExprNode *node) {
   }
   auto &func = functions_.GetFunction(func_name);
   if (func->GetReturnType() == kIRVoidType) {
-    cur_func_->PushStmt(std::make_unique<CallStmt>(functions_.GetFunction(node->GetFuncName()), std::move(arg_var)));
+    cur_func_->PushStmt(std::make_unique<CallStmt>(func, std::move(arg_var)));
   } else {
     auto res = vars_.CreateTmpVar(func->GetReturnType(), "");
-    cur_func_->PushStmt(std::make_unique<CallStmt>(res, functions_.GetFunction(node->GetFuncName()), std::move(arg_var)));
+    cur_func_->PushStmt(
+        std::make_unique<CallStmt>(res, func, std::move(arg_var)));
     node->SetVar(res);
   }
 }
@@ -683,6 +714,7 @@ void IRBuilder::visit(WhileStmtNode *node) {
   loop_step_ = loop_cond;
   loop_end_ = loop_end;
   stmts->accept(this);
+  cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(loop_cond));
   cur_func_->PushBlock(loop_end);
   loop_step_ = nullptr;
   loop_end_ = nullptr;

@@ -21,7 +21,9 @@ int strcmp(const char *str1, const char *str2);
 
 char *strcpy(char *dest, const char *src);
 
-char *strcat( char *dest, const char *src );
+char *strcat(char *dest, const char *src);
+
+void *memcpy(void *dest, const void *src, size_t count);
 
 void print(const char *str) {
   printf("%s", str);
@@ -57,11 +59,32 @@ const char *toString(int val) {
   return str;
 }
 
+int ptr_length(const char *str) {
+  return strlen(str);
+}
+
+char *ptr_substring(const char *str, int start, int end) {
+  char *ret = malloc(end - start + 1);
+  memcpy(ret, str + start, end - start);
+  ret[end - start] = 0;
+  return ret;
+}
+
+int ptr_parseInt(const char *str) {
+  int ret;
+  sscanf(str, "%d", &ret);
+  return ret;
+}
+
+int ptr_ord(const char *str, int pos) {
+  return str[pos];
+}
+
 size_t builtin_getSize(int *ptr) {
   return *(ptr - 1);
 }
 
-void builtin_printBool(bool val) {
+void builtin_printBool(char val) {
   printf(val ? "true" : "false");
 }
 

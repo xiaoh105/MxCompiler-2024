@@ -57,6 +57,7 @@ class Typename {
   std::optional<Type> GetMember(const std::string &name) const;
   std::optional<Function> GetFunction(const std::string &name) const;
   [[nodiscard]] const std::unordered_map<std::string, std::shared_ptr<Type>> &GetMembers() const;
+  [[nodiscard]] const std::unordered_map<std::string, std::shared_ptr<Function>> &GetFunctions() const;
   bool operator==(const Typename &other) const;
   bool operator!=(const Typename &other) const;
 

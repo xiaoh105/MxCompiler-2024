@@ -108,8 +108,8 @@ class FunctionManager {
     auto printlnInt = std::make_shared<IRFunction>(
         kIRVoidType, "printlnInt", std::vector<std::pair<IRType, std::string>>{{kIRIntType, "n"}}, true);
     functions_.emplace("printlnInt", std::move(printlnInt));
-    auto getString =
-        std::make_shared<IRFunction>(kIRStringType.ToPtr(), "getString", std::vector<std::pair<IRType, std::string>>{}, true);
+    auto getString = std::make_shared<IRFunction>(kIRStringType.ToPtr(), "getString",
+                                                  std::vector<std::pair<IRType, std::string>>{}, true);
     functions_.emplace("getString", std::move(getString));
     auto getInt =
         std::make_shared<IRFunction>(kIRIntType, "getInt", std::vector<std::pair<IRType, std::string>>{}, true);
@@ -117,6 +117,17 @@ class FunctionManager {
     auto toString = std::make_shared<IRFunction>(kIRStringType, "toString",
                                                  std::vector<std::pair<IRType, std::string>>{{kIRIntType, "i"}}, true);
     functions_.emplace("toString", std::move(toString));
+    auto length = std::make_shared<IRFunction>(kIRIntType, "ptr.length", std::vector<std::pair<IRType, std::string>>{}, true);
+    functions_.emplace("ptr.length", std::move(length));
+    auto substring = std::make_shared<IRFunction>(
+        kIRStringType.ToPtr(), "ptr.substring",
+        std::vector<std::pair<IRType, std::string>>{{kIRIntType, "start"}, {kIRIntType, "end"}}, true);
+    functions_.emplace("ptr.substring", std::move(substring));
+    auto parseInt = std::make_shared<IRFunction>(kIRIntType, "ptr.parseInt", std::vector<std::pair<IRType, std::string>>{}, true);
+    functions_.emplace("ptr.parseInt", std::move(parseInt));
+    auto ord = std::make_shared<IRFunction>(kIRIntType, "ptr.ord",
+                                            std::vector<std::pair<IRType, std::string>>{{kIRIntType, "pos"}}, true);
+    functions_.emplace("ptr.ord", std::move(ord));
     auto getSize = std::make_shared<IRFunction>(
         kIRIntType, "builtin.getSize", std::vector<std::pair<IRType, std::string>>{{kIRIntType.ToPtr(), "ptr"}}, true);
     functions_.emplace("builtin.getSize", std::move(getSize));

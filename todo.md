@@ -29,10 +29,11 @@
 TODO lists:
   - Correctnes Issues
     - [x] Add lvalue/rvalue system to Var.(8/25)
-    - [ ] Add class functions to FunctionManager
-    - [ ] Complete construction of jagged array literal
+    - [x] Add class functions to FunctionManager
+    - [ ] Complete construction of jagged array literal(8/25)
     - [x] Add initialization function at the beginning of `main`(8/25)
     - [x] Add `trunc` for boolean variables(since they use `i8` as their type)(8/25)
+    - [ ] Change `loopCond` and `loopEnd` to stack for loops inside loops.
   - Format Issues
     - [x] Remove initializer system for Registers(Since it can't be done with `alloca`)(8/25)
       - [ ] Small Optimize: Since it's UB for visiting uninitialized variables, we can remove certain initializations.

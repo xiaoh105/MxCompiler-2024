@@ -105,7 +105,7 @@ class IRVoidType final : public IRBaseType {
   [[nodiscard]] std::string GetIRTypename() const override { return "void"; }
   [[nodiscard]] std::pair<int, IRType> GetMember(const std::string &name) const override { assert(false); }
   [[nodiscard]] bool IsBuiltin() const override { return true; }
-  [[nodiscard]] bool IsTrivial() const override { return false; }
+  [[nodiscard]] bool IsTrivial() const override { return true; }
   void SetConstructor(const std::shared_ptr<IRFunction> &func) override { assert(false); }
   void Define() const override {}
 };
