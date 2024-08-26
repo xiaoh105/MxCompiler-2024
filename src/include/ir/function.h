@@ -69,7 +69,11 @@ class IRFunction {
       if (i > 0) {
         std::cout << ", ";
       }
-      std::cout << arguments_[i].first.GetIRTypename() << " %arg." << arguments_[i].second;
+      if (arguments_[i].second != "this") {
+        std::cout << arguments_[i].first.GetIRTypename() << " %arg." << arguments_[i].second;
+      } else {
+        std::cout << arguments_[i].first.GetIRTypename() << " %" << arguments_[i].second;
+      }
     }
     std::cout << ")" << std::endl;
     std::cout << "{" << std::endl;
@@ -114,7 +118,7 @@ class FunctionManager {
     auto getInt =
         std::make_shared<IRFunction>(kIRIntType, "getInt", std::vector<std::pair<IRType, std::string>>{}, true);
     functions_.emplace("getInt", std::move(getInt));
-    auto toString = std::make_shared<IRFunction>(kIRStringType, "toString",
+    auto toString = std::make_shared<IRFunction>(kIRStringType.ToPtr(), "toString",
                                                  std::vector<std::pair<IRType, std::string>>{{kIRIntType, "i"}}, true);
     functions_.emplace("toString", std::move(toString));
     auto length = std::make_shared<IRFunction>(kIRIntType, "ptr.length", std::vector<std::pair<IRType, std::string>>{}, true);
@@ -150,6 +154,7 @@ class FunctionManager {
   void DefineFunction(const std::shared_ptr<IRFunction> &function) {
     functions_.emplace(function->GetName(), function).second;
   }
+  [[nodiscard]] bool HasFunction(const std::string &name) const { return functions_.contains(name); }
   const std::shared_ptr<IRFunction> &GetFunction(const std::string &name) const { return functions_.at(name); }
   void PrintDeclare() {
     for (const auto &func : std::ranges::views::values(functions_)) {

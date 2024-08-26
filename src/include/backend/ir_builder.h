@@ -59,8 +59,8 @@ class IRBuilder final : public ASTVisitor {
   VarManager vars_;
   ClassManager classes_;
 
-  std::shared_ptr<Block> loop_step_{nullptr};
-  std::shared_ptr<Block> loop_end_{nullptr};
+  std::stack<std::shared_ptr<Block>> loop_step_;
+  std::stack<std::shared_ptr<Block>> loop_end_;
   std::shared_ptr<IRBaseType> cur_type_{nullptr};
 
   int zext_cnt_{0};

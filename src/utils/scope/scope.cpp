@@ -123,5 +123,6 @@ Scope &Scope::operator=(Scope &&other) noexcept {
   local_ = std::move(other.local_);
   current_index_ = std::move(other.current_index_);
   parent_scope_ = std::move(other.parent_scope_);
+  class_member_ = other.class_member_;
   return *this;
 }

@@ -4,10 +4,9 @@
  * Identification: ./src/frontend/symbol_collector.cpp
  * Function: Scan the parser tree and collect all global symbols
  */
-#include "frontend/symbol_collector.h"
 #include "ast/ast.h"
+#include "frontend/symbol_collector.h"
 #include "frontend/class_collector.h"
-
 #include "utils/error/semantic_error.hpp"
 
 SymbolCollector::SymbolCollector() : scope_(nullptr) {}
@@ -96,7 +95,7 @@ void SymbolCollector::visit(FunctionDefClassStmtNode *node) {
     }
     auto arg_type = CreateType(std::move(arg_typename.value()), arg_dim);
     ret_args.push_back(std::move(arg_type));
-    ret_names.push_back(arg_name);
+    ret_names.push_back(item.second);
   }
   Function func(std::move(return_type), std::move(ret_names), std::move(ret_args));
   current_class_->AddFunction(name, func);

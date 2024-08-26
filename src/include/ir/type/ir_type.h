@@ -115,7 +115,7 @@ class IRCustomType final : public IRBaseType {
   IRCustomType() = delete;
   IRCustomType(std::string name) : class_name_("struct." + std::move(name)) {}
   void SetMembers(std::vector<std::pair<std::string, IRType>> member) { member_ = std::move(member); }
-  [[nodiscard]] std::string GetIRTypename() const override { return class_name_; }
+  [[nodiscard]] std::string GetIRTypename() const override { return "%" + class_name_; }
   [[nodiscard]] std::pair<int, IRType> GetMember(const std::string &name) const override {
     for (int i = 0; i < member_.size(); ++i) {
       if (name == member_[i].first) {
@@ -127,7 +127,7 @@ class IRCustomType final : public IRBaseType {
   [[nodiscard]] bool IsBuiltin() const override { return false; }
   [[nodiscard]] bool IsTrivial() const override { return false; }
   void Define() const override {
-    std::cout << class_name_ << " = type { ";
+    std::cout << "%" << class_name_ << " = type { ";
     for (int i = 0; i < member_.size(); ++i) {
       if (i != 0) {
         std::cout << ", ";
@@ -193,8 +193,8 @@ class ClassManager {
       auto cur_type = std::dynamic_pointer_cast<IRCustomType>(class_[type.first]);
       std::vector<std::pair<std::string, IRType>> members;
       for (const auto &member : type.second->GetMembers()) {
-        members.emplace_back(member.first,
-                             IRType(GetType(member.second->GetTypename()->GetName()), member.second->GetDim()));
+        auto base = GetType(member.second->GetTypename()->GetName());
+        members.emplace_back(member.first, IRType(base, member.second->GetDim() + (base->IsTrivial() ? 0 : 1)));
       }
       cur_type->SetMembers(std::move(members));
     }

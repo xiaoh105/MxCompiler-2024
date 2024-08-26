@@ -25,8 +25,8 @@ public:
     }
     return it->second;
   }
-  const std::shared_ptr<Register> &CreateVar(IRType type, const std::string &name, bool global) {
-    auto ret = std::make_shared<Register>(std::move(type), name, global, true);
+  const std::shared_ptr<Register> &CreateVar(IRType type, const std::string &name, bool global, bool lvalue = true) {
+    auto ret = std::make_shared<Register>(std::move(type), name, global, lvalue);
     if (global) {
       return global_reg_.emplace(name, std::move(ret)).first->second;
     }
@@ -47,11 +47,22 @@ public:
     }
     return global_reg_.find(name)->second;
   }
+  void EnterNewFunc() {
+    local_reg_.clear();
+  }
+  void EnterInitFunc() {
+    local_reg_ = std::move(init_local_reg_);
+  }
+  void LeaveInitFunc() {
+    init_local_reg_ = std::move(local_reg_);
+    local_reg_.clear();
+  }
   const std::shared_ptr<Constant> &GetString(const std::string &value) {
     auto it = string_const_.find(value);
     if (it == string_const_.end()) {
       std::string name = "strConst." + std::to_string(string_const_.size());
-      auto var = CreateVar(kIRStringType.ToPtr(), name, true);
+      auto var = CreateVar(kIRStringType.ToPtr(), name, true, false);
+      var->SetConst(true);
       auto ret = std::make_shared<Constant>(std::move(var), value);
       return string_const_.emplace(value, std::move(ret)).first->second;
     }
@@ -85,4 +96,5 @@ private:
   std::unordered_map<std::string, std::shared_ptr<Register>> global_reg_;
   std::unordered_map<std::string, int> var_index_;
   std::unordered_map<std::string, std::shared_ptr<Register>> local_reg_;
+  std::unordered_map<std::string, std::shared_ptr<Register>> init_local_reg_;
 };

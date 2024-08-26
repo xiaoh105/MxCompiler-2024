@@ -21,6 +21,7 @@
 #include "ir/stmt/branch_stmt/br_cond_stmt.h"
 #include "ir/stmt/branch_stmt/br_uncond_stmt.h"
 #include "ir/stmt/branch_stmt/ret_stmt.h"
+#include "ir/stmt/branch_stmt/unreachable.h"
 
 #include "ir/var/var.h"
 #include "ir/var/constant.h"

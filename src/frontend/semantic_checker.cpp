@@ -655,7 +655,7 @@ void SemanticChecker::visit(ClassDefNode *node) {
     throw std::runtime_error("Unidentified class name");
   }
   current_class_ = std::move(type.value());
-  scope_ = {std::make_unique<Scope>(std::move(scope_))};
+  scope_ = {std::make_unique<Scope>(std::move(scope_)), true};
   scope_.DefineVar("this", CreateType(current_class_, 0), node->GetPos());
   for (const auto &member : current_class_->GetMembers()) {
     scope_.DefineVar(member.first, *member.second, node->GetPos());
@@ -734,20 +734,23 @@ void SemanticChecker::visit(ConstructorClassStmtNode *node) {
 }
 
 void SemanticChecker::visit(FunctionDefClassStmtNode *node) {
-  scope_ = {std::make_unique<Scope>(std::move(scope_)), true};
+  scope_ = {std::make_unique<Scope>(std::move(scope_))};
   auto func = current_class_->GetFunction(node->GetFuncName());
   if (func == std::nullopt) {
     throw std::runtime_error("Unidentified method name");
   }
   returned_ = false;
-  for (auto &item : node->GetArguments()) {
-    auto &[type_name, var_name] = item;
+  auto &func_args = func->GetArgName();
+  auto &args = node->GetArguments();
+  for (int i = 0; i < args.size(); ++i) {
+    auto &[type_name, var_name] = args[i];
     auto type_opt = global_scope_.GetType(type_name.first);
     if (type_opt == std::nullopt) {
       throw std::runtime_error("Invalid arg type");
     }
     auto type = CreateType(std::move(type_opt.value()), type_name.second);
     scope_.DefineVar(var_name, std::move(type), node->GetPos());
+    func_args[i] = var_name + "." + std::to_string(scope_.GetIndex(var_name));
   }
   return_type_ = std::make_shared<Type>(func->GetReturnType());
   node->GetFunctionBody()->accept(this);
