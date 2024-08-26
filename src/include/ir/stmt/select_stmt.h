@@ -18,7 +18,7 @@ class SelectStmt : public Stmt {
   }
   void Print() const override {
     const std::string res_typename = res_->GetType().GetIRTypename();
-    std::cout << "%truncTmp." << res_raw_ << " = trunc i8 " << res_->GetName() << " to i1" << std::endl;
+    std::cout << "%truncTmp." << res_raw_ << " = trunc i8 " << cond_->GetName() << " to i1" << std::endl;
     std::cout << res_->GetName() << " = select i1 %truncTmp." << res_raw_ << ", " << res_typename << " "
               << true_var_->GetName() << ", " << res_typename << " " << false_var_->GetName() << std::endl;
   }

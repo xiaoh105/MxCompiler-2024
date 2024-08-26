@@ -19,7 +19,7 @@ class ICmpStmt final : public Stmt {
   ICmpStmt(std::shared_ptr<Register> res, int res_raw, OpType op_type, std::shared_ptr<Var> lhs, std::shared_ptr<Var> rhs)
       : result_(std::move(res)), result_raw_(res_raw), op_type_(op_type), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {
     assert(result_->GetType() == kIRBoolType);
-    assert(lhs_->GetType() == rhs_->GetType());
+    assert(lhs_->GetType() == rhs_->GetType() || lhs_->GetType() == kIRNullType || rhs_->GetType() == kIRNullType);
   }
   void Print() const override {
     std::cout << "%zextTmp." << result_raw_ << " = icmp " << GetOpName(op_type_) << " " << lhs_->GetType().GetIRTypename() << " "

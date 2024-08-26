@@ -49,13 +49,17 @@ public:
   }
   void EnterNewFunc() {
     local_reg_.clear();
+    var_index_.clear();
   }
   void EnterInitFunc() {
     local_reg_ = std::move(init_local_reg_);
+    var_index_ = std::move(init_var_index_);
   }
   void LeaveInitFunc() {
     init_local_reg_ = std::move(local_reg_);
+    init_var_index_ = std::move(var_index_);
     local_reg_.clear();
+    var_index_.clear();
   }
   const std::shared_ptr<Constant> &GetString(const std::string &value) {
     auto it = string_const_.find(value);
@@ -95,6 +99,7 @@ private:
   std::unordered_map<std::string, std::shared_ptr<Constant>> string_const_;
   std::unordered_map<std::string, std::shared_ptr<Register>> global_reg_;
   std::unordered_map<std::string, int> var_index_;
+  std::unordered_map<std::string, int> init_var_index_;
   std::unordered_map<std::string, std::shared_ptr<Register>> local_reg_;
   std::unordered_map<std::string, std::shared_ptr<Register>> init_local_reg_;
 };

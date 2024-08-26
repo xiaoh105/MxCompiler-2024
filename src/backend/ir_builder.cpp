@@ -522,15 +522,27 @@ void IRBuilder::visit(TenaryExprNode *node) {
   auto &cond = node->GetCondition();
   auto &lhs = node->GetThenExpr();
   auto &rhs = node->GetElseExpr();
+  auto lhs_block = std::make_shared<Block>(cur_func_->AssignTag("ternaryLhs"));
+  auto rhs_block = std::make_shared<Block>(cur_func_->AssignTag("ternaryRhs"));
+  auto end_block = std::make_shared<Block>(cur_func_->AssignTag("ternaryEnd"));
   cond->accept(this);
+  cur_func_->PushStmt(std::make_unique<ConditionalBrStmt>(ToRightVal(cond->GetVar()), trunc_cnt_++, lhs_block, rhs_block));
+  cur_func_->PushBlock(lhs_block);
   lhs->accept(this);
+  auto l_val = lhs->GetVar() ? ToRightVal(lhs->GetVar()) : nullptr;
+  auto l_jmp = cur_func_->GetCurBlock();
+  cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(end_block));
+  cur_func_->PushBlock(rhs_block);
   rhs->accept(this);
-  auto cond_val = ToRightVal(cond->GetVar());
-  auto l_val = ToRightVal(lhs->GetVar());
-  auto r_val = ToRightVal(rhs->GetVar());
-  auto res = vars_.CreateTmpVar(l_val->GetType(), "");
-  cur_func_->PushStmt(std::make_unique<SelectStmt>(res, trunc_cnt_++, cond_val, l_val, r_val));
-  node->SetVar(res);
+  auto r_val = rhs->GetVar() ? ToRightVal(rhs->GetVar()) : nullptr;
+  auto r_jmp = cur_func_->GetCurBlock();
+  cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(end_block));
+  cur_func_->PushBlock(end_block);
+  if (l_val) {
+    auto res = vars_.CreateTmpVar(l_val->GetType(), "");
+    cur_func_->PushStmt(std::make_unique<PhiStmt>(res, std::vector<std::pair<std::shared_ptr<Var>, std::weak_ptr<Block>>>{{l_val, l_jmp}, {r_val, r_jmp}}));
+    node->SetVar(res);
+  }
 }
 
 void IRBuilder::visit(FunctionCallExprNode *node) {
@@ -593,15 +605,10 @@ void IRBuilder::visit(SubscriptExprNode *node) {
   std::shared_ptr<Register> res;
   for (const auto &item : index) {
     item->accept(this);
-    auto tmp = vars_.CreateTmpVar(base_var->GetType().RemovePtr(), "");
-    if (base_var->IsLValue()) {
-      cur_func_->PushStmt(std::make_unique<LoadStmt>(tmp, base_var));
-    } else {
-      tmp = base_var;
-    }
     auto index_var = ToRightVal(item->GetVar());
-    res = vars_.CreateTmpVar(tmp->GetType(), "", true);
-    cur_func_->PushStmt(std::make_unique<GetElementPtrStmt>(res, tmp, std::vector{index_var}));
+    base_var = std::dynamic_pointer_cast<Register>(ToRightVal(base_var));
+    res = vars_.CreateTmpVar(base_var->GetType(), "", true);
+    cur_func_->PushStmt(std::make_unique<GetElementPtrStmt>(res, base_var, std::vector{index_var}));
     base_var = res;
   }
   node->SetVar(res);
@@ -658,7 +665,7 @@ void IRBuilder::visit(ExprStmtNode *node) { node->GetExprNode()->accept(this); }
 void IRBuilder::visit(IfStmtNode *node) {
   auto &cond = node->GetCondition();
   cond->accept(this);
-  auto cond_val = cond->GetVar();
+  auto cond_val = ToRightVal(cond->GetVar());
   auto then_block = std::make_shared<Block>(cur_func_->AssignTag("ifThen"));
   auto else_block = std::make_shared<Block>(cur_func_->AssignTag("ifElse"));
   auto end_block = std::make_shared<Block>(cur_func_->AssignTag("ifEnd"));
@@ -762,9 +769,17 @@ void IRBuilder::visit(ForStmtNode *node) {
   }
   cur_func_->PushBlock(body_block);
   body->accept(this);
-  cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(step_block));
-  cur_func_->PushBlock(step_block);
-  step->accept(this);
+  if (step != nullptr) {
+    cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(step_block));
+    cur_func_->PushBlock(step_block);
+    step->accept(this);
+  } else {
+    if (cond != nullptr) {
+      cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(cond_block));
+    } else {
+      cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(body_block));
+    }
+  }
   if (cond != nullptr) {
     cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(cond_block));
   } else {
@@ -810,7 +825,7 @@ void IRBuilder::visit(VarDefNode *node) {
       cur_func_->PushStmt(std::make_unique<StoreStmt>(var, reg));
     }
   }
-  vars_.EnterInitFunc();
+  vars_.LeaveInitFunc();
   cur_func_ = nullptr;
 }
 
@@ -870,7 +885,7 @@ void IRBuilder::visit(FunctionDefClassStmtNode *node) {
       vars_.CreateVar({cur_type_, 1}, "this", false, false);
       continue;
     }
-    auto arg_val = vars_.CreateVar(arg.first, "arg." + arg.second, false);
+    auto arg_val = vars_.CreateVar(arg.first, "arg." + arg.second, false, false);
     auto arg_addr = vars_.CreateVar({arg.first.GetBaseType(), arg.first.GetDim() + 1}, arg.second, false);
     cur_func_->PushInitStmt(std::make_unique<AllocaStmt>(arg_addr));
     cur_func_->PushStmt(std::make_unique<StoreStmt>(arg_val, arg_addr));

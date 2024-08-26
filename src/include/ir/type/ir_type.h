@@ -132,7 +132,7 @@ class IRCustomType final : public IRBaseType {
       if (i != 0) {
         std::cout << ", ";
       }
-      std::cout << member_[i].second.GetIRTypename() << " ";
+      std::cout << member_[i].second.GetIRTypename();
     }
     std::cout << " }" << std::endl;
   }

@@ -447,16 +447,6 @@ std::any ASTBuilder::visitNullLiteral(MxParser::NullLiteralContext *ctx) {
 std::any ASTBuilder::visitStringLiteral(MxParser::StringLiteralContext *ctx) {
   auto str = ctx->StringLiteral()->getText();
   str = str.substr(1, str.size() - 2);
-  std::size_t pos = 0;
-  while ((pos = str.find("\\n", pos)) != std::string::npos) {
-    str.replace(pos, 3, "\n");
-  }
-  while ((pos = str.find("\\\\", pos)) != std::string::npos) {
-    str.replace(pos, 3, "\\");
-  }
-  while ((pos = str.find("\\\"", pos)) != std::string::npos) {
-    str.replace(pos, 3, "\"");
-  }
   return std::shared_ptr<PrimaryNode>(new LiteralPrimaryNode({ctx}, std::move(str)));
 }
 
