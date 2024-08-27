@@ -121,13 +121,15 @@ class FunctionManager {
     auto toString = std::make_shared<IRFunction>(kIRStringType.ToPtr(), "toString",
                                                  std::vector<std::pair<IRType, std::string>>{{kIRIntType, "i"}}, true);
     functions_.emplace("toString", std::move(toString));
-    auto length = std::make_shared<IRFunction>(kIRIntType, "ptr.length", std::vector<std::pair<IRType, std::string>>{}, true);
+    auto length =
+        std::make_shared<IRFunction>(kIRIntType, "ptr.length", std::vector<std::pair<IRType, std::string>>{}, true);
     functions_.emplace("ptr.length", std::move(length));
     auto substring = std::make_shared<IRFunction>(
         kIRStringType.ToPtr(), "ptr.substring",
         std::vector<std::pair<IRType, std::string>>{{kIRIntType, "start"}, {kIRIntType, "end"}}, true);
     functions_.emplace("ptr.substring", std::move(substring));
-    auto parseInt = std::make_shared<IRFunction>(kIRIntType, "ptr.parseInt", std::vector<std::pair<IRType, std::string>>{}, true);
+    auto parseInt =
+        std::make_shared<IRFunction>(kIRIntType, "ptr.parseInt", std::vector<std::pair<IRType, std::string>>{}, true);
     functions_.emplace("ptr.parseInt", std::move(parseInt));
     auto ord = std::make_shared<IRFunction>(kIRIntType, "ptr.ord",
                                             std::vector<std::pair<IRType, std::string>>{{kIRIntType, "pos"}}, true);
@@ -146,6 +148,9 @@ class FunctionManager {
         kIRIntType, "strcmp",
         std::vector<std::pair<IRType, std::string>>{{kIRStringType, "str1"}, {kIRStringType, "str2"}}, true);
     functions_.emplace("strcmp", std::move(strcmp));
+    auto malloc = std::make_shared<IRFunction>(kIRIntType.ToPtr(), "malloc",
+                                               std::vector<std::pair<IRType, std::string>>{{kIRIntType, "size"}}, true);
+    functions_.emplace("malloc", std::move(malloc));
     auto stringConcatenate = std::make_shared<IRFunction>(
         kIRStringType, "builtin.stringConcatenate",
         std::vector<std::pair<IRType, std::string>>{{kIRStringType, "str1"}, {kIRStringType, "str2"}}, true);

@@ -120,8 +120,9 @@ void *builtin_allocArray(size_t len) {
 void *builtin_stringConcatenate(const char *str1, const char *str2) {
   int len1 = strlen(str1);
   int len2 = strlen(str2);
-  char *ret = malloc(len1 + len2);
+  char *ret = malloc(len1 + len2 + 1);
   strcpy(ret, str1);
   strcat(ret, str2);
+  ret[len1 + len2] = '\0';
   return ret;
 }
