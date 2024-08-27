@@ -22,6 +22,9 @@ class GetElementPtrStmt final : public Stmt {
       assert(item->GetType() == kIRIntType);
     }
   }
+  [[nodiscard]] const std::shared_ptr<Register> &GetResult() const { return result_; }
+  [[nodiscard]] const std::shared_ptr<Register> &GetPtr() const { return ptr_; }
+  [[nodiscard]] const std::vector<std::shared_ptr<Var>> &GetIndex() const { return index_; }
   void Print() const override {
     std::cout << result_->GetName() << " = getelementptr " << ptr_->GetType().GetElementIRTypename() << ", ptr " << ptr_->GetName();
     for (const auto &item : index_) {

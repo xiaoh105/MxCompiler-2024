@@ -18,6 +18,8 @@ public:
       : value_(std::move(val)), ptr_(std::move(ptr)) {
     assert(ptr_->GetType().IsPtrOf(value_->GetType()) || value_->GetType() == kIRNullType);
   }
+  [[nodiscard]] const std::shared_ptr<Var> &GetValue() const { return value_; }
+  [[nodiscard]] const std::shared_ptr<Register> &GetPtr() const { return ptr_; }
   void Print() const override {
     std::cout << "store " << value_->GetType().GetIRTypename() << " " << value_->GetName() << ", ptr " << ptr_->GetName() << std::endl;
   }

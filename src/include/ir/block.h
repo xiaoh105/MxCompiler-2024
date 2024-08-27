@@ -29,6 +29,7 @@ class Block {
     }
   }
   [[nodiscard]] const std::string &GetLabel() const { return label_; }
+  std::vector<std::unique_ptr<Stmt>> &GetStmts() { return stmts_; }
   void Print() const {
     std::cout << label_ << ": " << std::endl;
     for (const auto &stmt : stmts_) {

@@ -553,7 +553,15 @@ void IRBuilder::visit(TenaryExprNode *node) {
   cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(end_block));
   cur_func_->PushBlock(end_block);
   if (l_val) {
-    auto res = vars_.CreateTmpVar(l_val->GetType(), "");
+    std::shared_ptr<Register> res;
+    if (l_val->GetType() != kIRNullType) {
+      res = vars_.CreateTmpVar(l_val->GetType(), "");
+    } else if (r_val->GetType() != kIRNullType) {
+      res = vars_.CreateTmpVar(r_val->GetType(), "");
+    } else {
+      node->SetVar(vars_.GetNull());
+      return;
+    }
     cur_func_->PushStmt(std::make_unique<PhiStmt>(
         res, std::vector<std::pair<std::shared_ptr<Var>, std::weak_ptr<Block>>>{{l_val, l_jmp}, {r_val, r_jmp}}));
     node->SetVar(res);

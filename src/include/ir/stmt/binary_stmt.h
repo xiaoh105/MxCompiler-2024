@@ -19,6 +19,10 @@ class BinaryStmt final : public Stmt {
       : result_(std::move(res)), op_type_(op), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {
     assert(lhs_->GetType() == rhs_->GetType());
   }
+  [[nodiscard]] const std::shared_ptr<Register> &GetResult() const { return result_; }
+  [[nodiscard]] const std::shared_ptr<Var> &GetLeft() const { return lhs_; }
+  [[nodiscard]] const std::shared_ptr<Var> &GetRight() const { return rhs_; }
+  [[nodiscard]] OpType GetOpType() const { return op_type_; }
   void Print() const override {
     std::cout << result_->GetName() << " = " << GetOpName(op_type_) << " " << lhs_->GetType().GetIRTypename() << " " << lhs_->GetName()
               << ", " << rhs_->GetName() << std::endl;

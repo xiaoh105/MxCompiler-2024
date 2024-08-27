@@ -23,6 +23,7 @@ class Register final : public Var {
   }
   [[nodiscard]] std::string GetName() const override { return name_; }
   [[nodiscard]] IRType GetType() const override { return type_; }
+  [[nodiscard]] bool IsGlobal() const { return global_; }
 
  private:
   const IRType type_;

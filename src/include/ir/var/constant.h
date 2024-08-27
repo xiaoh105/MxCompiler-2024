@@ -22,6 +22,9 @@ class Constant final : public Var {
   explicit Constant(std::shared_ptr<Var> var, std::string val)
       : Var(false, true), type_(kIRStringType), var_(std::move(var)), value_(std::move(val)) {}
   [[nodiscard]] IRType GetType() const override { return type_; }
+  [[nodiscard]] const std::variant<int, bool, std::string> &GetValue() const {
+    return value_;
+  }
   [[nodiscard]] std::string GetName() const override {
     if (type_ == kIRIntType) {
       return std::to_string(std::get<int>(value_));

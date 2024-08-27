@@ -30,7 +30,7 @@ TODO lists:
   - Correctness Issues
     - [x] Add lvalue/rvalue system to Var.(8/25)
     - [x] Add class functions to FunctionManager
-    - [ ] Complete construction of jagged array literal(8/25)
+    - [x] Complete construction of jagged array literal(8/25)
     - [x] Add initialization function at the beginning of `main`(8/25)
     - [x] Add `trunc` for boolean variables(since they use `i8` as their type)(8/25)
     - [x] Change `loopCond` and `loopEnd` to stack for loops inside loops.(8/26)
@@ -49,3 +49,8 @@ TODO lists:
   - String: An exception. It does not hold an internal size. Instead, it is ended with a `/0`.
 
 ### IR To RISC-V
+
+
+
+TODO lists:
+- [ ] After adding RegAlloc and SSA, remove structures left for `phi` instructions in BasicBlock and AsmFunction

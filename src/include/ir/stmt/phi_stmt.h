@@ -16,6 +16,8 @@ class PhiStmt : public Stmt {
   PhiStmt() = delete;
   PhiStmt(std::shared_ptr<Register> res, std::vector<std::pair<std::shared_ptr<Var>, std::weak_ptr<Block>>> blocks)
       : res_(std::move(res)), blocks_(std::move(blocks)) {}
+  [[nodiscard]] const std::shared_ptr<Register> &GetResult() const { return res_; }
+  [[nodiscard]] const std::vector<std::pair<std::shared_ptr<Var>, std::weak_ptr<Block>>> &GetBlocks() const { return blocks_; }
   void Print() const override {
     std::cout << res_->GetName() << " = phi " << res_->GetType().GetIRTypename() << " ";
     for (int i = 0; i < blocks_.size(); ++i) {

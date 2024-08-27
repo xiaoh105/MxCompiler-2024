@@ -11,6 +11,13 @@
 
 #include "backend/ir_builder.h"
 
+#include "asm/instruction/arith.h"
+#include "asm/register/register.h"
+#include "asm/instruction/mem.h"
+#include "asm/instruction/branch.h"
+#include "asm/register/virtual_register.h"
+#include "asm/asm_function.h"
+
 int main() {
   ANTLRInputStream input(std::cin);
   MxErrorListener error_listener;

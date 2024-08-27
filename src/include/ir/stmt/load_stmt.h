@@ -18,6 +18,8 @@ class LoadStmt : public Stmt {
       : result_(std::move(res)), ptr_(std::move(ptr)) {
     assert(ptr_->GetType().IsPtrOf(result_->GetType()));
   }
+  [[nodiscard]] const std::shared_ptr<Register> &GetResult() const { return result_; }
+  [[nodiscard]] const std::shared_ptr<Register> &GetPtr() const { return ptr_; }
   void Print() const override {
     std::cout << result_->GetName() << " = load " << result_->GetType().GetIRTypename() << ", ptr "
               << ptr_->GetName() << std::endl;

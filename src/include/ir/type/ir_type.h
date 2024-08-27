@@ -7,7 +7,11 @@
 #pragma once
 
 #include <cassert>
+#include <memory>
 #include <ranges>
+#include <vector>
+
+#include "utils/scope/type.h"
 
 class IRBaseType;
 
@@ -137,6 +141,7 @@ public:
     member_ = std::move(member);
     for (const auto &item : member_) {
       if (item.second == kIRBoolType) {
+        offset_.push_back(size_);
         ++size_;
       } else {
         if (size_ % 4 != 0) {
@@ -145,6 +150,7 @@ public:
         } else {
           size_ += 4;
         }
+        offset_.push_back(size_ - 4);
       }
     }
   }
@@ -169,11 +175,12 @@ public:
     }
     std::cout << " }" << std::endl;
   }
-  std::size_t GetSize() const override { return size_; }
+  [[nodiscard]] std::size_t GetSize() const override { return size_; }
 
 private:
   const std::string class_name_;
   std::vector<std::pair<std::string, IRType>> member_;
+  std::vector<std::size_t> offset_;
   std::size_t size_{0};
 };
 
