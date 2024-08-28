@@ -17,12 +17,17 @@ public:
 private:
   void Build();
   void BuildFunction(std::shared_ptr<IRFunction> function);
-  void ScanFunction(std::shared_ptr<IRFunction> function);
-  std::unique_ptr<BasicBlock> BuildBlock(const std::shared_ptr<Block> &block);
+  void ScanFunction(const std::shared_ptr<IRFunction>& function);
+  void BuildBlock(const std::shared_ptr<Block> &block);
   void ScanBlock(const std::shared_ptr<Block>& block);
+  void LoadRegister(const std::shared_ptr<Register> &virtual_reg, AsmRegister reg);
+  void LoadRegister(VirtualRegister virtual_reg, AsmRegister reg);
+  void StoreRegister(const std::shared_ptr<Register> &virtual_reg, AsmRegister reg);
+  void StoreRegister(VirtualRegister virtual_reg, AsmRegister reg);
   std::shared_ptr<AsmFunction> cur_func_{nullptr};
   FunctionManager functions_;
   VarManager vars_;
   ClassManager classes_;
-  std::vector<std::shared_ptr<AsmFunction>> asm_functions_;
+  std::unordered_map<std::string, std::shared_ptr<AsmFunction>> asm_functions_;
+  std::size_t tag_index_{0};
 };

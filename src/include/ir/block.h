@@ -30,6 +30,7 @@ class Block {
   }
   [[nodiscard]] const std::string &GetLabel() const { return label_; }
   std::vector<std::unique_ptr<Stmt>> &GetStmts() { return stmts_; }
+  std::unique_ptr<BranchStmt> &GetBranchStmt() { return branch_stmt_; }
   void Print() const {
     std::cout << label_ << ": " << std::endl;
     for (const auto &stmt : stmts_) {

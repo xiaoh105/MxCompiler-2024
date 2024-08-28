@@ -48,6 +48,7 @@ class AsmFunction {
     blocks_.back()->PushInstruction(std::move(instruction));
   }
   void PushInstruction(const std::string &block_name, std::unique_ptr<AsmInstruction> instruction) {
+    assert(blocks_index_.contains(block_name));
     blocks_index_[block_name]->PushInstruction(std::move(instruction));
   }
   void PushBlock(std::shared_ptr<BasicBlock> block) {

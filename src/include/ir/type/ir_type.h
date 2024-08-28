@@ -134,7 +134,7 @@ const IRType kIRVoidType(kIRVoidBase);
 const IRType kIRNullType(kIRNullBase);
 
 class IRCustomType final : public IRBaseType {
-public:
+ public:
   IRCustomType() = delete;
   IRCustomType(std::string name) : class_name_("struct." + std::move(name)) {}
   void SetMembers(std::vector<std::pair<std::string, IRType>> member) {
@@ -176,8 +176,9 @@ public:
     std::cout << " }" << std::endl;
   }
   [[nodiscard]] std::size_t GetSize() const override { return size_; }
+  [[nodiscard]] std::size_t GetOffset(int index) const { return offset_[index]; }
 
-private:
+ private:
   const std::string class_name_;
   std::vector<std::pair<std::string, IRType>> member_;
   std::vector<std::size_t> offset_;
@@ -250,6 +251,4 @@ inline std::string IRType::GetElementIRTypename() const {
 
 inline bool IRType::IsPtrOf(const IRType &other) const { return base_ == other.base_ && dim_ == other.dim_ + 1; }
 
-inline std::size_t IRType::GetSize() const {
-  return dim_ == 0 ? base_->GetSize() : 4;
-}
+inline std::size_t IRType::GetSize() const { return dim_ == 0 ? base_->GetSize() : 4; }

@@ -61,5 +61,13 @@ inline AsmRegister zero(0);
 inline AsmRegister ra(1);
 inline AsmRegister sp(2);
 constexpr AsmRegister a(int id) {
+  assert(id >= 0 && id < 8);
   return {id + 10};
+}
+constexpr AsmRegister t(int id) {
+  assert(id >= 0 && id < 7);
+  if (id <= 2) {
+    return {id + 5};
+  }
+  return {id + 25};
 }
