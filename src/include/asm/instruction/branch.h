@@ -33,7 +33,7 @@ class BranchInstruction : public AsmInstruction {
       case BranchType::kUnknown:
         assert(false);
     }
-    std::cout << "b" << name << " " << rs1_.GetName() << " " << rs2_.GetName() << " " << label_ << std::endl;
+    std::cout << "b" << name << " " << rs1_.GetName() << ", " << rs2_.GetName() << ", ." << label_ << std::endl;
   }
 
  private:
@@ -57,7 +57,7 @@ class JInstruction : public AsmInstruction {
 public:
   explicit JInstruction(std::string label) : label_(std::move(label)) {}
   void Print() const override {
-    std::cout << "j " << label_ << std::endl;
+    std::cout << "j ." << label_ << std::endl;
   }
 private:
   const std::string label_;

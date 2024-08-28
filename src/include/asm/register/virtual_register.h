@@ -54,6 +54,26 @@ public:
     cur_size_ += 4;
     return it->second;
   }
+  VirtualRegister AllocSpace(const std::shared_ptr<Register> &reg) {
+    auto type = reg->GetType().RemovePtr();
+    if (type == kIRBoolType) {
+      auto ret = VirtualRegister{1, cur_size_};
+      ++cur_size_;
+      alloc_space_.emplace(reg->GetName(), ret);
+      return ret;
+    }
+    if (cur_size_ % 4 != 0) {
+      cur_size_ -= cur_size_ % 4;
+      cur_size_ += 4;
+    }
+    auto ret = VirtualRegister{4, cur_size_};
+    cur_size_ += 4;
+    alloc_space_.emplace(reg->GetName(), ret);
+    return ret;
+  }
+  VirtualRegister GetAllocSpace(const std::shared_ptr<Register> &reg) const {
+    return alloc_space_.at(reg->GetName());
+  }
   std::size_t ReserveRegister(AsmRegister reg) {
     if (cur_size_ % 4 != 0) {
       cur_size_ -= cur_size_ % 4;
@@ -78,7 +98,8 @@ public:
   }
 
 private:
-  std::size_t cur_size_{4};
+  std::size_t cur_size_{0};
   std::unordered_map<std::string, VirtualRegister> registers_;
+  std::unordered_map<std::string, VirtualRegister> alloc_space_;
   std::unordered_map<int, std::size_t> reg_offset_;
 };

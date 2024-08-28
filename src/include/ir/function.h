@@ -31,6 +31,8 @@ class IRFunction {
   [[nodiscard]] IRType GetReturnType() const { return return_type_; }
   [[nodiscard]] const std::vector<std::pair<IRType, std::string>> &GetArguments() const { return arguments_; }
   std::shared_ptr<Block> &GetCurBlock() { return blocks_.back(); }
+  [[nodiscard]] const std::vector<std::shared_ptr<Block>> &GetBlocks() const { return blocks_; }
+  [[nodiscard]] bool IsBuiltin() const { return builtin_; }
   void PushBlock(std::shared_ptr<Block> block) {
     assert(!builtin_);
     blocks_.push_back(std::move(block));
@@ -161,6 +163,7 @@ class FunctionManager {
   }
   [[nodiscard]] bool HasFunction(const std::string &name) const { return functions_.contains(name); }
   const std::shared_ptr<IRFunction> &GetFunction(const std::string &name) const { return functions_.at(name); }
+  [[nodiscard]] const std::unordered_map<std::string, std::shared_ptr<IRFunction>> &GetFunctions() const { return functions_; }
   void PrintDeclare() {
     for (const auto &func : std::ranges::views::values(functions_)) {
       func->PrintDeclare();

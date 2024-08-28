@@ -28,31 +28,11 @@ char *strcat(char *dest, const char *src);
 void *memcpy(void *dest, const void *src, size_t count);
 
 void print(const char *str) {
-  for (size_t i = 0; i < strlen(str); i++) {
-    if (str[i] != '\\') {
-	  putchar(str[i]);
-    } else if (str[++i] == 'n') {
-      putchar('\n');
-    } else if (str[i] == '\\') {
-      putchar('\\');
-    } else if (str[i] == '\"') {
-      putchar('\"');
-    }
-  }
+  printf("%s", str);
 }
 
 void println(const char *str) {
-  for (size_t i = 0; i < strlen(str); i++) {
-    if (str[i] != '\\') {
-	  putchar(str[i]);
-    } else if (str[++i] == 'n') {
-      putchar('\n');
-    } else if (str[i] == '\\') {
-      putchar('\\');
-    } else if (str[i] == '\"') {
-      putchar('\"');
-    }
-  }
+  printf("%s", str);
   putchar('\n');
 }
 

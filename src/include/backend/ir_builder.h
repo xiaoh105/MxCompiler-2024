@@ -16,6 +16,7 @@ void GenerateIR(RootNode *root);
 
 class IRBuilder final : public ASTVisitor {
   friend void GenerateIR(RootNode *root);
+  friend void GenerateAsm(RootNode *root);
  public:
   IRBuilder(GlobalScope global_scope);
   void visit(RootNode *node) override;
@@ -55,9 +56,9 @@ class IRBuilder final : public ASTVisitor {
   std::shared_ptr<Var> ToRightVal(const std::shared_ptr<Var> &var);
   std::shared_ptr<IRFunction> cur_func_{nullptr};
   std::shared_ptr<IRFunction> init_func_{nullptr};
+  ClassManager classes_;
   FunctionManager functions_;
   VarManager vars_;
-  ClassManager classes_;
 
   std::stack<std::shared_ptr<Block>> loop_step_;
   std::stack<std::shared_ptr<Block>> loop_end_;

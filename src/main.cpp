@@ -1,22 +1,13 @@
 #include "ast/ast.h"
 #include "frontend/ast_builder.h"
 #include "frontend/error_listener.h"
-#include "frontend/semantic_checker.h"
 #include "parser/MxLexer.h"
 #include "parser/MxParser.h"
 #include "utils/error/semantic_error.hpp"
 
 #include "ir/type/ir_type.h"
-#include "ir/var/var_manager.h"
 
-#include "backend/ir_builder.h"
-
-#include "asm/instruction/arith.h"
-#include "asm/register/register.h"
-#include "asm/instruction/mem.h"
-#include "asm/instruction/branch.h"
-#include "asm/register/virtual_register.h"
-#include "asm/asm_function.h"
+#include "backend/asm_builder.h"
 
 int main() {
   ANTLRInputStream input(std::cin);
@@ -37,7 +28,7 @@ int main() {
   try {
     ASTBuilder builder;
     auto ast_root = std::any_cast<std::shared_ptr<RootNode>>(builder.visitProgram(root));
-    GenerateIR(ast_root.get());
+    GenerateAsm(ast_root.get());
   } catch (const SemanticError &err) {
 #ifndef OJ
     std::cerr << err.what() << std::endl;

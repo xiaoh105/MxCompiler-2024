@@ -60,7 +60,7 @@ class RegArithInstruction : public ArithInstruction {
     assert(type != ArithType::kUnknown);
   }
   void Print() const override {
-    std::cout << GetInstructionName() << " " << rd_.GetName() << " " << rs1_.GetName() << " " << rs2_.GetName()
+    std::cout << GetInstructionName() << " " << rd_.GetName() << ", " << rs1_.GetName() << ", " << rs2_.GetName()
               << std::endl;
   }
 
@@ -77,7 +77,12 @@ class ImmArithInstruction : public ArithInstruction {
     assert(type != ArithType::kSub && type != ArithType::kUnknown);
   }
   void Print() const override {
-    std::cout << GetInstructionName() << "i " << rd_.GetName() << " " << rs1_.GetName() << " " << imm_ << std::endl;
+    if (imm_ > 2047 || imm_ < -2048) {
+      std::cout << "li t5, " << imm_ << std::endl;
+      std::cout << GetInstructionName() << " " << rd_.GetName() << ", " << rs1_.GetName() << ", t5" << std::endl;
+    } else {
+      std::cout << GetInstructionName() << "i " << rd_.GetName() << ", " << rs1_.GetName() << ", " << imm_ << std::endl;
+    }
   }
 
  private:
@@ -89,7 +94,7 @@ class ImmArithInstruction : public ArithInstruction {
 class MoveInstruction : public ArithInstruction {
  public:
   MoveInstruction(AsmRegister rd, AsmRegister rs) : ArithInstruction(ArithType::kAdd), rd_(rd), rs_(rs) {}
-  void Print() const override { std::cout << "mv " << rd_.GetName() << " " << rs_.GetName() << std::endl; }
+  void Print() const override { std::cout << "mv " << rd_.GetName() << ", " << rs_.GetName() << std::endl; }
 
  private:
   AsmRegister rd_;
@@ -99,7 +104,7 @@ class MoveInstruction : public ArithInstruction {
 class LoadImmInstruction : public ArithInstruction {
  public:
   LoadImmInstruction(AsmRegister rd, int imm) : ArithInstruction(ArithType::kAdd), rd_(rd), imm_(imm) {}
-  void Print() const override { std::cout << "li " << rd_.GetName() << " " << imm_ << std::endl; }
+  void Print() const override { std::cout << "li " << rd_.GetName() << ", " << imm_ << std::endl; }
 
  private:
   AsmRegister rd_;
@@ -110,9 +115,41 @@ class LoadAddrInstruction : public ArithInstruction {
  public:
   LoadAddrInstruction(AsmRegister rd, std::string label)
       : ArithInstruction(ArithType::kAdd), rd_(rd), label_(std::move(label)) {}
-  void Print() const override { std::cout << "la " << rd_.GetName() << " " << label_ << std::endl; }
+  void Print() const override { std::cout << "la " << rd_.GetName() << ", " << label_ << std::endl; }
 
  private:
   AsmRegister rd_;
-  const std::string &label_;
+  const std::string label_;
+};
+
+class CmpZInstruction : public ArithInstruction {
+ public:
+  enum class CmpType : int { kUnknown = 0, kEqz, kNez, kLtz, kGtz };
+  CmpZInstruction(AsmRegister rd, AsmRegister rs, CmpType type)
+      : ArithInstruction(ArithType::kUnknown), rd_(rd), rs_(rs), type_(type) {}
+  void Print() const override {
+    std::string type;
+    switch (type_) {
+      case CmpType::kEqz:
+        type = "eqz";
+        break;
+      case CmpType::kNez:
+        type = "nez";
+        break;
+      case CmpType::kLtz:
+        type = "ltz";
+        break;
+      case CmpType::kGtz:
+        type = "gtz";
+        break;
+      case CmpType::kUnknown:
+        assert(false);
+    }
+    std::cout << "s" << type << " " << rd_.GetName() << ", " << rs_.GetName() << std::endl;
+  }
+
+ private:
+  AsmRegister rd_;
+  AsmRegister rs_;
+  CmpType type_;
 };

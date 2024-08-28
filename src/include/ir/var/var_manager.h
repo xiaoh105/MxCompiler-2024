@@ -90,6 +90,24 @@ public:
       std::cout << "]" << std::endl;
     }
   }
+  void PrintAsm() const {
+    std::cout << ".section .bss" << std::endl;
+    for (const auto &item : std::ranges::views::values(global_reg_)) {
+      if (item->GetName().starts_with("@strConst.")) {
+        continue;
+      }
+      if (item->GetType().RemovePtr() != kIRBoolType) {
+        std::cout << ".align 2" << std::endl;
+      }
+      std::cout << item->GetName().substr(1) << ":" << std::endl;
+      std::cout << ".zero " << (item->GetType().RemovePtr() == kIRBoolType ? 1 : 4) << std::endl;
+    }
+    std::cout << ".section .rodata" << std::endl;
+    for (const auto &[name, item] : string_const_) {
+      std::cout << item->GetName().substr(1) << ":" << std::endl;
+      std::cout << ".asciz \"" << name << "\"" << std::endl;
+    }
+  }
 
 private:
   std::shared_ptr<Constant> null_const_{std::make_shared<Constant>(nullptr)};

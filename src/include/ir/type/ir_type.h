@@ -31,13 +31,13 @@ class IRType {
     assert(dim_ == 0);
     return {base_, 1};
   }
-  bool operator==(const IRType &other) const { return base_ == other.base_ && dim_ == other.dim_; }
-  bool operator!=(const IRType &other) const { return base_ != other.base_ || dim_ != other.dim_; }
   [[nodiscard]] virtual std::pair<int, IRType> GetMember(const std::string &name) const;
   [[nodiscard]] std::string GetIRTypename() const;
   [[nodiscard]] std::string GetElementIRTypename() const;
   [[nodiscard]] bool IsPtrOf(const IRType &other) const;
   [[nodiscard]] std::size_t GetSize() const;
+  bool operator==(const IRType &other) const;
+  bool operator!=(const IRType &other) const;
 
  private:
   const std::shared_ptr<IRBaseType> base_{nullptr};
@@ -252,3 +252,11 @@ inline std::string IRType::GetElementIRTypename() const {
 inline bool IRType::IsPtrOf(const IRType &other) const { return base_ == other.base_ && dim_ == other.dim_ + 1; }
 
 inline std::size_t IRType::GetSize() const { return dim_ == 0 ? base_->GetSize() : 4; }
+
+inline bool IRType::operator==(const IRType &other) const {
+  return base_->GetIRTypename() == other.base_->GetIRTypename() && dim_ == other.dim_;
+}
+
+inline bool IRType::operator!=(const IRType &other) const {
+  return base_->GetIRTypename() != other.base_->GetIRTypename() || dim_ != other.dim_;
+}

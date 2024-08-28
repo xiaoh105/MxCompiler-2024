@@ -39,13 +39,27 @@ class AsmFunction {
  public:
   explicit AsmFunction(const std::shared_ptr<IRFunction> &func)
       : func_name_(func->GetName()),
-        prologue_(std::make_shared<BasicBlock>("prologue")),
-        epilogue_(std::make_shared<BasicBlock>(".epilogue")) {
-    blocks_index_["prologue"] = prologue_;
-    blocks_index_["epilogue"] = epilogue_;
+        func_(func),
+        prologue_(std::make_shared<BasicBlock>(func_name_ + ".prologue")),
+        epilogue_(std::make_shared<BasicBlock>(func_name_ + ".epilogue")) {
+    blocks_index_[func_name_ + ".prologue"] = prologue_;
+    blocks_index_[func_name_ + ".epilogue"] = epilogue_;
+    auto &args = func->GetArguments();
+    for (int i = 8; i < args.size(); ++i) {
+      stack_manager_.ReserveVirtualRegister(
+          std::make_shared<Register>(args[i].first, "arg." + args[i].second, false, false));
+    }
+    for (int i = 0; i < std::min(static_cast<int>(args.size()), 8); ++i) {
+      stack_manager_.ReserveVirtualRegister(std::make_shared<Register>(
+          args[i].first, args[i].second == "this" ? "this" : "arg." + args[i].second, false, false));
+    }
   }
+  [[nodiscard]] const std::string &GetName() const { return func_name_; }
   void PushInstruction(std::unique_ptr<AsmInstruction> instruction) {
     blocks_.back()->PushInstruction(std::move(instruction));
+  }
+  void PushPhiInstruction(std::unique_ptr<AsmInstruction> instruction) {
+    blocks_.back()->PushPhiInstruction(std::move(instruction));
   }
   void PushInstruction(const std::string &block_name, std::unique_ptr<AsmInstruction> instruction) {
     assert(blocks_index_.contains(block_name));
@@ -57,20 +71,28 @@ class AsmFunction {
   }
   [[nodiscard]] std::size_t GetStackSize() const { return stack_size_; }
   void GenerateHeader() {
+    stack_manager_.ReserveRegister(ra);
     stack_size_ = stack_manager_.GetStackSize();
-    prologue_->PushInstruction(std::make_unique<ImmArithInstruction>(sp, sp, -1 * stack_manager_.GetStackSize(),
+    prologue_->PushInstruction(std::make_unique<ImmArithInstruction>(sp, sp, -1 * static_cast<int>(stack_size_),
                                                                      ArithInstruction::ArithType::kAdd));
     for (const auto &reg : stack_manager_.GetReservedRegs()) {
       prologue_->PushInstruction(
-          std::make_unique<StoreInstruction>(sp, AsmRegister{reg.first}, reg.second, MemType::kByte));
+          std::make_unique<StoreInstruction>(sp, AsmRegister{reg.first}, reg.second, MemType::kWord));
       epilogue_->PushInstruction(
-          std::make_unique<LoadInstruction>(sp, AsmRegister{reg.first}, reg.second, MemType::kByte));
+          std::make_unique<LoadInstruction>(AsmRegister{reg.first}, sp, reg.second, MemType::kWord));
     }
-    epilogue_->PushInstruction(std::make_unique<ImmArithInstruction>(sp, sp, stack_manager_.GetStackSize(),
-                                                                     ArithInstruction::ArithType::kAdd));
+    auto &args = func_->GetArguments();
+    for (int i = 0; i < std::min(static_cast<int>(args.size()), 8); ++i) {
+      auto reg = stack_manager_.GetVirtualRegister(std::make_shared<Register>(
+          args[i].first, args[i].second == "this" ? "this" : "arg." + args[i].second, false, false));
+      prologue_->PushInstruction(std::make_unique<StoreInstruction>(sp, a(i), reg.GetOffset(), reg.GetLen()));
+    }
+    epilogue_->PushInstruction(
+        std::make_unique<ImmArithInstruction>(sp, sp, stack_size_, ArithInstruction::ArithType::kAdd));
     epilogue_->PushInstruction(std::make_unique<RetInstruction>());
   }
   void Print() const {
+    std::cout << func_name_ << ":" << std::endl;
     prologue_->Print();
     for (const auto &block : blocks_) {
       block->Print();
@@ -81,6 +103,7 @@ class AsmFunction {
 
  private:
   const std::string func_name_;
+  const std::shared_ptr<IRFunction> func_;
   std::size_t stack_size_{-1u};
   std::shared_ptr<BasicBlock> prologue_{nullptr};
   std::shared_ptr<BasicBlock> epilogue_{nullptr};
