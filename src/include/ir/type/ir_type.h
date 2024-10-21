@@ -122,17 +122,17 @@ class IRVoidType final : public IRBaseType {
   void Define() const override {}
 };
 
-const std::shared_ptr<IRBaseType> kIRIntBase = std::make_shared<IRIntType>();
-const std::shared_ptr<IRBaseType> kIRBoolBase = std::make_shared<IRBoolType>();
-const std::shared_ptr<IRBaseType> kIRStringBase = std::make_shared<IRStringType>();
-const std::shared_ptr<IRBaseType> kIRVoidBase = std::make_shared<IRVoidType>();
-const std::shared_ptr<IRBaseType> kIRNullBase = std::make_shared<IRNullType>();
+inline const std::shared_ptr<IRBaseType> kIRIntBase = std::make_shared<IRIntType>();
+inline const std::shared_ptr<IRBaseType> kIRBoolBase = std::make_shared<IRBoolType>();
+inline const std::shared_ptr<IRBaseType> kIRStringBase = std::make_shared<IRStringType>();
+inline const std::shared_ptr<IRBaseType> kIRVoidBase = std::make_shared<IRVoidType>();
+inline const std::shared_ptr<IRBaseType> kIRNullBase = std::make_shared<IRNullType>();
 
-const IRType kIRIntType(kIRIntBase);
-const IRType kIRBoolType(kIRBoolBase);
-const IRType kIRStringType(kIRStringBase);
-const IRType kIRVoidType(kIRVoidBase);
-const IRType kIRNullType(kIRNullBase);
+inline const IRType kIRIntType(kIRIntBase);
+inline const IRType kIRBoolType(kIRBoolBase);
+inline const IRType kIRStringType(kIRStringBase);
+inline const IRType kIRVoidType(kIRVoidBase);
+inline const IRType kIRNullType(kIRNullBase);
 
 class IRCustomType final : public IRBaseType {
  public:
@@ -255,7 +255,7 @@ inline bool IRType::IsPtrOf(const IRType &other) const { return base_ == other.b
 inline std::size_t IRType::GetSize() const { return dim_ == 0 ? base_->GetSize() : 4; }
 
 inline bool IRType::operator==(const IRType &other) const {
-  return base_->GetIRTypename() == other.base_->GetIRTypename() && dim_ == other.dim_;
+  return base_ == other.base_ && dim_ == other.dim_;
 }
 
 inline bool IRType::operator!=(const IRType &other) const {

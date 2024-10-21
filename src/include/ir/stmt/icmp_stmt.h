@@ -25,6 +25,8 @@ class ICmpStmt final : public Stmt {
   [[nodiscard]] OpType GetOpType() const { return op_type_; }
   [[nodiscard]] const std::shared_ptr<Var>& GetLhs() const { return lhs_; }
   [[nodiscard]] const std::shared_ptr<Var>& GetRhs() const { return rhs_; }
+  void SetLhs(std::shared_ptr<Var> lhs) { lhs_ = std::move(lhs); }
+  void SetRhs(std::shared_ptr<Var> rhs) { rhs_ = std::move(rhs); }
   void Print() const override {
     std::cout << "%zextTmp." << result_raw_ << " = icmp " << GetOpName(op_type_) << " " << lhs_->GetType().GetIRTypename() << " "
               << lhs_->GetName() << ", " << rhs_->GetName() << std::endl;

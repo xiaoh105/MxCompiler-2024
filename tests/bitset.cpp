@@ -1,6 +1,9 @@
 #include <iostream>
 #include <vector>
-#include "utils/bitset.h"
+
+#include <memory>
+
+#include "utils/set.h"
 
 void Test1() {
   dynamic_bitset bitset(100009);
@@ -139,8 +142,39 @@ void Test3() {
   assert(!bitset3.none());
 }
 
+void Test4() {
+  SetManager<int> set_manager;
+  std::vector<std::shared_ptr<int>> vec(507);
+  for (int i = 0; i < 507; ++i) {
+    vec[i] = std::make_shared<int>(i);
+    set_manager.AddElement(vec[i]);
+  }
+  auto set1 = set_manager.EmptySet();
+  auto set2 = set_manager.EmptySet();
+  auto set3 = set_manager.EmptySet();
+  for (int i = 0; i < 507; ++i) {
+    if (i % 4 == 0) {
+      set1.AddElement(vec[i]);
+    }
+    if (i % 5 == 0) {
+      set2.AddElement(vec[i]);
+    }
+    if (i % 7 == 0) {
+      set3.AddElement(vec[i]);
+    }
+  }
+  auto set4 = set1.Intersect(set2).Difference(set3);
+  for (int i = 0; i < 507; ++i) {
+    if (set4.Contains(vec[i])) {
+      std::cout << i << std::endl;
+    }
+  }
+  std::cout << set4.Size() << std::endl;
+}
+
 int main() {
-  Test1();
-  Test2();
-  Test3();
+  // Test1();
+  // Test2();
+  // Test3();
+  Test4();
 }

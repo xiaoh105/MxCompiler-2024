@@ -23,6 +23,8 @@ class BinaryStmt final : public Stmt {
   [[nodiscard]] const std::shared_ptr<Var> &GetLeft() const { return lhs_; }
   [[nodiscard]] const std::shared_ptr<Var> &GetRight() const { return rhs_; }
   [[nodiscard]] OpType GetOpType() const { return op_type_; }
+  void SetLeft(std::shared_ptr<Var> lhs) { lhs_ = std::move(lhs); }
+  void SetRight(std::shared_ptr<Var> rhs) { rhs_ = std::move(rhs); }
   void Print() const override {
     std::cout << result_->GetName() << " = " << GetOpName(op_type_) << " " << lhs_->GetType().GetIRTypename() << " " << lhs_->GetName()
               << ", " << rhs_->GetName() << std::endl;

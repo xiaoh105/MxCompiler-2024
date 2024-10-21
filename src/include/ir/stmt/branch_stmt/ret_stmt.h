@@ -13,6 +13,7 @@ public:
   RetStmt() = default;
   RetStmt(std::shared_ptr<Var> ret_val) : ret_val_(std::move(ret_val)) {}
   [[nodiscard]] const std::shared_ptr<Var> &GetRet() const { return ret_val_; }
+  void SetRet(const std::shared_ptr<Var> &ret_val) { ret_val_ = ret_val; }
   void Print() const override {
     if (ret_val_ != nullptr) {
       std::cout << "ret " << ret_val_->GetType().GetIRTypename() << " " << ret_val_->GetName() << std::endl;

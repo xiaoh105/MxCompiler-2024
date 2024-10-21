@@ -23,6 +23,7 @@ class ConditionalBrStmt final : public BranchStmt {
   [[nodiscard]] const std::shared_ptr<Var> &GetCondition() const { return condition_; }
   [[nodiscard]] const std::weak_ptr<Block> &GetTrueBlock() const { return true_block_; }
   [[nodiscard]] const std::weak_ptr<Block> &GetFalseBlock() const { return false_block_; }
+  void SetCondition(std::shared_ptr<Var> condition) { condition_ = std::move(condition); }
   void Print() const override {
     std::cout << "%truncTmp." << cond_raw_ << " = trunc i8 " << condition_->GetName() << " to i1" << std::endl;
     std::cout << "br i1 %truncTmp." << cond_raw_ << ", label %" << true_block_.lock()->GetLabel() << ", label %"

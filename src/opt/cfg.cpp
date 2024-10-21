@@ -39,7 +39,7 @@ std::shared_ptr<CFGNode> CFGNode::SetDirectDom() {
       break;
     }
   }
-  assert(!direct_dom_.expired());
+  // assert(!direct_dom_.expired());
   return direct_dom_.lock();
 }
 
@@ -51,11 +51,16 @@ void CFGNode::PushDomChild(const std::shared_ptr<CFGNode> &node) { dom_tree_chil
 
 void CFGNode::PushDomBorder(const std::shared_ptr<CFGNode> &node) { dom_border_.push_back(node); }
 
+extern bool generate_dominator_tree;
+
 ControlFlowGraph::ControlFlowGraph(const IRFunction &func) {
   auto &blocks = func.GetBlocks();
   std::unordered_map<std::shared_ptr<Block>, std::shared_ptr<CFGNode>> block_map;
   for (const auto &item : blocks) {
     auto node = std::make_shared<CFGNode>(item);
+    if (auto &branch_stmt = node->GetBlock()->GetBranchStmt(); dynamic_cast<Unreachable *>(branch_stmt.get()) != nullptr) {
+      continue;
+    }
     block_map.emplace(item, node);
     set_manager_.AddElement(node);
     cfg_nodes_.push_back(node);
@@ -78,24 +83,36 @@ ControlFlowGraph::ControlFlowGraph(const IRFunction &func) {
       false_br->PushPred(node);
     }
   }
+  if (generate_dominator_tree) {
+    GetDomSet();
+  }
 }
 
 std::shared_ptr<CFGNode> &ControlFlowGraph::GetSourceNode() { return source_; }
 
+std::vector<std::shared_ptr<CFGNode>> &ControlFlowGraph::GetCFGNodes() { return cfg_nodes_; }
+
 void ControlFlowGraph::GetDomSet() {
   std::unordered_set<std::shared_ptr<CFGNode>> flag;
   std::queue<std::shared_ptr<CFGNode>> queue;
-  queue.push(source_);
-  flag.insert(source_);
+  for (const auto &node : cfg_nodes_) {
+    if (node->GetPred().empty()) {
+      queue.push(node);
+      flag.insert(node);
+    }
+  }
   while (!queue.empty()) {
     auto node = queue.front();
     queue.pop();
     flag.erase(node);
-    auto cur_set = set_manager_.WholeSet();
+    auto cur_set = node->GetPred().empty() ? set_manager_.EmptySet() : set_manager_.WholeSet();
     for (const auto &pred : node->GetPred()) {
       cur_set.Intersect(pred.lock()->GetDom());
     }
-    cur_set.Union(set_manager_.EmptySet().AddElement(node));
+    cur_set.AddElement(node);
+    if (node->GetPred().empty()) {
+      cur_set = set_manager_.EmptySet().AddElement(node);
+    }
     if (cur_set != node->GetDom()) {
       for (const auto &suc : node->GetSuc()) {
         if (!flag.contains(suc.lock())) {
@@ -103,13 +120,17 @@ void ControlFlowGraph::GetDomSet() {
           queue.push(suc.lock());
         }
       }
+      node->SetDom(std::move(cur_set));
     }
   }
   for (const auto &item : cfg_nodes_) {
-    if (item == source_) {
+    if (item->GetPred().empty()) {
       continue;
     }
     auto direct_dom = item->SetDirectDom();
+    if (direct_dom == nullptr) {
+      continue;
+    }
     direct_dom->PushDomChild(item);
   }
   for (const auto &node : cfg_nodes_) {

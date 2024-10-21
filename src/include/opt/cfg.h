@@ -50,6 +50,7 @@ public:
   ControlFlowGraph &operator=(const ControlFlowGraph &) = delete;
   ControlFlowGraph &operator=(ControlFlowGraph &&) = delete;
   std::shared_ptr<CFGNode> &GetSourceNode();
+  std::vector<std::shared_ptr<CFGNode>> &GetCFGNodes();
 
 private:
   void GetDomSet();

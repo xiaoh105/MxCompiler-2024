@@ -50,6 +50,7 @@ class Set {
     iterator(const iterator &other) = default;
     iterator &operator=(const iterator &other) = default;
     iterator &operator++() {
+      assert(pos_ < base_->manager_->cnt_);
       ++pos_;
       while (pos_ < base_->manager_->cnt_ && !base_->state_.test(pos_)) {
         ++pos_;

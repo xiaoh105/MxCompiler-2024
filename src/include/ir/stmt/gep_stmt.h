@@ -24,7 +24,8 @@ class GetElementPtrStmt final : public Stmt {
   }
   [[nodiscard]] const std::shared_ptr<Register> &GetResult() const { return result_; }
   [[nodiscard]] const std::shared_ptr<Register> &GetPtr() const { return ptr_; }
-  [[nodiscard]] const std::vector<std::shared_ptr<Var>> &GetIndex() const { return index_; }
+  std::vector<std::shared_ptr<Var>> &GetIndex() { return index_; }
+  void SetPtr(std::shared_ptr<Register> ptr) { ptr_ = std::move(ptr); }
   void Print() const override {
     std::cout << result_->GetName() << " = getelementptr " << ptr_->GetType().GetElementIRTypename() << ", ptr " << ptr_->GetName();
     for (const auto &item : index_) {
@@ -35,6 +36,6 @@ class GetElementPtrStmt final : public Stmt {
 
  private:
   const std::shared_ptr<Register> result_;
-  const std::shared_ptr<Register> ptr_;
-  const std::vector<std::shared_ptr<Var>> index_;
+  std::shared_ptr<Register> ptr_;
+  std::vector<std::shared_ptr<Var>> index_;
 };

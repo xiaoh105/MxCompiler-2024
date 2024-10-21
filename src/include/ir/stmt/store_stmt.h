@@ -20,6 +20,7 @@ public:
   }
   [[nodiscard]] const std::shared_ptr<Var> &GetValue() const { return value_; }
   [[nodiscard]] const std::shared_ptr<Register> &GetPtr() const { return ptr_; }
+  void SetValue(std::shared_ptr<Var> value) { value_ = std::move(value); }
   void Print() const override {
     std::cout << "store " << value_->GetType().GetIRTypename() << " " << value_->GetName() << ", ptr " << ptr_->GetName() << std::endl;
   }

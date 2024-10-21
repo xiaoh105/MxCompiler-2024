@@ -1,6 +1,8 @@
 #include "backend/ir_builder.h"
 #include "frontend/semantic_checker.h"
 #include "frontend/symbol_collector.h"
+#include "opt/cfg.h"
+#include "opt/mem_to_reg/mem_to_reg.h"
 
 void GenerateIR(RootNode *root) {
   auto [scope, global_scope] = CollectSymbol(root);
@@ -924,10 +926,24 @@ void IRBuilder::visit(FunctionDefClassStmtNode *node) {
   cur_func_ = nullptr;
 }
 
+extern bool generate_cfg;
+extern bool mem_to_reg;
+
 void IRBuilder::visit(RootNode *node) {
   for (const auto &def : node->GetDefNodes()) {
     def->accept(this);
   }
   init_func_->PushStmt(std::make_unique<RetStmt>());
   init_func_->LinkInitStmt();
+  if (generate_cfg) {
+    for (const auto &func : functions_.GetFunctions()) {
+      if (func.second->IsBuiltin()) {
+        continue;
+      }
+      ControlFlowGraph cfg(*func.second);
+      if (mem_to_reg) {
+        MemToReg(cfg.GetCFGNodes(), vars_);
+      }
+    }
+  }
 }

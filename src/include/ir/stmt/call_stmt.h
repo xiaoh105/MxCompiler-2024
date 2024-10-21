@@ -26,7 +26,7 @@ class CallStmt final : public Stmt {
            std::vector<std::shared_ptr<Var>> args)
       : result_(std::move(res)), function_(function), arguments_(std::move(args)) {}
   [[nodiscard]] const std::shared_ptr<Register> &GetResult() const { return result_; }
-  [[nodiscard]] const std::vector<std::shared_ptr<Var>> &GetArguments() const { return arguments_; }
+  std::vector<std::shared_ptr<Var>> &GetArguments() { return arguments_; }
   [[nodiscard]] const std::weak_ptr<IRFunction> &GetFunction() const { return function_; }
   void Print() const override {
     if (result_ == nullptr) {

@@ -56,7 +56,10 @@ class dynamic_bitset {
   };
   dynamic_bitset() = delete;
   dynamic_bitset(std::size_t size) : size_(size) {  // NOLINT
-    assert(size_ > 0);
+    if (size_ == 0) {
+      data_ = nullptr;
+      return;
+    }
     std::size_t len = ((size - 1) >> 6) + 1;
     data_ = new uint64_t[len]{};  // NOLINT
   }
