@@ -30,6 +30,8 @@ add_executable(MxCompiler src/main.cpp
         src/frontend/symbol_collector.cpp
         src/frontend/semantic_checker.cpp
         src/backend/ir_builder.cpp
-        src/backend/asm_builder.cpp)
+        src/backend/asm_builder.cpp
+        src/opt/cfg.cpp
+        src/opt/mem_to_reg/mem_to_reg.cpp)
 
 target_link_libraries(MxCompiler antlr4-runtime)

@@ -1,15 +1,40 @@
 #include "ast/ast.h"
+#include "backend/asm_builder.h"
 #include "frontend/ast_builder.h"
 #include "frontend/error_listener.h"
+#include "frontend/semantic_checker.h"
 #include "parser/MxLexer.h"
 #include "parser/MxParser.h"
 #include "utils/error/semantic_error.hpp"
 
-#include "ir/type/ir_type.h"
+#include "utils/set.h"
 
-#include "backend/asm_builder.h"
+bool syntax_only = false;
+bool emit_llvm = false;
 
-int main() {
+bool generate_cfg = false;
+bool generate_dominator_tree = false;
+
+bool mem_to_reg = false;
+
+void ParseArgs(int argc, char **argv) {
+  for (int i = 1; i < argc; i++) {
+    if (!strcmp(argv[i], "-fsyntax-only")) {
+      syntax_only = true;
+    } else if (!strcmp(argv[i], "-femit-llvm")) {
+      emit_llvm = true;
+    } else if (!strcmp(argv[i], "-fmem-to-reg")) {
+      mem_to_reg = true;
+      generate_cfg = true;
+      generate_dominator_tree = true;
+    } else {
+      assert(false);
+    }
+  }
+}
+
+int main(int argc, char **argv) {
+  ParseArgs(argc, argv);
   ANTLRInputStream input(std::cin);
   MxErrorListener error_listener;
   MxLexer lexer(&input);
@@ -28,7 +53,13 @@ int main() {
   try {
     ASTBuilder builder;
     auto ast_root = std::any_cast<std::shared_ptr<RootNode>>(builder.visitProgram(root));
-    GenerateAsm(ast_root.get());
+    if (syntax_only) {
+      CheckSemantic(ast_root.get());
+    } else if (emit_llvm) {
+      GenerateIR(ast_root.get());
+    } else {
+      GenerateAsm(ast_root.get());
+    }
   } catch (const SemanticError &err) {
 #ifndef OJ
     std::cerr << err.what() << std::endl;

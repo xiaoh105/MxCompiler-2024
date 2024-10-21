@@ -179,6 +179,26 @@ class dynamic_bitset {
     }
     return *this;
   }
+  bool operator==(const dynamic_bitset &other) const {
+    assert(size_ == other.size_);
+    auto len = ((size_ - 1) >> 6) + 1;
+    for (auto i = 0u; i < len; ++i) {
+      if (data_[i] != other.data_[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+  bool operator!=(const dynamic_bitset &other) const {
+    assert(size_ == other.size_);
+    auto len = ((size_ - 1) >> 6) + 1;
+    for (auto i = 0u; i < len; ++i) {
+      if (data_[i] != other.data_[i]) {
+        return true;
+      }
+    }
+    return false;
+  }
   friend dynamic_bitset operator^(const dynamic_bitset &lhs, const dynamic_bitset &rhs) {
     auto res = lhs;
     res ^= rhs;

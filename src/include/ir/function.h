@@ -6,6 +6,8 @@
  */
 #pragma once
 
+#include <iostream>
+
 #include "ir/block.h"
 #include "ir/type/ir_type.h"
 #include "stmt/branch_stmt/br_uncond_stmt.h"
