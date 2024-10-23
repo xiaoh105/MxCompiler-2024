@@ -16,6 +16,8 @@ class UnconditionalBrStmt final : public BranchStmt {
   UnconditionalBrStmt() = delete;
   explicit UnconditionalBrStmt(const std::shared_ptr<Block> &block) : block_(block) {}
   [[nodiscard]] const std::weak_ptr<Block> &GetBlock() const noexcept { return block_; }
+  [[nodiscard]] std::shared_ptr<Register> GetDef() const override { return nullptr; }
+  [[nodiscard]] std::vector<std::shared_ptr<Register>> GetUse() const override { return {}; }
   void Print() const override { std::cout << "br label %" << block_.lock()->GetLabel() << std::endl; }
 
  private:

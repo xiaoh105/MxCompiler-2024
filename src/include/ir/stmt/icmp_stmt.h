@@ -27,6 +27,17 @@ class ICmpStmt final : public Stmt {
   [[nodiscard]] const std::shared_ptr<Var>& GetRhs() const { return rhs_; }
   void SetLhs(std::shared_ptr<Var> lhs) { lhs_ = std::move(lhs); }
   void SetRhs(std::shared_ptr<Var> rhs) { rhs_ = std::move(rhs); }
+  [[nodiscard]] std::shared_ptr<Register> GetDef() const override { return result_; }
+  [[nodiscard]] std::vector<std::shared_ptr<Register>> GetUse() const override {
+    std::vector<std::shared_ptr<Register>> ret;
+    if (auto lhs = std::dynamic_pointer_cast<Register>(lhs_); lhs != nullptr && !lhs->IsGlobal()) {
+      ret.push_back(lhs);
+    }
+    if (auto rhs = std::dynamic_pointer_cast<Register>(rhs_); rhs != nullptr && !rhs->IsGlobal()) {
+      ret.push_back(rhs);
+    }
+    return ret;
+  }
   void Print() const override {
     std::cout << "%zextTmp." << result_raw_ << " = icmp " << GetOpName(op_type_) << " " << lhs_->GetType().GetIRTypename() << " "
               << lhs_->GetName() << ", " << rhs_->GetName() << std::endl;

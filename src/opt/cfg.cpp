@@ -18,9 +18,9 @@ const Set<CFGNode> &CFGNode::GetDom() const { return dom_; }
 
 Set<CFGNode> CFGNode::GetDom() { return dom_; }
 
-const std::vector<std::weak_ptr<CFGNode>> &CFGNode::GetPred() const { return pred_; }
+std::vector<std::weak_ptr<CFGNode>> &CFGNode::GetPred() { return pred_; }
 
-const std::vector<std::weak_ptr<CFGNode>> &CFGNode::GetSuc() const { return suc_; }
+std::vector<std::weak_ptr<CFGNode>> &CFGNode::GetSuc() { return suc_; }
 
 const std::vector<std::shared_ptr<CFGNode>> &CFGNode::GetDomBorder() const { return dom_border_; }
 
@@ -39,7 +39,6 @@ std::shared_ptr<CFGNode> CFGNode::SetDirectDom() {
       break;
     }
   }
-  // assert(!direct_dom_.expired());
   return direct_dom_.lock();
 }
 
@@ -51,14 +50,33 @@ void CFGNode::PushDomChild(const std::shared_ptr<CFGNode> &node) { dom_tree_chil
 
 void CFGNode::PushDomBorder(const std::shared_ptr<CFGNode> &node) { dom_border_.push_back(node); }
 
-extern bool generate_dominator_tree;
+const Set<Register> &CFGNode::GetLiveIn() const { return live_in_; }
 
-ControlFlowGraph::ControlFlowGraph(const IRFunction &func) {
-  auto &blocks = func.GetBlocks();
+void CFGNode::SetLiveIn(Set<Register> live_in) { live_in_ = std::move(live_in); }
+
+const Set<Register> &CFGNode::GetLiveOut() const { return live_out_; }
+
+void CFGNode::SetLiveOut(Set<Register> live_out) { live_out_ = std::move(live_out); }
+
+const Set<Register> &CFGNode::GetDef() const { return def_; }
+
+const Set<Register> &CFGNode::GetUse() const { return use_; }
+
+void CFGNode::SetDefUse(Set<Register> def, Set<Register> use) {
+  def_ = std::move(def);
+  use_ = std::move(use);
+}
+
+extern bool generate_dominator_tree;
+extern bool generate_data_flow;
+
+ControlFlowGraph::ControlFlowGraph(std::shared_ptr<IRFunction> func) : func_(std::move(func)) {
+  auto &blocks = func_->GetBlocks();
   std::unordered_map<std::shared_ptr<Block>, std::shared_ptr<CFGNode>> block_map;
   for (const auto &item : blocks) {
     auto node = std::make_shared<CFGNode>(item);
-    if (auto &branch_stmt = node->GetBlock()->GetBranchStmt(); dynamic_cast<Unreachable *>(branch_stmt.get()) != nullptr) {
+    if (auto &branch_stmt = node->GetBlock()->GetBranchStmt();
+        dynamic_cast<Unreachable *>(branch_stmt.get()) != nullptr) {
       continue;
     }
     block_map.emplace(item, node);
@@ -86,11 +104,16 @@ ControlFlowGraph::ControlFlowGraph(const IRFunction &func) {
   if (generate_dominator_tree) {
     GetDomSet();
   }
+  if (generate_data_flow) {
+    GetDataFlow();
+  }
 }
 
 std::shared_ptr<CFGNode> &ControlFlowGraph::GetSourceNode() { return source_; }
 
 std::vector<std::shared_ptr<CFGNode>> &ControlFlowGraph::GetCFGNodes() { return cfg_nodes_; }
+
+std::shared_ptr<IRFunction> &ControlFlowGraph::GetIRFunction() { return func_; }
 
 void ControlFlowGraph::GetDomSet() {
   std::unordered_set<std::shared_ptr<CFGNode>> flag;
@@ -140,6 +163,88 @@ void ControlFlowGraph::GetDomSet() {
     }
     for (const auto &item : target_nodes) {
       item->PushDomBorder(node);
+    }
+  }
+}
+
+void ControlFlowGraph::CollectRegister() {
+  for (const auto &arg : func_->GetArgumentVars()) {
+    reg_manager_.AddElement(arg);
+  }
+  for (const auto &node : cfg_nodes_) {
+    for (const auto &stmt : node->GetBlock()->GetStmts()) {
+      if (auto alloca_stmt = dynamic_cast<AllocaStmt *>(stmt.get()); alloca_stmt != nullptr) {
+        reg_manager_.AddElement(alloca_stmt->GetResult());
+      }
+      if (auto reg = stmt->GetDef(); reg != nullptr) {
+        reg_manager_.AddElement(reg);
+      }
+    }
+    for (const auto &stmt : node->GetBlock()->GetMoveStmts()) {
+      if (auto reg = stmt->GetDef(); reg != nullptr) {
+        reg_manager_.AddElement(reg);
+      }
+    }
+    if (auto reg = node->GetBlock()->GetBranchStmt()->GetDef(); reg != nullptr) {
+      reg_manager_.AddElement(reg);
+    }
+  }
+}
+
+void ControlFlowGraph::SetDefUse() {
+  for (const auto &node : cfg_nodes_) {
+    auto &block = node->GetBlock();
+    auto def = reg_manager_.EmptySet();
+    auto use = reg_manager_.EmptySet();
+    for (const auto &stmt : block->GetStmts()) {
+      use |= reg_manager_.GetSet(stmt->GetUse()) - def;
+      def |= reg_manager_.GetSet({stmt->GetDef()});
+    }
+    for (const auto &stmt : block->GetMoveStmts()) {
+      use |= reg_manager_.GetSet(stmt->GetUse()) - def;
+      def |= reg_manager_.GetSet({stmt->GetDef()});
+    }
+    use |= reg_manager_.GetSet(block->GetBranchStmt()->GetUse()) - def;
+    def |= reg_manager_.GetSet({block->GetBranchStmt()->GetDef()});
+    node->SetDefUse(std::move(def), std::move(use));
+  }
+}
+
+void ControlFlowGraph::GetDataFlow() {
+  CollectRegister();
+  if (reg_manager_.Size() == 0) {
+    return;
+  }
+  SetDefUse();
+  std::unordered_set<std::shared_ptr<CFGNode>> flag;
+  std::queue<std::shared_ptr<CFGNode>> queue;
+  for (const auto &node : cfg_nodes_) {
+    node->SetLiveIn(reg_manager_.EmptySet());
+    node->SetLiveOut(reg_manager_.EmptySet());
+    if (node->GetSuc().empty()) {
+      queue.push(node);
+      flag.insert(node);
+    }
+  }
+  while (!queue.empty()) {
+    auto node = queue.front();
+    queue.pop();
+    flag.erase(node);
+    auto live_in = reg_manager_.EmptySet();
+    auto live_out = reg_manager_.EmptySet();
+    for (const auto &suc : node->GetSuc()) {
+      live_out |= suc.lock()->GetLiveIn();
+    }
+    live_in = node->GetUse() | live_out - node->GetDef();
+    if (live_out != node->GetLiveOut() || live_in != node->GetLiveIn()) {
+      node->SetLiveOut(live_out);
+      node->SetLiveIn(live_in);
+      for (const auto &pred : node->GetPred()) {
+        if (!flag.contains(pred.lock())) {
+          queue.push(pred.lock());
+          flag.insert(pred.lock());
+        }
+      }
     }
   }
 }

@@ -16,8 +16,8 @@ class CFGNode {
 public:
   CFGNode() = delete;
   CFGNode(std::shared_ptr<Block> block);
-  [[nodiscard]] const std::vector<std::weak_ptr<CFGNode>> &GetPred() const;
-  [[nodiscard]] const std::vector<std::weak_ptr<CFGNode>> &GetSuc() const;
+  std::vector<std::weak_ptr<CFGNode>> &GetPred();
+  std::vector<std::weak_ptr<CFGNode>> &GetSuc();
   Set<CFGNode> GetDom();
   [[nodiscard]] const Set<CFGNode> &GetDom() const;
   [[nodiscard]] const std::vector<std::shared_ptr<CFGNode>> &GetDomBorder() const;
@@ -31,6 +31,14 @@ public:
   std::shared_ptr<CFGNode> SetDirectDom();
   void PushDomChild(const std::shared_ptr<CFGNode> &node);
 
+  [[nodiscard]] const Set<Register> &GetLiveIn() const;
+  [[nodiscard]] const Set<Register> &GetLiveOut() const;
+  [[nodiscard]] const Set<Register> &GetDef() const;
+  [[nodiscard]] const Set<Register> &GetUse() const;
+  void SetLiveIn(Set<Register> live_in);
+  void SetLiveOut(Set<Register> live_out);
+  void SetDefUse(Set<Register> def, Set<Register> use);
+
 private:
   std::shared_ptr<Block> block_{nullptr};
   std::vector<std::weak_ptr<CFGNode>> suc_;
@@ -39,22 +47,34 @@ private:
   std::vector<std::shared_ptr<CFGNode>> dom_border_;
   std::weak_ptr<CFGNode> direct_dom_{};
   std::vector<std::shared_ptr<CFGNode>> dom_tree_child_{};
+
+  Set<Register> live_in_;
+  Set<Register> live_out_;
+  Set<Register> def_;
+  Set<Register> use_;
 };
 
 class ControlFlowGraph {
 public:
   ControlFlowGraph() = delete;
-  explicit ControlFlowGraph(const IRFunction &func);
+  ControlFlowGraph(std::shared_ptr<IRFunction> func);
   ControlFlowGraph(const ControlFlowGraph &) = delete;
   ControlFlowGraph(ControlFlowGraph &&) = delete;
   ControlFlowGraph &operator=(const ControlFlowGraph &) = delete;
   ControlFlowGraph &operator=(ControlFlowGraph &&) = delete;
   std::shared_ptr<CFGNode> &GetSourceNode();
   std::vector<std::shared_ptr<CFGNode>> &GetCFGNodes();
+  std::shared_ptr<IRFunction> &GetIRFunction();
 
 private:
   void GetDomSet();
+  void CollectRegister();
+  void SetDefUse();
+  void GetDataFlow();
+  std::shared_ptr<IRFunction> func_;
+  std::vector<std::shared_ptr<Register>> registers_;
   std::vector<std::shared_ptr<CFGNode>> cfg_nodes_;
+  SetManager<Register> reg_manager_;
   SetManager<CFGNode> set_manager_;
   std::shared_ptr<CFGNode> source_;
 };

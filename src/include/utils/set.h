@@ -26,8 +26,10 @@ public:
     elements_.push_back(item);
     map_.emplace(item, cnt_++);
   }
+  [[nodiscard]] size_t Size() const { return cnt_; }
   Set<T> EmptySet();
   Set<T> WholeSet();
+  Set<T> GetSet(const std::vector<std::shared_ptr<T>> &elements);
 
 private:
   std::size_t cnt_{0};
@@ -176,4 +178,16 @@ Set<T> SetManager<T>::EmptySet() {
 template <class T>
 Set<T> SetManager<T>::WholeSet() {
   return Set<T>(elements_.size(), this, true);
+}
+
+template <class T>
+Set<T> SetManager<T>::GetSet(const std::vector<std::shared_ptr<T>> &elements) {
+  auto ret = EmptySet();
+  for (const auto &element : elements) {
+    if (element == nullptr) {
+      continue;
+    }
+    ret.AddElement(element);
+  }
+  return ret;
 }

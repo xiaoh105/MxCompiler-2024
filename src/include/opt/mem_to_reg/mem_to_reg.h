@@ -10,4 +10,6 @@
 
 #include "opt/cfg.h"
 
-void MemToReg(const std::vector<std::shared_ptr<CFGNode>> &cfg_nodes, VarManager &var_manager);
+void MemToReg(ControlFlowGraph &cfg, VarManager &var_manager);
+
+void DestructPhi(ControlFlowGraph &cfg);

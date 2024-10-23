@@ -26,8 +26,19 @@ class GetElementPtrStmt final : public Stmt {
   [[nodiscard]] const std::shared_ptr<Register> &GetPtr() const { return ptr_; }
   std::vector<std::shared_ptr<Var>> &GetIndex() { return index_; }
   void SetPtr(std::shared_ptr<Register> ptr) { ptr_ = std::move(ptr); }
+  [[nodiscard]] std::shared_ptr<Register> GetDef() const override { return result_; }
+  [[nodiscard]] std::vector<std::shared_ptr<Register>> GetUse() const override {
+    std::vector<std::shared_ptr<Register>> ret;
+    for (const auto &index : index_) {
+      if (auto reg = std::dynamic_pointer_cast<Register>(index); reg != nullptr && !reg->IsGlobal()) {
+        ret.emplace_back(std::move(reg));
+      }
+    }
+    return ret;
+  }
   void Print() const override {
-    std::cout << result_->GetName() << " = getelementptr " << ptr_->GetType().GetElementIRTypename() << ", ptr " << ptr_->GetName();
+    std::cout << result_->GetName() << " = getelementptr " << ptr_->GetType().GetElementIRTypename() << ", ptr "
+              << ptr_->GetName();
     for (const auto &item : index_) {
       std::cout << ", " << item->GetType().GetIRTypename() << " " << item->GetName();
     }

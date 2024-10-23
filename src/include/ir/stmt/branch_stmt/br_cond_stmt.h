@@ -24,6 +24,13 @@ class ConditionalBrStmt final : public BranchStmt {
   [[nodiscard]] const std::weak_ptr<Block> &GetTrueBlock() const { return true_block_; }
   [[nodiscard]] const std::weak_ptr<Block> &GetFalseBlock() const { return false_block_; }
   void SetCondition(std::shared_ptr<Var> condition) { condition_ = std::move(condition); }
+  [[nodiscard]] std::shared_ptr<Register> GetDef() const override { return nullptr; }
+  [[nodiscard]] std::vector<std::shared_ptr<Register>> GetUse() const override {
+    if (auto reg = std::dynamic_pointer_cast<Register>(condition_); reg != nullptr && !reg->IsGlobal()) {
+      return {reg};
+    }
+    return {};
+  }
   void Print() const override {
     std::cout << "%truncTmp." << cond_raw_ << " = trunc i8 " << condition_->GetName() << " to i1" << std::endl;
     std::cout << "br i1 %truncTmp." << cond_raw_ << ", label %" << true_block_.lock()->GetLabel() << ", label %"

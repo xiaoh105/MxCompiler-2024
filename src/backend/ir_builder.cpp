@@ -858,12 +858,15 @@ void IRBuilder::visit(VarDefNode *node) {
 void IRBuilder::visit(FunctionDefNode *node) {
   cur_func_ = functions_.GetFunction(node->GetFunctionName());
   vars_.EnterNewFunc();
+  std::vector<std::shared_ptr<Register>> arg_vars;
   for (const auto &arg : cur_func_->GetArguments()) {
     auto arg_val = vars_.CreateVar(arg.first, "arg." + arg.second, false);
+    arg_vars.push_back(arg_val);
     auto arg_addr = vars_.CreateVar({arg.first.GetBaseType(), arg.first.GetDim() + 1}, arg.second, false);
     cur_func_->PushInitStmt(std::make_unique<AllocaStmt>(arg_addr));
     cur_func_->PushStmt(std::make_unique<StoreStmt>(arg_val, arg_addr));
   }
+  cur_func_->SetArgumentVars(std::move(arg_vars));
   if (node->GetFunctionName() == "main") {
     cur_func_->PushStmt(std::make_unique<CallStmt>(init_func_, std::vector<std::shared_ptr<Var>>{}));
   }
@@ -906,16 +909,20 @@ void IRBuilder::visit(FunctionDefClassStmtNode *node) {
   auto &func = functions_.GetFunction(cur_type_->GetIRTypename().substr(1) + "." + node->GetFuncName());
   cur_func_ = func;
   vars_.EnterNewFunc();
+  std::vector<std::shared_ptr<Register>> arg_var;
   for (const auto &arg : cur_func_->GetArguments()) {
     if (arg.second == "this") {
-      vars_.CreateVar({cur_type_, 1}, "this", false, false);
+      auto arg_val = vars_.CreateVar({cur_type_, 1}, "this", false, false);
+      arg_var.push_back(arg_val);
       continue;
     }
     auto arg_val = vars_.CreateVar(arg.first, "arg." + arg.second, false, false);
+    arg_var.push_back(arg_val);
     auto arg_addr = vars_.CreateVar({arg.first.GetBaseType(), arg.first.GetDim() + 1}, arg.second, false);
     cur_func_->PushInitStmt(std::make_unique<AllocaStmt>(arg_addr));
     cur_func_->PushStmt(std::make_unique<StoreStmt>(arg_val, arg_addr));
   }
+  cur_func_->SetArgumentVars(std::move(arg_var));
   node->GetFunctionBody()->accept(this);
   if (cur_func_->GetReturnType() == kIRVoidType) {
     cur_func_->PushStmt(std::make_unique<RetStmt>());
@@ -940,9 +947,9 @@ void IRBuilder::visit(RootNode *node) {
       if (func.second->IsBuiltin()) {
         continue;
       }
-      ControlFlowGraph cfg(*func.second);
+      ControlFlowGraph cfg(func.second);
       if (mem_to_reg) {
-        MemToReg(cfg.GetCFGNodes(), vars_);
+        MemToReg(cfg, vars_);
       }
     }
   }

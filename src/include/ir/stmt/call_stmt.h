@@ -28,6 +28,18 @@ class CallStmt final : public Stmt {
   [[nodiscard]] const std::shared_ptr<Register> &GetResult() const { return result_; }
   std::vector<std::shared_ptr<Var>> &GetArguments() { return arguments_; }
   [[nodiscard]] const std::weak_ptr<IRFunction> &GetFunction() const { return function_; }
+  [[nodiscard]] std::shared_ptr<Register> GetDef() const override {
+    return result_;
+  }
+  [[nodiscard]] std::vector<std::shared_ptr<Register>> GetUse() const override {
+    std::vector<std::shared_ptr<Register>> ret;
+    for (const auto &arg : arguments_) {
+      if (auto reg = std::dynamic_pointer_cast<Register>(arg); reg != nullptr && !reg->IsGlobal()) {
+        ret.push_back(reg);
+      }
+    }
+    return ret;
+  }
   void Print() const override {
     if (result_ == nullptr) {
       std::cout << "call void @" << function_.lock()->GetName() << "(";

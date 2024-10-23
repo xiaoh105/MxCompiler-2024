@@ -20,9 +20,16 @@ class LoadStmt : public Stmt {
   }
   [[nodiscard]] const std::shared_ptr<Register> &GetResult() const { return result_; }
   [[nodiscard]] const std::shared_ptr<Register> &GetPtr() const { return ptr_; }
+  [[nodiscard]] std::shared_ptr<Register> GetDef() const override { return result_; }
+  [[nodiscard]] std::vector<std::shared_ptr<Register>> GetUse() const override {
+    if (ptr_->IsGlobal()) {
+      return {};
+    }
+    return {ptr_};
+  }
   void Print() const override {
-    std::cout << result_->GetName() << " = load " << result_->GetType().GetIRTypename() << ", ptr "
-              << ptr_->GetName() << std::endl;
+    std::cout << result_->GetName() << " = load " << result_->GetType().GetIRTypename() << ", ptr " << ptr_->GetName()
+              << std::endl;
   }
 
  private:

@@ -25,6 +25,17 @@ class BinaryStmt final : public Stmt {
   [[nodiscard]] OpType GetOpType() const { return op_type_; }
   void SetLeft(std::shared_ptr<Var> lhs) { lhs_ = std::move(lhs); }
   void SetRight(std::shared_ptr<Var> rhs) { rhs_ = std::move(rhs); }
+  [[nodiscard]] std::shared_ptr<Register> GetDef() const override { return result_; }
+  [[nodiscard]] std::vector<std::shared_ptr<Register>> GetUse() const override {
+    std::vector<std::shared_ptr<Register>> ret;
+    if (auto lhs = std::dynamic_pointer_cast<Register>(lhs_); lhs != nullptr && !lhs->IsGlobal()) {
+      ret.push_back(lhs);
+    }
+    if (auto rhs = std::dynamic_pointer_cast<Register>(rhs_); rhs != nullptr && !rhs->IsGlobal()) {
+      ret.push_back(rhs);
+    }
+    return ret;
+  }
   void Print() const override {
     std::cout << result_->GetName() << " = " << GetOpName(op_type_) << " " << lhs_->GetType().GetIRTypename() << " " << lhs_->GetName()
               << ", " << rhs_->GetName() << std::endl;

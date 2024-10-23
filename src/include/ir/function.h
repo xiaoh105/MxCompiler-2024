@@ -32,6 +32,8 @@ class IRFunction {
   [[nodiscard]] const std::string &GetName() const { return name_; }
   [[nodiscard]] IRType GetReturnType() const { return return_type_; }
   [[nodiscard]] const std::vector<std::pair<IRType, std::string>> &GetArguments() const { return arguments_; }
+  void SetArgumentVars(std::vector<std::shared_ptr<Register>> arg_vars) { arg_vars_ = std::move(arg_vars); }
+  [[nodiscard]] const std::vector<std::shared_ptr<Register>> &GetArgumentVars() const { return arg_vars_; }
   std::shared_ptr<Block> &GetCurBlock() { return blocks_.back(); }
   [[nodiscard]] const std::vector<std::shared_ptr<Block>> &GetBlocks() const { return blocks_; }
   [[nodiscard]] bool IsBuiltin() const { return builtin_; }
@@ -93,6 +95,7 @@ class IRFunction {
   const std::string name_;
   const std::vector<std::pair<IRType, std::string>> arguments_;
   bool builtin_;
+  std::vector<std::shared_ptr<Register>> arg_vars_;
   std::shared_ptr<Block> init_block_;
   std::vector<std::shared_ptr<Block>> blocks_;
   std::unordered_map<std::string, int> tag_index_;

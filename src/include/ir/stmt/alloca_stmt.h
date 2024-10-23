@@ -20,6 +20,8 @@ class AllocaStmt final : public Stmt {
   void Print() const override {
     std::cout << result_->GetName() << " = alloca " << result_->GetType().GetElementIRTypename() << std::endl;
   }
+  [[nodiscard]] std::vector<std::shared_ptr<Register>> GetUse() const override { return {}; }
+  [[nodiscard]] std::shared_ptr<Register> GetDef() const override { return nullptr; }
 
  private:
   const std::shared_ptr<Register> result_{nullptr};

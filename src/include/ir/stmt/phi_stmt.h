@@ -18,6 +18,16 @@ class PhiStmt : public Stmt {
       : res_(std::move(res)), blocks_(std::move(blocks)) {}
   [[nodiscard]] const std::shared_ptr<Register> &GetResult() const { return res_; }
   std::vector<std::pair<std::shared_ptr<Var>, std::weak_ptr<Block>>> &GetBlocks() { return blocks_; }
+  [[nodiscard]] std::shared_ptr<Register> GetDef() const override { return res_; }
+  [[nodiscard]] std::vector<std::shared_ptr<Register>> GetUse() const override {
+    std::vector<std::shared_ptr<Register>> ret;
+    for (const auto &item : blocks_) {
+      if (auto reg = std::dynamic_pointer_cast<Register>(item.first); reg != nullptr && !reg->IsGlobal()) {
+        ret.emplace_back(reg);
+      }
+    }
+    return ret;
+  }
   void Print() const override {
     std::cout << res_->GetName() << " = phi " << res_->GetType().GetIRTypename() << " ";
     for (int i = 0; i < blocks_.size(); ++i) {

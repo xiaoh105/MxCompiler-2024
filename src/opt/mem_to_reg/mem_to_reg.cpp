@@ -57,7 +57,7 @@ void ReservePhi(const std::vector<std::shared_ptr<CFGNode>> &cfg_nodes, VarManag
   }
 }
 
-void PlacePhi(const std::shared_ptr<CFGNode> &cur_node, VarManager &var_manager) { // NOLINT
+void PlacePhi(const std::shared_ptr<CFGNode> &cur_node, VarManager &var_manager) {  // NOLINT
   auto &block = cur_node->GetBlock();
   std::stack<std::pair<std::shared_ptr<Register>, std::shared_ptr<Var>>> old_ver;
   for (const auto &[alloca_var, vec] : cur_node->GetBlock()->GetReservedPhi()) {
@@ -195,11 +195,56 @@ void ReplaceRegs(const std::vector<std::shared_ptr<CFGNode>> &cfg_nodes) {
   }
 }
 
-void MemToReg(const std::vector<std::shared_ptr<CFGNode>> &cfg_nodes, VarManager &var_manager) {
+void MemToReg(ControlFlowGraph &cfg, VarManager &var_manager) {
+  const auto &cfg_nodes = cfg.GetCFGNodes();
   alloca_reg.clear();
   reg_version.clear();
   replace_reg.clear();
   ReservePhi(cfg_nodes, var_manager);
   PlacePhi(cfg_nodes[0], var_manager);
   ReplaceRegs(cfg_nodes);
+}
+
+void RemoveCriticalEdge(ControlFlowGraph &cfg) {
+  auto &func = cfg.GetIRFunction();
+  auto &cfg_nodes = cfg.GetCFGNodes();
+  for (auto &node : cfg_nodes) {
+    auto &suc_nodes = node->GetSuc();
+    for (auto &suc : suc_nodes) {
+      if (node->GetSuc().size() > 1 && suc.lock()->GetPred().size() > 1 &&
+          !suc_nodes[0].lock()->GetBlock()->GetPhiStmts().empty() &&
+          !suc_nodes[1].lock()->GetBlock()->GetPhiStmts().empty()) {
+        auto temp_block = std::make_shared<Block>(func->AssignTag("criticalRemoval"));
+        func->PushBlock(temp_block);
+        temp_block->Append(std::make_unique<UnconditionalBrStmt>(suc.lock()->GetBlock()));
+        auto temp_node = std::make_shared<CFGNode>(temp_block);
+        temp_node->PushSuc(suc.lock());
+        temp_node->PushPred(node);
+        for (auto &suc_pred : suc.lock()->GetPred()) {
+          if (suc_pred.lock() == node) {
+            suc_pred = std::weak_ptr(temp_node);
+          }
+        }
+        suc = temp_node;
+      }
+    }
+  }
+}
+
+void PlaceMove(const std::vector<std::shared_ptr<CFGNode>> &cfg_nodes) {
+  for (auto &item : cfg_nodes) {
+    auto &phi_stmts = item->GetBlock()->GetPhiStmts();
+    for (const auto &stmt : phi_stmts) {
+      auto phi_stmt = dynamic_cast<PhiStmt *>(stmt.get());
+      for (auto &[var, block] : phi_stmt->GetBlocks()) {
+        block.lock()->AppendMove(std::make_unique<MoveStmt>(phi_stmt->GetResult(), var));
+      }
+    }
+    phi_stmts.clear();
+  }
+}
+
+void DestructPhi(ControlFlowGraph &cfg) {
+  RemoveCriticalEdge(cfg);
+  PlaceMove(cfg.GetCFGNodes());
 }
