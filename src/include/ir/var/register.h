@@ -14,7 +14,7 @@
 /**
  * IR node for global and local variables
  */
-class Register final : public Var {
+class Register : public Var {
  public:
   Register() = delete;
   Register(IRType type, std::string name, bool global, bool lvalue)

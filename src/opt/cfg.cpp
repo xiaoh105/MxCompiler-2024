@@ -115,6 +115,10 @@ std::vector<std::shared_ptr<CFGNode>> &ControlFlowGraph::GetCFGNodes() { return 
 
 std::shared_ptr<IRFunction> &ControlFlowGraph::GetIRFunction() { return func_; }
 
+std::vector<std::shared_ptr<Register>> ControlFlowGraph::GetRegisters() const { return registers_; }
+
+SetManager<Register> &ControlFlowGraph::GetRegManager() { return reg_manager_; }
+
 void ControlFlowGraph::GetDomSet() {
   std::unordered_set<std::shared_ptr<CFGNode>> flag;
   std::queue<std::shared_ptr<CFGNode>> queue;
@@ -170,23 +174,28 @@ void ControlFlowGraph::GetDomSet() {
 void ControlFlowGraph::CollectRegister() {
   for (const auto &arg : func_->GetArgumentVars()) {
     reg_manager_.AddElement(arg);
+    registers_.push_back(arg);
   }
   for (const auto &node : cfg_nodes_) {
     for (const auto &stmt : node->GetBlock()->GetStmts()) {
       if (auto alloca_stmt = dynamic_cast<AllocaStmt *>(stmt.get()); alloca_stmt != nullptr) {
         reg_manager_.AddElement(alloca_stmt->GetResult());
+        registers_.push_back(alloca_stmt->GetResult());
       }
       if (auto reg = stmt->GetDef(); reg != nullptr) {
         reg_manager_.AddElement(reg);
+        registers_.push_back(reg);
       }
     }
     for (const auto &stmt : node->GetBlock()->GetMoveStmts()) {
       if (auto reg = stmt->GetDef(); reg != nullptr) {
         reg_manager_.AddElement(reg);
+        registers_.push_back(reg);
       }
     }
     if (auto reg = node->GetBlock()->GetBranchStmt()->GetDef(); reg != nullptr) {
       reg_manager_.AddElement(reg);
+      registers_.push_back(reg);
     }
   }
 }

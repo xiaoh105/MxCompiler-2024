@@ -57,7 +57,7 @@ private:
 class ControlFlowGraph {
 public:
   ControlFlowGraph() = delete;
-  ControlFlowGraph(std::shared_ptr<IRFunction> func);
+  explicit ControlFlowGraph(std::shared_ptr<IRFunction> func);
   ControlFlowGraph(const ControlFlowGraph &) = delete;
   ControlFlowGraph(ControlFlowGraph &&) = delete;
   ControlFlowGraph &operator=(const ControlFlowGraph &) = delete;
@@ -65,6 +65,8 @@ public:
   std::shared_ptr<CFGNode> &GetSourceNode();
   std::vector<std::shared_ptr<CFGNode>> &GetCFGNodes();
   std::shared_ptr<IRFunction> &GetIRFunction();
+  SetManager<Register> &GetRegManager();
+  [[nodiscard]] std::vector<std::shared_ptr<Register>> GetRegisters() const;
 
 private:
   void GetDomSet();

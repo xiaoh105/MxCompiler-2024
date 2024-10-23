@@ -10,6 +10,7 @@
 #include "ir/stmt/alloca_stmt.h"
 #include "ir/stmt/binary_stmt.h"
 #include "ir/stmt/call_stmt.h"
+#include "ir/stmt/def_stmt.h"
 #include "ir/stmt/gep_stmt.h"
 #include "ir/stmt/icmp_stmt.h"
 #include "ir/stmt/load_stmt.h"

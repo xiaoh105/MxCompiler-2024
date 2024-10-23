@@ -33,6 +33,8 @@ add_executable(MxCompiler src/main.cpp
         src/backend/asm_builder.cpp
         src/opt/cfg.cpp
         src/opt/mem_to_reg/mem_to_reg.cpp
-        src/opt/reg_alloc/interference_graph.cpp)
+        src/opt/reg_alloc/spill_graph.cpp
+        src/opt/reg_alloc/reg_alloc.cpp
+        src/opt/reg_alloc/coalesce_graph.cpp)
 
 target_link_libraries(MxCompiler antlr4-runtime)
