@@ -8,12 +8,14 @@
 
 #include <cassert>
 #include <string>
+#include <unordered_set>
 
 class AsmRegister {
  public:
-  AsmRegister(int id) : id_(id) { assert(id >= 0 && id < 32); }
+  constexpr AsmRegister(int id) : id_(id) { assert(id >= 0 && id < 32); }
   AsmRegister(const AsmRegister &other) = default;
   AsmRegister &operator=(const AsmRegister &other) = default;
+  bool operator==(const AsmRegister &other) const { return id_ == other.id_; }
   [[nodiscard]] int GetId() const { return id_; }
   [[nodiscard]] std::string GetName() const {
     switch (id_) {
@@ -87,8 +89,18 @@ constexpr AsmRegister x(int id) {
   return {id};
 }
 
-constexpr std::size_t kAvailableRegisters = 26;
+inline std::unordered_set<std::size_t> GetAvailableRegisters() {
+  std::unordered_set<std::size_t> ret;
+  ret.insert(3);
+  ret.insert(4);
+  for (int i = 8; i < 31; ++i) {
+    ret.insert(i);
+  }
+  return ret;
+}
 
-inline AsmRegister caller_saved_registers[] = {a(0), a(1), a(2), a(3), a(4), a(5), a(6), a(7), t(3), t(4), t(5), t(6)};
-inline AsmRegister callee_saved_registers[] = {x(3), x(4), s(0), s(1), s(2), s(3),  s(4),
+inline constexpr std::size_t kAvailableRegisters = 26;
+
+inline constexpr AsmRegister caller_saved_registers[] = {a(0), a(1), a(2), a(3), a(4), a(5), a(6), a(7), t(3), t(4), t(5), t(6)};
+inline constexpr AsmRegister callee_saved_registers[] = {x(3), x(4), s(0), s(1), s(2), s(3),  s(4),
                                                s(5), s(6), s(7), s(8), s(9), s(10), s(11)};

@@ -14,6 +14,7 @@ SpillNode::SpillNode(std::shared_ptr<Register> reg) : register_(std::move(reg)) 
 
 SpillGraph::SpillGraph(ControlFlowGraph &cfg) : cfg_(cfg), reg_manager_(cfg_.GetRegManager()) {
   BuildGraph();
+  Spill();
 }
 
 void SpillGraph::BuildGraph() {

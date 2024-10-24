@@ -1,13 +1,21 @@
+#include "opt/cfg.h"
+#include "opt/mem_to_reg/mem_to_reg.h"
+#include "opt/reg_alloc/coalesce_graph.h"
 #include "opt/reg_alloc/reg_alloc.h"
 
 std::unordered_map<std::size_t, std::size_t> machine_reg_id;
 std::size_t temp_cnt;
 
+MachineRegister::MachineRegister(IRType type, std::string name, bool global, bool lvalue, AsmRegister asm_reg)
+    : Register(std::move(type), std::move(name), global, lvalue), asm_reg_(asm_reg) {}
+
+AsmRegister MachineRegister::GetAsmRegister() const { return asm_reg_; }
+
 std::shared_ptr<Register> GetMachineRegister(AsmRegister reg) {
   auto reg_id = reg.GetId();
   auto cnt = machine_reg_id[reg_id]++;
-  return std::make_shared<MachineRegister>(kIRIntType, "reg" + std::to_string(reg_id) + "." + std::to_string(cnt), false,
-                                           false, reg);
+  return std::make_shared<MachineRegister>(kIRIntType, "reg" + std::to_string(reg_id) + "." + std::to_string(cnt),
+                                           false, false, reg);
 }
 
 std::shared_ptr<Register> GetTempRegister() {
@@ -36,9 +44,19 @@ void AddMachineRegister(const std::shared_ptr<IRFunction> &func) {
     auto temp_reg = GetTempRegister();
     prologue_stmts.push_front(std::make_unique<DefStmt>(machine_reg));
     prologue_stmts.push_back(std::make_unique<MoveStmt>(temp_reg, machine_reg));
+    machine_reg = GetMachineRegister(asm_reg);
     end_block->Append(std::make_unique<MoveStmt>(machine_reg, temp_reg));
+    end_block->Append(std::make_unique<UseStmt>(temp_reg));
   }
   end_block->Append(std::make_unique<RetStmt>(ret_val));
+  auto &arg_var = func->GetArgumentVars();
+  for (int i = 0; i < arg_var.size(); ++i) {
+    if (i < 8) {
+      auto machine_reg = GetMachineRegister(a(i));
+      prologue_stmts.push_back(std::make_unique<DefStmt>(machine_reg));
+      prologue_stmts.emplace_back(std::make_unique<MoveStmt>(arg_var[i], machine_reg));
+    }
+  }
   func->PushBlock(std::move(end_block));
   entry_block->GetStmts().splice(entry_block->GetStmts().cbegin(), prologue_stmts);
   for (const auto &block : func->GetBlocks()) {
@@ -53,9 +71,23 @@ void AddMachineRegister(const std::shared_ptr<IRFunction> &func) {
           auto machine_reg = GetMachineRegister(asm_reg);
           save_stmts.push_front(std::make_unique<DefStmt>(machine_reg));
           save_stmts.push_back(std::make_unique<MoveStmt>(temp_reg, machine_reg));
+          machine_reg = GetMachineRegister(asm_reg);
           stmts.insert(next_it, std::make_unique<MoveStmt>(machine_reg, temp_reg));
+          stmts.insert(next_it, std::make_unique<UseStmt>(machine_reg));
         }
       }
     }
   }
+}
+
+AllocationInfo AllocaRegister(const std::shared_ptr<IRFunction> &func) {
+  AddMachineRegister(func);
+  ControlFlowGraph cfg(func);
+  if (cfg.GetRegisters().empty()) {
+    return {{}, {}};
+  }
+  SpillGraph spill_graph(cfg);
+  DestructPhi(cfg);
+  CoalesceGraph coalesce_graph(cfg, spill_graph);
+  return {spill_graph.GetSpilledRegs(), coalesce_graph.GetRegisterAllocation()};
 }

@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "ir/block.h"
+#include "ir/ir.h"
 #include "utils/set.h"
 
 class CFGNode {

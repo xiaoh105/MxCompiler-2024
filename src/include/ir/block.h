@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <cassert>
 #include <iostream>
 #include <list>
 #include <vector>
@@ -13,6 +14,7 @@
 #include "ir/stmt/branch_stmt/branch_stmt.h"
 
 class PhiStmt;
+class Var;
 
 /**
  * Node for blocks in LLVM IR

@@ -29,6 +29,7 @@ public:
   SpillGraph() = delete;
   explicit SpillGraph(ControlFlowGraph &cfg);
   [[nodiscard]] const std::unordered_set<std::shared_ptr<Register>> &GetSpilledRegs() const;
+  [[nodiscard]] const std::list<std::shared_ptr<SpillNode>> &GetSpilledNodes() const { return nodes_; }
 
 private:
   void BuildGraph();

@@ -3,6 +3,7 @@
 #include "frontend/symbol_collector.h"
 #include "opt/cfg.h"
 #include "opt/mem_to_reg/mem_to_reg.h"
+#include "opt/reg_alloc/reg_alloc.h"
 
 void GenerateIR(RootNode *root) {
   auto [scope, global_scope] = CollectSymbol(root);
@@ -951,6 +952,7 @@ void IRBuilder::visit(RootNode *node) {
       if (mem_to_reg) {
         MemToReg(cfg, vars_);
       }
+      AllocaRegister(func.second);
     }
   }
 }

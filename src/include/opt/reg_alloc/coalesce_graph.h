@@ -6,11 +6,13 @@
  */
 #pragma once
 
+#include <stack>
 #include <unordered_map>
 #include <unordered_set>
 
+#include "asm/register/register.h"
 #include "opt/cfg.h"
-#include "opt/reg_alloc/reg_alloc.h"
+#include "opt/reg_alloc/spill_graph.h"
 
 struct RegisterNode {
   RegisterNode() = delete;
@@ -25,12 +27,16 @@ struct RegisterNode {
 class CoalesceGraph {
 public:
   CoalesceGraph() = delete;
-  explicit CoalesceGraph(ControlFlowGraph &cfg);
+  explicit CoalesceGraph(ControlFlowGraph &cfg, SpillGraph &spill_graph);
+  const std::unordered_map<std::shared_ptr<Register>, AsmRegister> &GetRegisterAllocation() const;
 
 private:
-  void BuildGraph();
+  void BuildGraph(ControlFlowGraph &cfg, SpillGraph &spill_graph);
   void SimplifyAndCoalesce();
-  CoalesceGraph &cfg_;
-  std::vector<std::shared_ptr<RegisterNode>> nodes_;
+  void Select(std::stack<std::shared_ptr<RegisterNode>> worklist);
+  void Coalesce(std::shared_ptr<RegisterNode> node1, std::shared_ptr<RegisterNode> node2);
+  bool TrySimplify(const std::shared_ptr<RegisterNode> &node1, const std::shared_ptr<RegisterNode> &node2) const;
+  std::list<std::shared_ptr<RegisterNode>> nodes_;
   std::unordered_map<std::shared_ptr<Register>, AsmRegister> allocation_;
+  std::unordered_map<std::shared_ptr<RegisterNode>, std::shared_ptr<RegisterNode>> merge_info_;
 };

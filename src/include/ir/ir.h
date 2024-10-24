@@ -18,6 +18,7 @@
 #include "ir/stmt/phi_stmt.h"
 #include "ir/stmt/select_stmt.h"
 #include "ir/stmt/store_stmt.h"
+#include "ir/stmt/use_stmt.h"
 
 #include "ir/stmt/branch_stmt/branch_stmt.h"
 #include "ir/stmt/branch_stmt/br_cond_stmt.h"
