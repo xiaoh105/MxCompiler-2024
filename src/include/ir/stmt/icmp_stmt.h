@@ -21,7 +21,7 @@ class ICmpStmt final : public Stmt {
     assert(result_->GetType() == kIRBoolType);
     assert(lhs_->GetType() == rhs_->GetType() || lhs_->GetType() == kIRNullType || rhs_->GetType() == kIRNullType);
   }
-  [[nodiscard]] const std::shared_ptr<Register>& GetResult() const { return result_; }
+  [[nodiscard]] const std::shared_ptr<Register> &GetResult() const { return result_; }
   [[nodiscard]] OpType GetOpType() const { return op_type_; }
   [[nodiscard]] const std::shared_ptr<Var>& GetLhs() const { return lhs_; }
   [[nodiscard]] const std::shared_ptr<Var>& GetRhs() const { return rhs_; }

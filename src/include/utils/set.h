@@ -26,6 +26,9 @@ public:
     elements_.push_back(item);
     map_.emplace(item, cnt_++);
   }
+  bool HasElement(const std::shared_ptr<T> &item) {
+    return map_.contains(item);
+  }
   [[nodiscard]] size_t Size() const { return cnt_; }
   Set<T> EmptySet();
   Set<T> WholeSet();

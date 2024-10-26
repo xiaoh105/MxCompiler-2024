@@ -5,12 +5,9 @@
  * Function: Classes needed to maintain the interference graph
  */
 #include "asm/register/register.h"
-#include "opt/reg_alloc/reg_alloc.h"
 #include "opt/reg_alloc/spill_graph.h"
 
-SpillNode::SpillNode(std::shared_ptr<Register> reg) : register_(std::move(reg)) {
-  precolored_ = std::dynamic_pointer_cast<MachineRegister>(register_) != nullptr;
-}
+SpillNode::SpillNode(std::shared_ptr<Register> reg) : register_(std::move(reg)) {}
 
 SpillGraph::SpillGraph(ControlFlowGraph &cfg) : cfg_(cfg), reg_manager_(cfg_.GetRegManager()) {
   BuildGraph();
@@ -31,13 +28,16 @@ void SpillGraph::BuildGraph() {
         auto cur_node = node_map_.at(def);
         cur_node->pressure_ = 0;
         for (const auto &regs : live_out) {
+          if (def == regs) {
+            continue;
+          }
           auto live_node = node_map_.at(regs);
           live_node->edge_.insert(cur_node);
           cur_node->rev_edge_.insert(live_node);
         }
         cur_node->pressure_ = cur_node->rev_edge_.size() + 1;
       }
-      live_out = node->GetUse() | live_out - reg_manager_.GetSet({def});
+      live_out = reg_manager_.GetSet(stmt->GetUse()) | live_out - reg_manager_.GetSet({def});
     }
     for (const auto &stmt : std::ranges::reverse_view(node->GetBlock()->GetPhiStmts())) {
       auto def = stmt->GetDef();
@@ -45,13 +45,16 @@ void SpillGraph::BuildGraph() {
         auto cur_node = node_map_.at(def);
         cur_node->pressure_ = 0;
         for (const auto &regs : live_out) {
+          if (def == regs) {
+            continue;
+          }
           auto live_node = node_map_.at(regs);
           live_node->edge_.insert(cur_node);
           cur_node->rev_edge_.insert(live_node);
         }
         cur_node->pressure_ = cur_node->rev_edge_.size() + 1;
       }
-      live_out = node->GetUse() | live_out - reg_manager_.GetSet({def});
+      live_out = reg_manager_.GetSet(stmt->GetUse()) | live_out - reg_manager_.GetSet({def});
     }
   }
   for (const auto &node : nodes_) {
@@ -74,7 +77,7 @@ void SpillGraph::Spill() {
     std::shared_ptr<SpillNode> useful_node = nullptr;
     std::size_t max_useful = 0;
     for (const auto &node : nodes_) {
-      if (!node->precolored_ && node->useful_ > max_useful) {
+      if (node->useful_ > max_useful) {
         max_useful = node->useful_;
         useful_node = node;
       }
@@ -103,6 +106,12 @@ void SpillGraph::Spill() {
     }
     for (const auto &prev : useful_node->rev_edge_) {
       prev->edge_.erase(useful_node);
+    }
+    for (auto it = nodes_.begin(); it != nodes_.end(); ++it) {
+      if (*it == useful_node) {
+        nodes_.erase(it);
+        break;
+      }
     }
   }
 }

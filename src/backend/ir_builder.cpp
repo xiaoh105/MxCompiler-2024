@@ -503,7 +503,7 @@ void IRBuilder::visit(BinaryExprNode *node) {
       cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(and_end));
       cur_func_->PushBlock(and_end);
       auto res = vars_.CreateTmpVar(kIRBoolType, "");
-      cur_func_->PushStmt(
+      cur_func_->GetCurBlock()->AppendPhi(
           std::make_unique<PhiStmt>(res, std::vector<std::pair<std::shared_ptr<Var>, std::weak_ptr<Block>>>{
                                              {vars_.GetBool(false), and_lhs}, {r_var, and_rhs}}));
       node->SetVar(res);
@@ -522,7 +522,7 @@ void IRBuilder::visit(BinaryExprNode *node) {
       cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(or_end));
       cur_func_->PushBlock(or_end);
       auto res = vars_.CreateTmpVar(kIRBoolType, "");
-      cur_func_->PushStmt(
+      cur_func_->GetCurBlock()->AppendPhi(
           std::make_unique<PhiStmt>(res, std::vector<std::pair<std::shared_ptr<Var>, std::weak_ptr<Block>>>{
                                              {vars_.GetBool(true), or_lhs}, {r_var, or_rhs}}));
       node->SetVar(res);
@@ -565,7 +565,7 @@ void IRBuilder::visit(TenaryExprNode *node) {
       node->SetVar(vars_.GetNull());
       return;
     }
-    cur_func_->PushStmt(std::make_unique<PhiStmt>(
+    cur_func_->GetCurBlock()->AppendPhi(std::make_unique<PhiStmt>(
         res, std::vector<std::pair<std::shared_ptr<Var>, std::weak_ptr<Block>>>{{l_val, l_jmp}, {r_val, r_jmp}}));
     node->SetVar(res);
   }
@@ -952,7 +952,7 @@ void IRBuilder::visit(RootNode *node) {
       if (mem_to_reg) {
         MemToReg(cfg, vars_);
       }
-      AllocaRegister(func.second);
+      AllocateRegister(func.second);
     }
   }
 }

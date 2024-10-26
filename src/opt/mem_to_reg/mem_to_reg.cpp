@@ -237,6 +237,9 @@ void PlaceMove(const std::vector<std::shared_ptr<CFGNode>> &cfg_nodes) {
     for (const auto &stmt : phi_stmts) {
       auto phi_stmt = dynamic_cast<PhiStmt *>(stmt.get());
       for (auto &[var, block] : phi_stmt->GetBlocks()) {
+        if (phi_stmt->GetResult() == var) {
+          continue;
+        }
         block.lock()->AppendMove(std::make_unique<MoveStmt>(phi_stmt->GetResult(), var));
       }
     }

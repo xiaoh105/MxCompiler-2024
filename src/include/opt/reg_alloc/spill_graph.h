@@ -21,7 +21,6 @@ struct SpillNode {
   std::unordered_set<std::shared_ptr<SpillNode>> rev_edge_;
   std::size_t pressure_{};
   std::size_t useful_{};
-  bool precolored_{false};
 };
 
 class SpillGraph {

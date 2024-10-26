@@ -18,10 +18,9 @@ struct RegisterNode {
   RegisterNode() = delete;
   explicit RegisterNode(std::shared_ptr<Register> reg);
 
-  std::shared_ptr<Register> register_;
+  std::shared_ptr<Register> register_{nullptr};
   std::unordered_set<std::shared_ptr<RegisterNode>> edge_;
   std::unordered_map<std::shared_ptr<RegisterNode>, std::size_t> affinity_;
-  bool precolored_{false};
 };
 
 class CoalesceGraph {

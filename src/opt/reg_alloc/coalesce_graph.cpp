@@ -8,9 +8,7 @@
 
 #include "opt/reg_alloc/reg_alloc.h"
 
-RegisterNode::RegisterNode(std::shared_ptr<Register> reg) : register_(std::move(reg)) {
-  precolored_ = std::dynamic_pointer_cast<MachineRegister>(register_) != nullptr;
-}
+RegisterNode::RegisterNode(std::shared_ptr<Register> reg) : register_(std::move(reg)) {}
 
 CoalesceGraph::CoalesceGraph(ControlFlowGraph &cfg, SpillGraph &spill_graph) {
   BuildGraph(cfg, spill_graph);
@@ -78,24 +76,20 @@ void CoalesceGraph::BuildGraph(ControlFlowGraph &cfg, SpillGraph &spill_graph) {
 }
 
 void CoalesceGraph::SimplifyAndCoalesce() {
-  std::size_t precolored_cnt = 0;
   std::stack<std::shared_ptr<RegisterNode>> work_stack;
-  for (auto &node : nodes_) {
-    if (node->precolored_) {
-      ++precolored_cnt;
-    }
-  }
-  while (nodes_.size() > precolored_cnt) {
+  while (!nodes_.empty()) {
     bool simplify_succeed = false;
     std::shared_ptr<RegisterNode> u{nullptr};
     std::shared_ptr<RegisterNode> v{nullptr};
     std::size_t max_affinity = 0;
     for (auto it = nodes_.begin(); it != nodes_.end();) {
       auto &node = *it;
+      assert(!node->edge_.contains(nullptr));
       if (node->edge_.size() < kAvailableRegisters && node->affinity_.empty()) {
         simplify_succeed = true;
         work_stack.push(node);
         for (const auto &suc : node->edge_) {
+          assert(suc->edge_.contains(node));
           suc->edge_.erase(node);
         }
         it = nodes_.erase(it);
@@ -122,6 +116,9 @@ void CoalesceGraph::SimplifyAndCoalesce() {
         }
       }
       for (const auto &node2 : node1->affinity_ | std::views::keys) {
+        if (node1->edge_.contains(node2)) {
+          continue;
+        }
         std::unordered_set<std::shared_ptr<RegisterNode>> high_deg2{};
         for (const auto &neighbor : node2->edge_) {
           if (neighbor->edge_.size() >= kAvailableRegisters) {
@@ -131,7 +128,7 @@ void CoalesceGraph::SimplifyAndCoalesce() {
         if (high_deg1 == high_deg2) {
           rule_succeed = true;
           Coalesce(node1, node2);
-          continue;
+          break;
         }
         if (high_deg1.size() < high_deg2.size()) {
           std::swap(high_deg1, high_deg2);
@@ -140,13 +137,18 @@ void CoalesceGraph::SimplifyAndCoalesce() {
         if (high_deg1.size() < kAvailableRegisters) {
           rule_succeed = true;
           Coalesce(node1, node2);
+          break;
         }
+      }
+      if (rule_succeed) {
+        break;
       }
     }
     if (rule_succeed) {
       continue;
     }
-    if (TrySimplify(u, v)) {
+    assert(max_affinity > 0);
+    if (!u->edge_.contains(v) && TrySimplify(u, v)) {
       Coalesce(u, v);
     } else {
       u->affinity_.erase(v);
@@ -157,26 +159,19 @@ void CoalesceGraph::SimplifyAndCoalesce() {
 }
 
 void CoalesceGraph::Select(std::stack<std::shared_ptr<RegisterNode>> worklist) {
-  for (const auto &node : nodes_) {
-    assert(node->precolored_);
-    auto machine_reg = std::dynamic_pointer_cast<MachineRegister>(node->register_);
-    assert(machine_reg != nullptr);
-    allocation_.emplace(node->register_, machine_reg->GetAsmRegister());
-  }
   while (!worklist.empty()) {
     auto node = worklist.top();
     worklist.pop();
     std::unordered_set<std::size_t> used_regs = GetAvailableRegisters();
     for (const auto &suc : node->edge_) {
       auto suc_node = suc;
-      while (merge_info_.contains(suc)) {
+      while (merge_info_.contains(suc_node)) {
         suc_node = merge_info_.at(suc_node);
       }
       if (merge_info_.contains(suc)) {
         merge_info_[suc] = suc_node;
       }
       assert(allocation_.contains(suc_node->register_));
-      assert(used_regs.contains(allocation_.at(suc_node->register_).GetId()));
       used_regs.erase(allocation_.at(suc_node->register_).GetId());
     }
     allocation_.emplace(node->register_, AsmRegister{static_cast<int>(*used_regs.begin())});
@@ -191,29 +186,26 @@ void CoalesceGraph::Select(std::stack<std::shared_ptr<RegisterNode>> worklist) {
 }
 
 void CoalesceGraph::Coalesce(std::shared_ptr<RegisterNode> node1, std::shared_ptr<RegisterNode> node2) {
-  assert(!node1->precolored_ || !node2->precolored_ ||
-         std::dynamic_pointer_cast<MachineRegister>(node1->register_)->GetAsmRegister() ==
-             std::dynamic_pointer_cast<MachineRegister>(node2->register_)->GetAsmRegister());
-  if (node2->precolored_) {
+  if (node1->edge_.size() + node1->affinity_.size() < node2->edge_.size() + node2->affinity_.size()) {
     std::swap(node1, node2);
   }
   merge_info_[node2] = node1;
-  if (node1->edge_.size() < node2->edge_.size()) {
-    std::swap(node1->edge_, node2->edge_);
-  }
+  assert(!node1->edge_.contains(node2));
+  assert(!node2->edge_.contains(node1));
   for (const auto &neighbor : node2->edge_) {
     assert(neighbor->edge_.contains(node2));
     neighbor->edge_.erase(node2);
     neighbor->edge_.insert(node1);
   }
   node1->edge_.merge(node2->edge_);
-  if (node1->affinity_.size() < node2->affinity_.size()) {
-    std::swap(node1->affinity_, node2->affinity_);
-  }
+  node1->affinity_.erase(node2);
   for (const auto &item : node2->affinity_) {
+    if (item.first == node1) {
+      continue;
+    }
     item.first->affinity_[node1] += item.second;
-    item.first->affinity_.erase(node2);
     node1->affinity_[item.first] += item.second;
+    item.first->affinity_.erase(node2);
   }
   for (auto it = nodes_.begin(); it != nodes_.end(); ++it) {
     if (*it == node2) {
@@ -227,20 +219,26 @@ void CoalesceGraph::Coalesce(std::shared_ptr<RegisterNode> node1, std::shared_pt
 bool CoalesceGraph::TrySimplify(const std::shared_ptr<RegisterNode> &node1,
                                 const std::shared_ptr<RegisterNode> &node2) const {
   std::list<std::shared_ptr<RegisterNode>> nodes;
-  std::size_t precolored_cnt = 0;
-  std::shared_ptr<RegisterNode> u{nullptr}, v{nullptr};
+  std::unordered_map<std::shared_ptr<RegisterNode>, std::shared_ptr<RegisterNode>> mapping;
   for (const auto &node : nodes_) {
     auto temp_node = std::make_shared<RegisterNode>(*node);
-    if (node == node1) {
-      u = temp_node;
-    }
-    if (node == node2) {
-      v = temp_node;
-    }
-    if (temp_node->precolored_) {
-      ++precolored_cnt;
-    }
+    mapping.emplace(node, temp_node);
     nodes.emplace_back(std::move(temp_node));
+  }
+  for (const auto &node : nodes_) {
+    auto &target_node = mapping.at(node);
+    target_node->edge_.clear();
+    for (const auto &suc : node->edge_) {
+      target_node->edge_.insert(mapping.at(suc));
+    }
+  }
+  auto &u = mapping.at(node1);
+  auto &v = mapping.at(node2);
+  assert(u != nullptr && v != nullptr);
+  for (const auto &suc : v->edge_) {
+    assert(suc->edge_.contains(v));
+    suc->edge_.erase(v);
+    suc->edge_.insert(u);
   }
   u->edge_.merge(v->edge_);
   for (auto it = nodes.begin(); it != nodes.end(); ++it) {
@@ -249,12 +247,13 @@ bool CoalesceGraph::TrySimplify(const std::shared_ptr<RegisterNode> &node1,
       break;
     }
   }
-  while (nodes.size() > precolored_cnt) {
+  while (!nodes.empty()) {
     bool succeed = false;
     for (auto it = nodes.begin(); it != nodes.end(); ++it) {
       auto &node = *it;
       if (node->edge_.size() < kAvailableRegisters) {
         for (const auto &suc : node->edge_) {
+          assert(suc->edge_.contains(node));
           suc->edge_.erase(node);
         }
         nodes.erase(it);

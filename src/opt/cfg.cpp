@@ -172,11 +172,13 @@ void ControlFlowGraph::GetDomSet() {
 }
 
 void ControlFlowGraph::CollectRegister() {
-  for (const auto &arg : func_->GetArgumentVars()) {
-    reg_manager_.AddElement(arg);
-    registers_.push_back(arg);
-  }
   for (const auto &node : cfg_nodes_) {
+    for (const auto &stmt : node->GetBlock()->GetPhiStmts()) {
+      if (auto reg = stmt->GetDef(); reg != nullptr) {
+        reg_manager_.AddElement(reg);
+        registers_.push_back(reg);
+      }
+    }
     for (const auto &stmt : node->GetBlock()->GetStmts()) {
       if (auto alloca_stmt = dynamic_cast<AllocaStmt *>(stmt.get()); alloca_stmt != nullptr) {
         reg_manager_.AddElement(alloca_stmt->GetResult());
@@ -198,6 +200,13 @@ void ControlFlowGraph::CollectRegister() {
       registers_.push_back(reg);
     }
   }
+  for (const auto &arg : func_->GetArgumentVars()) {
+    if (reg_manager_.HasElement(arg)) {
+      continue;
+    }
+    reg_manager_.AddElement(arg);
+    registers_.push_back(arg);
+  }
 }
 
 void ControlFlowGraph::SetDefUse() {
@@ -205,6 +214,9 @@ void ControlFlowGraph::SetDefUse() {
     auto &block = node->GetBlock();
     auto def = reg_manager_.EmptySet();
     auto use = reg_manager_.EmptySet();
+    for (const auto &stmt : block->GetPhiStmts()) {
+      def |= reg_manager_.GetSet({stmt->GetDef()});
+    }
     for (const auto &stmt : block->GetStmts()) {
       use |= reg_manager_.GetSet(stmt->GetUse()) - def;
       def |= reg_manager_.GetSet({stmt->GetDef()});
@@ -243,6 +255,19 @@ void ControlFlowGraph::GetDataFlow() {
     auto live_out = reg_manager_.EmptySet();
     for (const auto &suc : node->GetSuc()) {
       live_out |= suc.lock()->GetLiveIn();
+      for (const auto &stmt : suc.lock()->GetBlock()->GetPhiStmts()) {
+        auto phi_stmt = dynamic_cast<PhiStmt *>(stmt.get());
+        assert(phi_stmt != nullptr);
+        for (const auto &pred : phi_stmt->GetBlocks()) {
+          if (pred.second.lock() == node->GetBlock()) {
+            auto reg = std::dynamic_pointer_cast<Register>(pred.first);
+            if (reg != nullptr) {
+              live_out.AddElement(reg);
+            }
+            break;
+          }
+        }
+      }
     }
     live_in = node->GetUse() | live_out - node->GetDef();
     if (live_out != node->GetLiveOut() || live_in != node->GetLiveIn()) {
