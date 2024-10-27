@@ -26,8 +26,9 @@ class AsmRegister {
       case 2:
         return "sp";
       case 3:
+        return "gp";
       case 4:
-        assert(false);
+        return "tp";
       case 5:
       case 6:
       case 7:
@@ -93,7 +94,7 @@ inline std::unordered_set<std::size_t> GetAvailableRegisters() {
   std::unordered_set<std::size_t> ret;
   ret.insert(3);
   ret.insert(4);
-  for (int i = 8; i < 31; ++i) {
+  for (int i = 8; i <= 31; ++i) {
     ret.insert(i);
   }
   return ret;

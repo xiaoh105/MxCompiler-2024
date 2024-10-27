@@ -172,14 +172,20 @@ void ReplaceRegs(const std::vector<std::shared_ptr<CFGNode>> &cfg_nodes) {
           icmp_stmt->SetRhs(replace_reg[right]);
         }
       } else if (auto phi_stmt = dynamic_cast<PhiStmt *>(stmt.get()); phi_stmt != nullptr) {
-        auto &args = phi_stmt->GetBlocks();
-        for (auto &arg : args) {
-          if (replace_reg.contains(arg.first)) {
-            arg.first = replace_reg[arg.first];
-          }
-        }
+        assert(false);
       }
       ++it;
+    }
+    for (auto &stmt : node->GetBlock()->GetPhiStmts()) {
+      auto phi_stmt = dynamic_cast<PhiStmt *>(stmt.get());
+      assert(phi_stmt != nullptr);
+      auto &args = phi_stmt->GetBlocks();
+      for (auto &arg : args) {
+        auto reg = std::dynamic_pointer_cast<Register>(arg.first);
+        if (reg != nullptr && replace_reg.contains(reg)) {
+          arg.first = replace_reg[arg.first];
+        }
+      }
     }
     if (auto ret_stmt = dynamic_cast<RetStmt *>(block->GetBranchStmt().get()); ret_stmt != nullptr) {
       auto &ret = ret_stmt->GetRet();

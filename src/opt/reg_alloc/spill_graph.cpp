@@ -59,6 +59,15 @@ void SpillGraph::BuildGraph() {
       live_out = reg_manager_.GetSet(stmt->GetUse()) | live_out - reg_manager_.GetSet({def});
     }
   }
+  auto &arg_var = cfg_.GetIRFunction()->GetArgumentVars();
+  for (int i = 0; i < arg_var.size(); ++i) {
+    auto cur_node = node_map_.at(arg_var[i]);
+    for (int j = 0; j < i; ++j) {
+      auto pred_var = node_map_.at(arg_var[j]);
+      cur_node->edge_.insert(pred_var);
+      pred_var->rev_edge_.insert(cur_node);
+    }
+  }
   for (const auto &node : nodes_) {
     for (const auto &suc : node->edge_) {
       if (suc->pressure_ > kAvailableRegisters) {
@@ -115,6 +124,10 @@ void SpillGraph::Spill() {
         break;
       }
     }
+  }
+  for (const auto &node : nodes_) {
+    assert(node->pressure_ <= kAvailableRegisters);
+    assert(node->rev_edge_.size() <= kAvailableRegisters || node->pressure_ == node->rev_edge_.size());
   }
 }
 

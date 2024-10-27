@@ -48,12 +48,7 @@ void AsmBuilder::ScanFunction(const std::shared_ptr<IRFunction> &function) {
   auto [spilled, allocation] = AllocateRegister(function);
   auto func = std::make_shared<AsmFunction>(function, allocation, spilled);
   asm_functions_.emplace(function->GetName(), func);
-  cur_func_ = std::move(func);
-  for (const auto &block : function->GetBlocks()) {
-    ScanBlock(block);
-  }
-  cur_func_->GenerateHeader();
-  cur_func_ = nullptr;
+  func->GenerateHeader();
 }
 
 void AsmBuilder::BuildFunction(const std::shared_ptr<IRFunction> &function) {
@@ -69,32 +64,6 @@ void AsmBuilder::BuildFunction(const std::shared_ptr<IRFunction> &function) {
   allocation_ = nullptr;
 }
 
-void AsmBuilder::ScanBlock(const std::shared_ptr<Block> &block) {
-  for (const auto &stmt : block->GetStmts()) {
-    if (auto alloca_stmt = dynamic_cast<AllocaStmt *>(stmt.get()); alloca_stmt != nullptr) {
-      cur_func_->GetStackManager().ReserveVirtualRegister(alloca_stmt->GetResult());
-      cur_func_->GetStackManager().AllocSpace(alloca_stmt->GetResult());
-    } else if (auto binary_stmt = dynamic_cast<BinaryStmt *>(stmt.get()); binary_stmt != nullptr) {
-      cur_func_->GetStackManager().ReserveVirtualRegister(binary_stmt->GetResult());
-    } else if (auto call_stmt = dynamic_cast<CallStmt *>(stmt.get()); call_stmt != nullptr) {
-      auto res = call_stmt->GetResult();
-      if (res != nullptr) {
-        cur_func_->GetStackManager().ReserveVirtualRegister(res);
-      }
-    } else if (auto gep_stmt = dynamic_cast<GetElementPtrStmt *>(stmt.get()); gep_stmt != nullptr) {
-      cur_func_->GetStackManager().ReserveVirtualRegister(gep_stmt->GetResult());
-    } else if (auto icmp_stmt = dynamic_cast<ICmpStmt *>(stmt.get()); icmp_stmt != nullptr) {
-      cur_func_->GetStackManager().ReserveVirtualRegister(icmp_stmt->GetResult());
-    } else if (auto load_stmt = dynamic_cast<LoadStmt *>(stmt.get()); load_stmt != nullptr) {
-      cur_func_->GetStackManager().ReserveVirtualRegister(load_stmt->GetResult());
-    } else if (auto phi_stmt = dynamic_cast<PhiStmt *>(stmt.get()); phi_stmt != nullptr) {
-      assert(false);
-    } else if (auto move_stmt = dynamic_cast<MoveStmt *>(stmt.get()); move_stmt != nullptr) {
-      cur_func_->GetStackManager().ReserveVirtualRegister(move_stmt->GetDest());
-    }
-  }
-}
-
 AsmRegister AsmBuilder::GetRegister(const std::shared_ptr<Var> &var, AsmRegister reg_hint) const {
   auto reg = std::dynamic_pointer_cast<Register>(var);
   if (reg == nullptr) {
@@ -103,7 +72,7 @@ AsmRegister AsmBuilder::GetRegister(const std::shared_ptr<Var> &var, AsmRegister
   if (allocation_->contains(reg)) {
     return allocation_->at(reg);
   }
-  assert(spilled_registers_->contains(reg));
+  assert(reg->IsGlobal() || spilled_registers_->contains(reg));
   return reg_hint;
 }
 
@@ -183,6 +152,7 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
         }
       }
       bool force_reg_op = false;
+      bool can_swap = true;
       ArithInstruction::ArithType arith_type;
       switch (op_type) {
         case BinaryStmt::OpType::kAdd:
@@ -192,6 +162,7 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
         case BinaryStmt::OpType::kSub:
           arith_type = ArithInstruction::ArithType::kSub;
           result = imm1 - imm2;
+          can_swap = false;
           break;
         case BinaryStmt::OpType::kMul:
           arith_type = ArithInstruction::ArithType::kMul;
@@ -213,19 +184,21 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
         case BinaryStmt::OpType::kShiftL:
           arith_type = ArithInstruction::ArithType::kShiftL;
           result = imm1 << imm2;
+          can_swap = false;
           break;
         case BinaryStmt::OpType::kShiftR:
           arith_type = ArithInstruction::ArithType::kShiftR;
           result = imm1 >> imm2;
+          can_swap = false;
           break;
         case BinaryStmt::OpType::kSDiv:
           arith_type = ArithInstruction::ArithType::kDiv;
-          result = imm1 / imm2;
+          result = imm2 == 0 ? 114514 : imm1 / imm2;
           force_reg_op = true;
           break;
         case BinaryStmt::OpType::kSRem:
           arith_type = ArithInstruction::ArithType::kRem;
-          result = imm1 % imm2;
+          result = imm2 == 0 ? 114514 : imm1 % imm2;
           force_reg_op = true;
           break;
         case BinaryStmt::OpType::kUnknown:
@@ -235,7 +208,7 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
       auto r_reg = std::dynamic_pointer_cast<Register>(rhs);
       if (l_val != nullptr && r_val != nullptr) {
         cur_func_->PushInstruction(std::make_unique<LoadImmInstruction>(dest, result));
-      } else if (l_val == nullptr && r_val == nullptr || force_reg_op) {
+      } else if (l_val == nullptr && r_val == nullptr || force_reg_op || l_val != nullptr && !can_swap) {
         AsmRegister src1 = GetRegister(lhs, t(1));
         if (l_reg != nullptr) {
           LoadRegister(l_reg, t(1));
@@ -394,7 +367,7 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
             cur_func_->PushInstruction(std::make_unique<ImmArithInstruction>(
                 dest, ptr_reg, std::get<int>(index_val->GetValue()), ArithInstruction::ArithType::kAdd));
           } else {
-            auto index_reg = LoadRegister(std::dynamic_pointer_cast<Register>(index[0]), t(1));
+            auto index_reg = LoadRegister(std::dynamic_pointer_cast<Register>(index[0]), t(2));
             cur_func_->PushInstruction(
                 std::make_unique<RegArithInstruction>(dest, ptr_reg, index_reg, ArithInstruction::ArithType::kAdd));
           }
@@ -403,13 +376,13 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
           auto index_val = std::dynamic_pointer_cast<Constant>(index[0]);
           if (index_val != nullptr) {
             cur_func_->PushInstruction(std::make_unique<ImmArithInstruction>(
-                ptr_reg, ptr_reg, std::get<int>(index_val->GetValue()) << 2, ArithInstruction::ArithType::kAdd));
+                dest, ptr_reg, std::get<int>(index_val->GetValue()) << 2, ArithInstruction::ArithType::kAdd));
           } else {
-            auto index_reg = LoadRegister(std::dynamic_pointer_cast<Register>(index[0]), t(1));
+            auto index_reg = LoadRegister(std::dynamic_pointer_cast<Register>(index[0]), t(2));
             cur_func_->PushInstruction(
-                std::make_unique<ImmArithInstruction>(index_reg, index_reg, 2, ArithInstruction::ArithType::kShiftL));
+                std::make_unique<ImmArithInstruction>(t(2), index_reg, 2, ArithInstruction::ArithType::kShiftL));
             cur_func_->PushInstruction(
-                std::make_unique<RegArithInstruction>(dest, ptr_reg, index_reg, ArithInstruction::ArithType::kAdd));
+                std::make_unique<RegArithInstruction>(dest, ptr_reg, t(2), ArithInstruction::ArithType::kAdd));
           }
           StoreRegister(res, dest, t(2));
         }
@@ -519,6 +492,17 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
       StoreRegister(res, dest, t(2));
     }
   }
+  auto &branch_stmt = block->GetBranchStmt();
+  if (auto br_cond_stmt = dynamic_cast<ConditionalBrStmt *>(branch_stmt.get()); br_cond_stmt != nullptr) {
+    auto &cond = br_cond_stmt->GetCondition();
+    auto cond_var = std::dynamic_pointer_cast<Register>(cond);
+    if (cond_var != nullptr) {
+      auto cond_reg = LoadRegister(cond_var, t(2));
+      if (cond_reg != t(2)) {
+        cur_func_->PushInstruction(std::make_unique<MoveInstruction>(t(2), cond_reg));
+      }
+    }
+  }
   for (const auto &stmt : block->GetMoveStmts()) {
     if (auto move_stmt = dynamic_cast<MoveStmt *>(stmt.get()); move_stmt != nullptr) {
       auto source = move_stmt->GetSrc();
@@ -541,24 +525,20 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
       assert(false);
     }
   }
-  auto &branch_stmt = block->GetBranchStmt();
   if (auto br_cond_stmt = dynamic_cast<ConditionalBrStmt *>(branch_stmt.get()); br_cond_stmt != nullptr) {
     auto &cond = br_cond_stmt->GetCondition();
     auto true_block = br_cond_stmt->GetTrueBlock().lock();
     auto false_block = br_cond_stmt->GetFalseBlock().lock();
     if (auto cond_val = std::dynamic_pointer_cast<Constant>(cond); cond_val != nullptr) {
       if (std::get<bool>(cond_val->GetValue()) == true) {
-        cur_func_->PushInstruction(
-            std::make_unique<JInstruction>(cur_func_->GetName() + "." + true_block->GetLabel()));
+        cur_func_->PushInstruction(std::make_unique<JInstruction>(cur_func_->GetName() + "." + true_block->GetLabel()));
       } else {
         cur_func_->PushInstruction(
             std::make_unique<JInstruction>(cur_func_->GetName() + "." + false_block->GetLabel()));
       }
     } else {
-      auto cond_var = std::dynamic_pointer_cast<Register>(cond);
-      auto cond_reg = LoadRegister(cond_var, t(0));
       cur_func_->PushInstruction(std::make_unique<BranchInstruction>(
-          cur_func_->GetName() + "." + true_block->GetLabel(), cond_reg, zero, BranchInstruction::BranchType::kNe));
+          cur_func_->GetName() + "." + true_block->GetLabel(), t(2), zero, BranchInstruction::BranchType::kNe));
       cur_func_->PushInstruction(std::make_unique<JInstruction>(cur_func_->GetName() + "." + false_block->GetLabel()));
     }
   } else if (auto br_uncond_stmt = dynamic_cast<UnconditionalBrStmt *>(branch_stmt.get()); br_uncond_stmt != nullptr) {
@@ -589,9 +569,11 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
     auto stack_size = cur_func_->GetStackManager().GetStackSize();
     if (stack_size > 2047) {
       cur_func_->PushInstruction(std::make_unique<LoadImmInstruction>(t(0), stack_size));
-      cur_func_->PushInstruction(std::make_unique<RegArithInstruction>(sp, sp, t(0), ArithInstruction::ArithType::kAdd));
+      cur_func_->PushInstruction(
+          std::make_unique<RegArithInstruction>(sp, sp, t(0), ArithInstruction::ArithType::kAdd));
     } else {
-      cur_func_->PushInstruction(std::make_unique<ImmArithInstruction>(sp, sp, stack_size, ArithInstruction::ArithType::kAdd));
+      cur_func_->PushInstruction(
+          std::make_unique<ImmArithInstruction>(sp, sp, stack_size, ArithInstruction::ArithType::kAdd));
     }
     cur_func_->PushInstruction(std::make_unique<RetInstruction>());
   }

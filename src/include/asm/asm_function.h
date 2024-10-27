@@ -49,6 +49,9 @@ class AsmFunction {
         stack_manager_.ReserveVirtualRegister(arg_var[i]);
       }
     }
+    for (const auto &reg : spilled_regs_) {
+      stack_manager_.ReserveVirtualRegister(reg);
+    }
     std::unordered_set<int> used_reg;
     for (const auto &machine_reg : allocation_ | std::views::values) {
       used_reg.insert(machine_reg.GetId());
@@ -99,7 +102,8 @@ class AsmFunction {
           std::make_unique<StoreInstruction>(sp, reg, stack_manager_.GetMachineRegister(reg), MemType::kWord));
     }
     auto &arg_var = func_->GetArgumentVars();
-    std::vector<int> move_list;
+    int cnt = 0;
+    std::vector<std::pair<int, int>> move_list;
     for (int i = 0; i < std::min(static_cast<int>(arg_var.size()), 8); ++i) {
       if (spilled_regs_.contains(arg_var[i])) {
         auto offset = stack_manager_.GetVirtualRegister(arg_var[i]);
@@ -111,15 +115,22 @@ class AsmFunction {
           continue;
         }
         if (pos.GetId() <= a(7).GetId() && pos.GetId() > a(i).GetId()) {
-          move_list.push_back(i);
-          prologue_->PushInstruction(std::make_unique<MoveInstruction>(t(pos.GetId()), a(i)));
+          move_list.emplace_back(pos.GetId(), t(cnt).GetId());
+          prologue_->PushInstruction(std::make_unique<MoveInstruction>(t(cnt), a(i)));
+          ++cnt;
         } else {
           prologue_->PushInstruction(std::make_unique<MoveInstruction>(pos, a(i)));
         }
       }
     }
-    for (const auto &reg : move_list) {
-      prologue_->PushInstruction(std::make_unique<MoveInstruction>(a(reg), t(reg)));
+    for (const auto &[dest, val] : move_list) {
+      prologue_->PushInstruction(std::make_unique<MoveInstruction>(x(dest), x(val)));
+    }
+    for (int i = 8; i < arg_var.size(); ++i) {
+      if (allocation_.contains(arg_var[i])) {
+        auto offset = stack_manager_.GetVirtualRegister(arg_var[i]);
+        prologue_->PushInstruction(std::make_unique<LoadInstruction>(allocation_.at(arg_var[i]), sp, offset.GetOffset(), offset.GetLen()));
+      }
     }
   }
   void Print() const {

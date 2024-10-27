@@ -21,7 +21,6 @@ private:
   void BuildFunction(const std::shared_ptr<IRFunction>& function);
   void ScanFunction(const std::shared_ptr<IRFunction>& function);
   void BuildBlock(const std::shared_ptr<Block> &block);
-  void ScanBlock(const std::shared_ptr<Block> &block);
   AsmRegister GetRegister(const std::shared_ptr<Var> &var, AsmRegister reg_hint) const;
   AsmRegister LoadRegister(const std::shared_ptr<Register> &virtual_reg, AsmRegister reg_hint) const;
   void StoreRegister(const std::shared_ptr<Register> &virtual_reg, AsmRegister reg, AsmRegister temp_reg) const;

@@ -257,7 +257,7 @@ void ControlFlowGraph::GetDataFlow() {
         for (const auto &pred : phi_stmt->GetBlocks()) {
           if (pred.second.lock() == node->GetBlock()) {
             auto reg = std::dynamic_pointer_cast<Register>(pred.first);
-            if (reg != nullptr) {
+            if (reg != nullptr && !reg->IsGlobal()) {
               live_out.AddElement(reg);
             }
             break;

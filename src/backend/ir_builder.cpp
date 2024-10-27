@@ -899,7 +899,8 @@ void IRBuilder::visit(ConstructorClassStmtNode *node) {
   auto &constructor = cur_type_->GetConstructor();
   cur_func_ = constructor.lock();
   vars_.EnterNewFunc();
-  vars_.CreateVar({cur_type_, 1}, "this", false, false);
+  auto this_ptr = vars_.CreateVar({cur_type_, 1}, "this", false, false);
+  cur_func_->SetArgumentVars({this_ptr});
   node->GetFunctionBody()->accept(this);
   cur_func_->PushStmt(std::make_unique<RetStmt>());
   cur_func_->LinkInitStmt();
