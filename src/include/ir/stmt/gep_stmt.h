@@ -28,7 +28,7 @@ class GetElementPtrStmt final : public Stmt {
   void SetPtr(std::shared_ptr<Register> ptr) { ptr_ = std::move(ptr); }
   [[nodiscard]] std::shared_ptr<Register> GetDef() const override { return result_; }
   [[nodiscard]] std::vector<std::shared_ptr<Register>> GetUse() const override {
-    std::vector<std::shared_ptr<Register>> ret;
+    std::vector ret{ptr_};
     for (const auto &index : index_) {
       if (auto reg = std::dynamic_pointer_cast<Register>(index); reg != nullptr && !reg->IsGlobal()) {
         ret.emplace_back(std::move(reg));

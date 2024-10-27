@@ -21,10 +21,13 @@ private:
   void BuildFunction(const std::shared_ptr<IRFunction>& function);
   void ScanFunction(const std::shared_ptr<IRFunction>& function);
   void BuildBlock(const std::shared_ptr<Block> &block);
-  void ScanBlock(const std::shared_ptr<Block>& block);
-  void LoadRegister(const std::shared_ptr<Register> &virtual_reg, AsmRegister reg, bool phi = false) const;
-  void StoreRegister(const std::shared_ptr<Register> &virtual_reg, AsmRegister reg, bool phi = false) const;
+  void ScanBlock(const std::shared_ptr<Block> &block);
+  AsmRegister GetRegister(const std::shared_ptr<Var> &var, AsmRegister reg_hint) const;
+  AsmRegister LoadRegister(const std::shared_ptr<Register> &virtual_reg, AsmRegister reg_hint) const;
+  void StoreRegister(const std::shared_ptr<Register> &virtual_reg, AsmRegister reg, AsmRegister temp_reg) const;
   std::shared_ptr<AsmFunction> cur_func_{nullptr};
+  const std::unordered_map<std::shared_ptr<Register>, AsmRegister> *allocation_{nullptr};
+  const std::unordered_set<std::shared_ptr<Register>> *spilled_registers_{nullptr};
   FunctionManager functions_;
   VarManager vars_;
   ClassManager classes_;

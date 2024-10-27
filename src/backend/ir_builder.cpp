@@ -952,7 +952,6 @@ void IRBuilder::visit(RootNode *node) {
       if (mem_to_reg) {
         MemToReg(cfg, vars_);
       }
-      AllocateRegister(func.second);
     }
   }
 }

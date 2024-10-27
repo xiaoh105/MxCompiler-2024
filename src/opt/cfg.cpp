@@ -123,10 +123,8 @@ void ControlFlowGraph::GetDomSet() {
   std::unordered_set<std::shared_ptr<CFGNode>> flag;
   std::queue<std::shared_ptr<CFGNode>> queue;
   for (const auto &node : cfg_nodes_) {
-    if (node->GetPred().empty()) {
-      queue.push(node);
-      flag.insert(node);
-    }
+    queue.push(node);
+    flag.insert(node);
   }
   while (!queue.empty()) {
     auto node = queue.front();
@@ -242,10 +240,8 @@ void ControlFlowGraph::GetDataFlow() {
   for (const auto &node : cfg_nodes_) {
     node->SetLiveIn(reg_manager_.EmptySet());
     node->SetLiveOut(reg_manager_.EmptySet());
-    if (node->GetSuc().empty()) {
-      queue.push(node);
-      flag.insert(node);
-    }
+    queue.push(node);
+    flag.insert(node);
   }
   while (!queue.empty()) {
     auto node = queue.front();

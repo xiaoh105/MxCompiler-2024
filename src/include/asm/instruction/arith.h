@@ -75,14 +75,10 @@ class ImmArithInstruction : public ArithInstruction {
   ImmArithInstruction(AsmRegister rd, AsmRegister rs1, int imm, ArithType type)
       : ArithInstruction(type), rd_(rd), rs1_(rs1), imm_(imm) {
     assert(type != ArithType::kSub && type != ArithType::kUnknown);
+    assert(imm_ >= -2048 && imm_ <= 2047);
   }
   void Print() const override {
-    if (imm_ > 2047 || imm_ < -2048) {
-      std::cout << "li t5, " << imm_ << std::endl;
-      std::cout << GetInstructionName() << " " << rd_.GetName() << ", " << rs1_.GetName() << ", t5" << std::endl;
-    } else {
-      std::cout << GetInstructionName() << "i " << rd_.GetName() << ", " << rs1_.GetName() << ", " << imm_ << std::endl;
-    }
+    std::cout << GetInstructionName() << "i " << rd_.GetName() << ", " << rs1_.GetName() << ", " << imm_ << std::endl;
   }
 
  private:

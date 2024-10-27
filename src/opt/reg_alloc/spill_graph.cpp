@@ -22,6 +22,8 @@ void SpillGraph::BuildGraph() {
   }
   for (const auto &node : cfg_.GetCFGNodes()) {
     auto live_out = node->GetLiveOut();
+    auto &br_stmt = node->GetBlock()->GetBranchStmt();
+    live_out |= reg_manager_.GetSet(br_stmt->GetUse());
     for (const auto &stmt : std::ranges::reverse_view(node->GetBlock()->GetStmts())) {
       auto def = stmt->GetDef();
       if (def != nullptr) {

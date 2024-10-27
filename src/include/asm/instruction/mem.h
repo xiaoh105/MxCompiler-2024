@@ -8,23 +8,18 @@
 
 #include "asm/instruction/instruction.h"
 
-enum class MemType : int { kUnknown = 0, kWord, kHalfWord, kByte };
+enum class MemType : int { kUnknown = 0, kWord = 4, kHalfWord = 2, kByte = 1 };
 
 class LoadInstruction : public AsmInstruction {
  public:
   LoadInstruction(AsmRegister rd, AsmRegister rs1, int imm, MemType mem_type)
       : rd_(rd), rs1_(rs1), imm_(imm), mem_type_(mem_type) {
     assert(mem_type_ != MemType::kUnknown);
+    assert(imm_>= -2048 && imm_ <= 2047);
   }
   void Print() const override {
     std::string type = mem_type_ == MemType::kWord ? "w" : mem_type_ == MemType::kHalfWord ? "h" : "b";
-    if (imm_ > 2047 || imm_ < -2048) {
-      std::cout << "li t5, " << imm_ << std::endl;
-      std::cout << "add t4, " << rs1_.GetName() << ", t5" << std::endl;
-      std::cout << "l" << type << " " << rd_.GetName() << ", 0(t4)" << std::endl;
-    } else {
-      std::cout << "l" << type << " " << rd_.GetName() << ", " << imm_ << "(" << rs1_.GetName() << ")" << std::endl;
-    }
+    std::cout << "l" << type << " " << rd_.GetName() << ", " << imm_ << "(" << rs1_.GetName() << ")" << std::endl;
   }
 
  private:
@@ -39,16 +34,11 @@ class StoreInstruction : public AsmInstruction {
   StoreInstruction(AsmRegister rs1, AsmRegister rs2, int imm, MemType mem_type)
       : rs1_(rs1), rs2_(rs2), imm_(imm), mem_type_(mem_type) {
     assert(mem_type_ != MemType::kUnknown);
+    assert(imm_ >= -2048 && imm_ <= 2047);
   }
   void Print() const override {
     std::string type = mem_type_ == MemType::kWord ? "w" : mem_type_ == MemType::kHalfWord ? "h" : "b";
-    if (imm_ > 2047 || imm_ < -2048) {
-      std::cout << "li t5, " << imm_ << std::endl;
-      std::cout << "add t4, " << rs1_.GetName() << ", t5" << std::endl;
-      std::cout << "s" << type << " " << rs2_.GetName() << ", 0(t4)" << std::endl;
-    } else {
-      std::cout << "s" << type << " " << rs2_.GetName() << ", " << imm_ << "(" << rs1_.GetName() << ")" << std::endl;
-    }
+    std::cout << "s" << type << " " << rs2_.GetName() << ", " << imm_ << "(" << rs1_.GetName() << ")" << std::endl;
   }
 
  private:

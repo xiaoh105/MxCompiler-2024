@@ -12,8 +12,8 @@
 bool syntax_only = false;
 bool emit_llvm = false;
 
-bool generate_cfg = false;
-bool generate_dominator_tree = false;
+bool generate_cfg = true;
+bool generate_dominator_tree = true;
 bool generate_data_flow = true;
 
 bool mem_to_reg = false;

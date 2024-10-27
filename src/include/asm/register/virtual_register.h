@@ -83,6 +83,9 @@ public:
     cur_size_ += 4;
     return cur_size_ - 4;
   }
+  std::size_t GetMachineRegister(AsmRegister reg) const {
+    return reg_offset_.at(reg.GetId());
+  }
   const std::unordered_map<int, std::size_t> &GetReservedRegs() const {
     return reg_offset_;
   }

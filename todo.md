@@ -48,9 +48,15 @@ TODO lists:
 - Array representation: An array created by `malloc`. Size is 4 bytes before its beginning. Only C lib can access it.
   - String: An exception. It does not hold an internal size. Instead, it is ended with a `/0`.
 
-### IR To RISC-V
-
-
-
-TODO lists:
-- [ ] After adding RegAlloc and SSA, remove structures left for `phi` instructions in BasicBlock and AsmFunction
+#### Some ideas in optimize
+- Register Allocation
+  - We can consider adding a new benchmark called a virtual register's "preference" for a certain physical register.
+  - The following factors can be taken into account:
+    - Whether a virtual register is used as a 'call' argument in a function
+    - Whether a virtual register is passed in as a function argument
+    - Prefer to use temporary registers to avoid saving callee-saved regs in prologue/epilogue
+    - Prefer to use callee saved registers to avoid backup caller-saved regs when calling
+    - When both two occurs on the above two rules, we prefer the latter(we open a new save reg, and it can be reused)
+    - Prefer to reuse caller saved registers instead of opening another one
+  - When function calling, we can consider saving all live registers before call.
+    - After register allocation, record all registers needed. Only backup all caller-saved registers live at that time
