@@ -516,8 +516,8 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
       }
     }
   }
+  std::list<std::pair<std::shared_ptr<Register>, std::shared_ptr<Register>>> move_list;
   for (const auto &stmt : block->GetMoveStmts()) {
-    std::list<std::pair<std::shared_ptr<Register>, std::shared_ptr<Register>>> move_list;
     if (auto move_stmt = dynamic_cast<MoveStmt *>(stmt.get()); move_stmt != nullptr) {
       auto source = move_stmt->GetSrc();
       auto res = move_stmt->GetDest();
@@ -537,7 +537,8 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
     } else {
       assert(false);
     }
-    std::shared_ptr<Register> temp_dest{nullptr}, temp_cycle{nullptr};
+  }
+  std::shared_ptr<Register> temp_dest{nullptr}, temp_cycle{nullptr};
     while (!move_list.empty()) {
       bool remove_link = false;
       for (auto it = move_list.begin(); it != move_list.end(); ++it) {
@@ -600,7 +601,6 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
       temp_cycle = nullptr;
       temp_dest = nullptr;
     }
-  }
   if (auto br_cond_stmt = dynamic_cast<ConditionalBrStmt *>(branch_stmt.get()); br_cond_stmt != nullptr) {
     auto &cond = br_cond_stmt->GetCondition();
     auto true_block = br_cond_stmt->GetTrueBlock().lock();
