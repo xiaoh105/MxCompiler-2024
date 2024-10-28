@@ -24,6 +24,7 @@ private:
   AsmRegister GetRegister(const std::shared_ptr<Var> &var, AsmRegister reg_hint) const;
   AsmRegister LoadRegister(const std::shared_ptr<Register> &virtual_reg, AsmRegister reg_hint) const;
   void StoreRegister(const std::shared_ptr<Register> &virtual_reg, AsmRegister reg, AsmRegister temp_reg) const;
+  void StoreRegister(const std::shared_ptr<Register> &virtual_reg, AsmRegister reg) const;
   std::shared_ptr<AsmFunction> cur_func_{nullptr};
   const std::unordered_map<std::shared_ptr<Register>, AsmRegister> *allocation_{nullptr};
   const std::unordered_set<std::shared_ptr<Register>> *spilled_registers_{nullptr};

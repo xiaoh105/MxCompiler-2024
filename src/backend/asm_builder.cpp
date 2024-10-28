@@ -117,6 +117,16 @@ void AsmBuilder::StoreRegister(const std::shared_ptr<Register> &virtual_reg, Asm
   }
 }
 
+void AsmBuilder::StoreRegister(const std::shared_ptr<Register> &virtual_reg, AsmRegister reg) const {
+  assert(!virtual_reg->IsGlobal());
+  if (!allocation_->contains(virtual_reg)) {
+    assert(spilled_registers_->contains(virtual_reg));
+    auto pos = cur_func_->GetStackManager().GetVirtualRegister(virtual_reg);
+    assert(pos.GetOffset() >= -2048 && pos.GetOffset() <= 2047);
+    cur_func_->PushInstruction(std::make_unique<StoreInstruction>(sp, reg, pos.GetOffset(), pos.GetLen()));
+  }
+}
+
 void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
   auto ret = std::make_unique<BasicBlock>(cur_func_->GetName() + "." + block->GetLabel());
   cur_func_->PushBlock(std::move(ret));
@@ -507,6 +517,7 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
     }
   }
   for (const auto &stmt : block->GetMoveStmts()) {
+    std::list<std::pair<std::shared_ptr<Register>, std::shared_ptr<Register>>> move_list;
     if (auto move_stmt = dynamic_cast<MoveStmt *>(stmt.get()); move_stmt != nullptr) {
       auto source = move_stmt->GetSrc();
       auto res = move_stmt->GetDest();
@@ -519,13 +530,75 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
           imm = std::get<int>(src_val->GetValue());
         }
         cur_func_->PushInstruction(std::make_unique<LoadImmInstruction>(dest, imm));
+        StoreRegister(res, dest, t(1));
       } else {
-        auto src = LoadRegister(std::dynamic_pointer_cast<Register>(source), t(1));
-        cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest, src));
+        move_list.emplace_back(res, std::dynamic_pointer_cast<Register>(source));
       }
-      StoreRegister(res, dest, t(1));
     } else {
       assert(false);
+    }
+    std::shared_ptr<Register> temp_dest{nullptr}, temp_cycle{nullptr};
+    while (!move_list.empty()) {
+      bool remove_link = false;
+      for (auto it = move_list.begin(); it != move_list.end(); ++it) {
+        auto &move = *it;
+        bool has_ref = false;
+        for (auto &item : move_list) {
+          if (!(item.first == temp_dest && item.second == temp_cycle) && item.second == move.first) {
+            has_ref = true;
+            break;
+          }
+        }
+        if (has_ref) {
+          continue;
+        }
+        remove_link = true;
+        auto dest = move.first;
+        auto src = move.second;
+        if (dest == temp_dest && src == temp_cycle) {
+          if (allocation_->contains(dest)) {
+            auto dest_reg = allocation_->at(dest);
+            cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest_reg, t(1)));
+          } else {
+            StoreRegister(dest, t(1), t(0));
+          }
+          temp_dest = nullptr;
+          temp_cycle = nullptr;
+        } else if (allocation_->contains(src)) {
+          AsmRegister src_reg = allocation_->at(src);
+          if (allocation_->contains(dest)) {
+            AsmRegister dest_reg = allocation_->at(dest);
+            cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest_reg, src_reg));
+          } else {
+            StoreRegister(dest, src_reg, t(0));
+          }
+        } else {
+          LoadRegister(src, t(0));
+          if (allocation_->contains(dest)) {
+            AsmRegister dest_reg = allocation_->at(dest);
+            cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest_reg, t(0)));
+          } else {
+            // Consider add stack register coalescing and remove this unsafe part
+            StoreRegister(dest, t(0));
+          }
+        }
+        move_list.erase(it);
+        break;
+      }
+      if (remove_link) {
+        continue;
+      }
+      assert(temp_dest == nullptr && temp_cycle == nullptr);
+      auto dest = move_list.begin()->first;
+      auto src = move_list.begin()->second;
+      if (allocation_->contains(src)) {
+        auto old_reg = allocation_->at(src);
+        cur_func_->PushInstruction(std::make_unique<MoveInstruction>(t(1), old_reg));
+      } else {
+        LoadRegister(src, t(1));
+      }
+      temp_cycle = nullptr;
+      temp_dest = nullptr;
     }
   }
   if (auto br_cond_stmt = dynamic_cast<ConditionalBrStmt *>(branch_stmt.get()); br_cond_stmt != nullptr) {

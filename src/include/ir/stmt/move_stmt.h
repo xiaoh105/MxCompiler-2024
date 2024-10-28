@@ -19,7 +19,7 @@ class MoveStmt : public Stmt {
     assert(src_ != nullptr);
     assert(dest_->GetType() == src_->GetType() || dest_->GetType().GetDim() >= 1 && src_->GetType() == kIRNullType);
   }
-  [[nodiscard]] const std::shared_ptr<Register> &GetDest() const { return dest_; }
+  std::shared_ptr<Register> &GetDest() { return dest_; }
   [[nodiscard]] const std::shared_ptr<Var> &GetSrc() const { return src_; }
   [[nodiscard]] std::shared_ptr<Register> GetDef() const override { return dest_; }
   [[nodiscard]] std::vector<std::shared_ptr<Register>> GetUse() const override {
