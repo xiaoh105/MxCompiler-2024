@@ -3,6 +3,7 @@ grammar Mx;
 @lexer::members {
     int formatMode = 0;
     bool exprMode = false;
+    int bracketDepth = 0;
 }
 
 program
@@ -10,7 +11,7 @@ program
     ;
 
 mainFunc
-    : Int 'main' '(' ')' suite
+    : Int Main '(' ')' suite
     ;
 
 classDef
@@ -155,6 +156,7 @@ While : 'while';
 Break : 'break';
 Continue : 'continue';
 Return : 'return';
+Main : { bracketDepth == 0 }? 'main';
 // Types and Identifiers
 Bool : 'bool';
 Int : 'int';
@@ -197,8 +199,12 @@ LeftParen : '(';
 RightParen : ')';
 LeftBracket : '[';
 RightBracket : ']';
-LeftBrace : '{';
-RightBrace : '}';
+LeftBrace : '{'
+          { ++bracketDepth; }
+          ;
+RightBrace : '}'
+           { --bracketDepth; }
+           ;
 // Other Symbols
 Dollar
     : '$'

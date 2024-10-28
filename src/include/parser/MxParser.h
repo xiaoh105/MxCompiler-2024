@@ -8,25 +8,25 @@
 class MxParser : public antlr4::Parser {
  public:
   enum {
-    T__0 = 1,
-    FormatQuatation = 2,
-    Quotation = 3,
-    True = 4,
-    False = 5,
-    DecimalNumber = 6,
-    StringLiteral = 7,
-    FormatStringLiteral = 8,
-    Null = 9,
-    New = 10,
-    Class = 11,
-    This = 12,
-    If = 13,
-    Else = 14,
-    For = 15,
-    While = 16,
-    Break = 17,
-    Continue = 18,
-    Return = 19,
+    FormatQuatation = 1,
+    Quotation = 2,
+    True = 3,
+    False = 4,
+    DecimalNumber = 5,
+    StringLiteral = 6,
+    FormatStringLiteral = 7,
+    Null = 8,
+    New = 9,
+    Class = 10,
+    This = 11,
+    If = 12,
+    Else = 13,
+    For = 14,
+    While = 15,
+    Break = 16,
+    Continue = 17,
+    Return = 18,
+    Main = 19,
     Bool = 20,
     Int = 21,
     Void = 22,
@@ -143,6 +143,7 @@ class MxParser : public antlr4::Parser {
     MainFuncContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Int();
+    antlr4::tree::TerminalNode *Main();
     antlr4::tree::TerminalNode *LeftParen();
     antlr4::tree::TerminalNode *RightParen();
     SuiteContext *suite();

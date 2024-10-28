@@ -220,7 +220,14 @@ void RemoveCriticalEdge(ControlFlowGraph &cfg) {
       if (node->GetSuc().size() > 1 && suc.lock()->GetPred().size() > 1 &&
           !suc.lock()->GetBlock()->GetPhiStmts().empty()) {
         auto temp_block = std::make_shared<Block>(func->AssignTag("criticalRemoval"));
-        func->PushBlock(temp_block);
+        auto &blocks = func->GetBlocks();
+        for (auto it = blocks.begin(); it != blocks.end(); ++it) {
+          if (*it == node->GetBlock()) {
+            ++it;
+            blocks.insert(it, temp_block);
+            break;
+          }
+        }
         temp_block->Append(std::make_unique<UnconditionalBrStmt>(suc.lock()->GetBlock()));
         auto temp_node = std::make_shared<CFGNode>(temp_block);
         temp_node->PushSuc(suc.lock());

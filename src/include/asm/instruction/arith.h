@@ -78,6 +78,12 @@ class ImmArithInstruction : public ArithInstruction {
     assert(imm_ >= -2048 && imm_ <= 2047);
   }
   void Print() const override {
+    if (imm_ == 0 && GetArithType() == ArithType::kAdd && rd_ == rs1_) {
+      return;
+    }
+    if (imm_ == 1 && GetArithType() == ArithType::kMul && rd_ == rs1_) {
+      return;
+    }
     std::cout << GetInstructionName() << "i " << rd_.GetName() << ", " << rs1_.GetName() << ", " << imm_ << std::endl;
   }
 
@@ -90,7 +96,12 @@ class ImmArithInstruction : public ArithInstruction {
 class MoveInstruction : public ArithInstruction {
  public:
   MoveInstruction(AsmRegister rd, AsmRegister rs) : ArithInstruction(ArithType::kAdd), rd_(rd), rs_(rs) {}
-  void Print() const override { std::cout << "mv " << rd_.GetName() << ", " << rs_.GetName() << std::endl; }
+  void Print() const override {
+    if (rd_ == rs_) {
+      return;
+    }
+    std::cout << "mv " << rd_.GetName() << ", " << rs_.GetName() << std::endl;
+  }
 
  private:
   AsmRegister rd_;

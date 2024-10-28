@@ -580,7 +580,11 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
           cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest_reg, t(0)));
         } else {
           // Consider add stack register coalescing and remove this unsafe part
-          StoreRegister(dest, t(0));
+          if (temp_cycle != nullptr) {
+            StoreRegister(dest, t(0));
+          } else {
+            StoreRegister(dest, t(0), t(1));
+          }
         }
       }
       move_list.erase(it);

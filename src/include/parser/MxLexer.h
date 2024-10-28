@@ -8,25 +8,25 @@
 class MxLexer : public antlr4::Lexer {
  public:
   enum {
-    T__0 = 1,
-    FormatQuatation = 2,
-    Quotation = 3,
-    True = 4,
-    False = 5,
-    DecimalNumber = 6,
-    StringLiteral = 7,
-    FormatStringLiteral = 8,
-    Null = 9,
-    New = 10,
-    Class = 11,
-    This = 12,
-    If = 13,
-    Else = 14,
-    For = 15,
-    While = 16,
-    Break = 17,
-    Continue = 18,
-    Return = 19,
+    FormatQuatation = 1,
+    Quotation = 2,
+    True = 3,
+    False = 4,
+    DecimalNumber = 5,
+    StringLiteral = 6,
+    FormatStringLiteral = 7,
+    Null = 8,
+    New = 9,
+    Class = 10,
+    This = 11,
+    If = 12,
+    Else = 13,
+    For = 14,
+    While = 15,
+    Break = 16,
+    Continue = 17,
+    Return = 18,
+    Main = 19,
     Bool = 20,
     Int = 21,
     Void = 22,
@@ -78,6 +78,7 @@ class MxLexer : public antlr4::Lexer {
 
   int formatMode = 0;
   bool exprMode = false;
+  int bracketDepth = 0;
 
   std::string getGrammarFileName() const override;
 
@@ -106,10 +107,13 @@ class MxLexer : public antlr4::Lexer {
   // Individual action functions triggered by action() above.
   void FormatQuatationAction(antlr4::RuleContext *context, size_t actionIndex);
   void QuotationAction(antlr4::RuleContext *context, size_t actionIndex);
+  void LeftBraceAction(antlr4::RuleContext *context, size_t actionIndex);
+  void RightBraceAction(antlr4::RuleContext *context, size_t actionIndex);
   void DollarAction(antlr4::RuleContext *context, size_t actionIndex);
 
   // Individual semantic predicate functions triggered by sempred() above.
   bool QuotationSempred(antlr4::RuleContext *_localctx, size_t predicateIndex);
   bool StringLiteralSempred(antlr4::RuleContext *_localctx, size_t predicateIndex);
   bool FormatStringLiteralSempred(antlr4::RuleContext *_localctx, size_t predicateIndex);
+  bool MainSempred(antlr4::RuleContext *_localctx, size_t predicateIndex);
 };
