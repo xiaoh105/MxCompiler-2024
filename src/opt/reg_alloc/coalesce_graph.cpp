@@ -10,7 +10,8 @@
 
 RegisterNode::RegisterNode(std::shared_ptr<Register> reg) : register_(std::move(reg)) {}
 
-CoalesceGraph::CoalesceGraph(ControlFlowGraph &cfg, SpillGraph &spill_graph) {
+CoalesceGraph::CoalesceGraph(ControlFlowGraph &cfg, SpillGraph &spill_graph)
+    : register_info_(spill_graph.GetRegisterInfo()) {
   BuildGraph(cfg, spill_graph);
   SimplifyAndCoalesce();
 }
@@ -159,6 +160,13 @@ void CoalesceGraph::SimplifyAndCoalesce() {
 }
 
 void CoalesceGraph::Select(std::stack<std::shared_ptr<RegisterNode>> worklist) {
+  std::unordered_map<int, int> preference;
+  for (auto asm_reg : GetAvailableRegisters()) {
+    preference[static_cast<int>(asm_reg)] = 0;
+  }
+  for (const auto reg : callee_saved_registers) {
+    preference[reg.GetId()] = -4;
+  }
   while (!worklist.empty()) {
     auto node = worklist.top();
     worklist.pop();
@@ -174,7 +182,23 @@ void CoalesceGraph::Select(std::stack<std::shared_ptr<RegisterNode>> worklist) {
       assert(allocation_.contains(suc_node->register_));
       used_regs.erase(allocation_.at(suc_node->register_).GetId());
     }
-    allocation_.emplace(node->register_, AsmRegister{static_cast<int>(*used_regs.begin())});
+    std::unordered_map<int, int> reg_preference = preference;
+    auto &reg_info = register_info_.at(node->register_);
+    for (int i = 0; i < 8; ++i) {
+      reg_preference[a(i).GetId()] += reg_info.arg_offset_[i];
+    }
+    for (auto reg : caller_saved_registers) {
+      reg_preference[reg.GetId()] -= reg_info.pass_function_ * 8;
+    }
+    int pos = -1;
+    int max_preference = INT32_MIN;
+    for (auto reg : used_regs) {
+      if (reg_preference[static_cast<int>(reg)] > max_preference) {
+        max_preference = reg_preference[static_cast<int>(reg)];
+        pos = static_cast<int>(reg);
+      }
+    }
+    allocation_.emplace(node->register_, AsmRegister{pos});
   }
   for (auto [node, belong] : merge_info_) {
     while (merge_info_.contains(belong)) {

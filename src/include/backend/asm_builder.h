@@ -28,6 +28,7 @@ private:
   std::shared_ptr<AsmFunction> cur_func_{nullptr};
   const std::unordered_map<std::shared_ptr<Register>, AsmRegister> *allocation_{nullptr};
   const std::unordered_set<std::shared_ptr<Register>> *spilled_registers_{nullptr};
+  const std::unordered_map<CallStmt *, FunctionCallInfo> *call_info_{nullptr};
   FunctionManager functions_;
   VarManager vars_;
   ClassManager classes_;

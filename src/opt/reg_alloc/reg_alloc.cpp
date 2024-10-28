@@ -4,10 +4,10 @@
  * Identification: ./src/opt/reg_alloc/reg_alloc.cpp
  * Function: Register allocation
  */
+#include "opt/reg_alloc/reg_alloc.h"
 #include "opt/cfg.h"
 #include "opt/mem_to_reg/mem_to_reg.h"
 #include "opt/reg_alloc/coalesce_graph.h"
-#include "opt/reg_alloc/reg_alloc.h"
 
 std::unordered_map<std::size_t, std::size_t> machine_reg_id;
 std::size_t temp_cnt;
@@ -104,5 +104,5 @@ AllocationInfo AllocateRegister(const std::shared_ptr<IRFunction> &func) {
   SpillGraph spill_graph(cfg);
   DestructPhi(cfg);
   CoalesceGraph coalesce_graph(cfg, spill_graph);
-  return {spill_graph.GetSpilledRegs(), coalesce_graph.GetRegisterAllocation()};
+  return {spill_graph.GetSpilledRegs(), coalesce_graph.GetRegisterAllocation(), spill_graph.GetFunctionCallInfo()};
 }

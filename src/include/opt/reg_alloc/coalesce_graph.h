@@ -38,4 +38,5 @@ private:
   std::list<std::shared_ptr<RegisterNode>> nodes_;
   std::unordered_map<std::shared_ptr<Register>, AsmRegister> allocation_;
   std::unordered_map<std::shared_ptr<RegisterNode>, std::shared_ptr<RegisterNode>> merge_info_;
+  const std::unordered_map<std::shared_ptr<Register>, RegisterInfo> &register_info_;
 };

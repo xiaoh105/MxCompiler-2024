@@ -23,14 +23,30 @@ struct SpillNode {
   std::size_t useful_{};
 };
 
+struct RegisterInfo {
+  int pass_function_{0};
+  int arg_offset_[8]{};
+};
+
+struct FunctionCallInfo {
+  std::unordered_set<std::shared_ptr<Register>> live_in_{};
+  std::unordered_set<std::shared_ptr<Register>> live_out_{};
+};
+
 class SpillGraph {
-public:
+ public:
   SpillGraph() = delete;
   explicit SpillGraph(ControlFlowGraph &cfg);
   [[nodiscard]] const std::unordered_set<std::shared_ptr<Register>> &GetSpilledRegs() const;
   [[nodiscard]] const std::list<std::shared_ptr<SpillNode>> &GetSpilledNodes() const { return nodes_; }
+  [[nodiscard]] const std::unordered_map<std::shared_ptr<Register>, RegisterInfo> &GetRegisterInfo() const {
+    return register_info_;
+  }
+  [[nodiscard]] const std::unordered_map<CallStmt *, FunctionCallInfo> &GetFunctionCallInfo() const {
+    return function_call_info_;
+  }
 
-private:
+ private:
   void BuildGraph();
   void Spill();
   ControlFlowGraph &cfg_;
@@ -38,4 +54,6 @@ private:
   std::list<std::shared_ptr<SpillNode>> nodes_;
   std::unordered_map<std::shared_ptr<Register>, std::shared_ptr<SpillNode>> node_map_;
   std::unordered_set<std::shared_ptr<Register>> spilled_registers_;
+  std::unordered_map<std::shared_ptr<Register>, RegisterInfo> register_info_;
+  std::unordered_map<CallStmt *, FunctionCallInfo> function_call_info_;
 };

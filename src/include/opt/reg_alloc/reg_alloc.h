@@ -8,6 +8,7 @@
 
 #include "asm/register/register.h"
 #include "ir/ir.h"
+#include "opt/reg_alloc/spill_graph.h"
 
 /*class MachineRegister : public Register {
  public:
@@ -21,7 +22,10 @@
 
 void AddMachineRegister(const std::shared_ptr<IRFunction> &func);
 
-using AllocationInfo = std::pair<std::unordered_set<std::shared_ptr<Register>>,
-                                 std::unordered_map<std::shared_ptr<Register>, AsmRegister>>;
+struct AllocationInfo {
+  std::unordered_set<std::shared_ptr<Register>> spill_list_;
+  std::unordered_map<std::shared_ptr<Register>, AsmRegister> allocation_;
+  std::unordered_map<CallStmt *, FunctionCallInfo> call_info_;
+};
 
 AllocationInfo AllocateRegister(const std::shared_ptr<IRFunction> &func);

@@ -45,8 +45,9 @@ void AsmBuilder::Build() {
 
 void AsmBuilder::ScanFunction(const std::shared_ptr<IRFunction> &function) {
   assert(!asm_functions_.contains(function->GetName()));
-  auto [spilled, allocation] = AllocateRegister(function);
-  auto func = std::make_shared<AsmFunction>(function, allocation, spilled);
+  auto alloc_info = AllocateRegister(function);
+  auto func = std::make_shared<AsmFunction>(function, std::move(alloc_info.allocation_),
+                                            std::move(alloc_info.spill_list_), std::move(alloc_info.call_info_));
   asm_functions_.emplace(function->GetName(), func);
   func->GenerateHeader();
 }
@@ -56,6 +57,7 @@ void AsmBuilder::BuildFunction(const std::shared_ptr<IRFunction> &function) {
   cur_func_ = func;
   spilled_registers_ = &cur_func_->GetSpillList();
   allocation_ = &cur_func_->GetAllocation();
+  call_info_ = &cur_func_->GetFunctionCallInfo();
   for (const auto &block : function->GetBlocks()) {
     BuildBlock(block);
   }
@@ -278,67 +280,115 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
       auto &args = call_stmt->GetArguments();
       int stack_size = func->IsBuiltin() ? 0 : -static_cast<int>(asm_functions_[func->GetName()]->GetStackSize());
       int stack_offset = 0;
-      for (auto arg_used : cur_func_->GetBackupCallerList()) {
+      std::list<AsmRegister> backup_list;
+      auto &[live_in, live_out] = call_info_->empty() ? FunctionCallInfo{{}, {}} : call_info_->at(call_stmt);
+      auto &caller_saved_list = cur_func_->GetBackupCallerList();
+      for (auto &reg : live_in) {
+        if (!live_out.contains(reg)) {
+          continue;
+        }
+        auto asm_reg = allocation_->at(reg);
+        if (caller_saved_list.contains(asm_reg.GetId())) {
+          backup_list.push_back(asm_reg);
+        }
+      }
+      for (auto arg_used : backup_list) {
         AsmRegister reg(arg_used);
         auto offset = cur_func_->GetStackManager().GetMachineRegister(reg);
         cur_func_->PushInstruction(std::make_unique<StoreInstruction>(sp, reg, offset, MemType::kWord));
       }
-      for (int i = 0; i < args.size(); ++i) {
+      for (int i = 8; i < args.size(); ++i) {
         auto cur_arg = std::dynamic_pointer_cast<Register>(args[i]);
-        if (i < 8) {
-          if (cur_arg != nullptr) {
-            auto reg = LoadRegister(cur_arg, a(i));
-            if (reg != a(i)) {
-              cur_func_->PushInstruction(std::make_unique<MoveInstruction>(a(i), reg));
-            }
+        int offset;
+        if (cur_arg != nullptr) {
+          if (cur_arg->GetType() == kIRBoolType) {
+            offset = stack_offset + stack_size;
+            stack_offset++;
           } else {
-            int val;
-            auto arg_val = std::dynamic_pointer_cast<Constant>(args[i]);
-            if (arg_val->GetType() == kIRBoolType) {
-              val = std::get<bool>(arg_val->GetValue());
-            } else {
-              val = std::get<int>(arg_val->GetValue());
+            if (stack_offset % 4 != 0) {
+              stack_offset = stack_offset >> 4 << 4;
             }
-            cur_func_->PushInstruction(std::make_unique<LoadImmInstruction>(a(i), val));
+            offset = stack_offset + stack_size;
+            stack_offset += 4;
           }
+          auto reg = LoadRegister(cur_arg, t(0));
+          auto mem_type = cur_arg->GetType() == kIRBoolType ? MemType::kByte : MemType::kWord;
+          cur_func_->PushInstruction(std::make_unique<StoreInstruction>(sp, reg, offset, mem_type));
         } else {
-          int offset;
-          if (cur_arg != nullptr) {
-            if (cur_arg->GetType() == kIRBoolType) {
-              offset = stack_offset + stack_size;
-              stack_offset++;
-            } else {
-              if (stack_offset % 4 != 0) {
-                stack_offset = stack_offset >> 4 << 4;
-              }
-              offset = stack_offset + stack_size;
-              stack_offset += 4;
-            }
-            auto reg = LoadRegister(cur_arg, t(0));
-            auto mem_type = cur_arg->GetType() == kIRBoolType ? MemType::kByte : MemType::kWord;
-            cur_func_->PushInstruction(std::make_unique<StoreInstruction>(sp, reg, offset, mem_type));
+          auto cur_val = std::dynamic_pointer_cast<Constant>(args[i]);
+          if (cur_val->GetType() == kIRBoolType) {
+            offset = stack_offset + stack_size;
+            stack_offset++;
           } else {
-            auto cur_val = std::dynamic_pointer_cast<Constant>(args[i]);
-            if (cur_val->GetType() == kIRBoolType) {
-              offset = stack_offset + stack_size;
-              stack_offset++;
-            } else {
-              if (stack_offset % 4 != 0) {
-                stack_offset = stack_offset >> 4 << 4;
-              }
-              offset = stack_offset + stack_size;
-              stack_offset += 4;
+            if (stack_offset % 4 != 0) {
+              stack_offset = stack_offset >> 4 << 4;
             }
-            int imm;
-            if (cur_val->GetType() == kIRBoolType) {
-              imm = std::get<bool>(cur_val->GetValue());
-            } else {
-              imm = std::get<int>(cur_val->GetValue());
-            }
-            cur_func_->PushInstruction(std::make_unique<LoadImmInstruction>(t(0), imm));
-            auto mem_type = cur_val->GetType() == kIRBoolType ? MemType::kByte : MemType::kWord;
-            cur_func_->PushInstruction(std::make_unique<StoreInstruction>(sp, t(0), offset, mem_type));
+            offset = stack_offset + stack_size;
+            stack_offset += 4;
           }
+          int imm;
+          if (cur_val->GetType() == kIRBoolType) {
+            imm = std::get<bool>(cur_val->GetValue());
+          } else {
+            imm = std::get<int>(cur_val->GetValue());
+          }
+          cur_func_->PushInstruction(std::make_unique<LoadImmInstruction>(t(0), imm));
+          auto mem_type = cur_val->GetType() == kIRBoolType ? MemType::kByte : MemType::kWord;
+          cur_func_->PushInstruction(std::make_unique<StoreInstruction>(sp, t(0), offset, mem_type));
+        }
+      }
+      std::list<std::pair<AsmRegister, AsmRegister>> move_regs;
+      for (int i = 0; i < std::min(args.size(), 8ul); ++i) {
+        auto &arg = args[i];
+        auto arg_reg = std::dynamic_pointer_cast<Register>(arg);
+        if (arg_reg == nullptr || spilled_registers_->contains(arg_reg) || arg_reg->IsGlobal()) {
+          continue;
+        }
+        move_regs.emplace_back(a(i), allocation_->at(arg_reg));
+      }
+      while (!move_regs.empty()) {
+        bool reduce_succeed = false;
+        for (auto it = move_regs.begin(); it != move_regs.end(); ++it) {
+          auto &[dest, src] = *it;
+          bool contain_ref = false;
+          for (const auto &item : move_regs) {
+            if (dest == item.second) {
+              contain_ref = true;
+              break;
+            }
+          }
+          if (contain_ref) {
+            continue;
+          }
+          reduce_succeed = true;
+          cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest, src));
+          move_regs.erase(it);
+          break;
+        }
+        if (reduce_succeed) {
+          continue;
+        }
+        for (const auto &src : move_regs | std::views::values) {
+          assert(src != t(1));
+        }
+        auto &[dest, src] = move_regs.front();
+        cur_func_->PushInstruction(std::make_unique<MoveInstruction>(t(1), src));
+        src = t(1);
+      }
+      for (int i = 0; i < std::min(args.size(), 8ul); ++i) {
+        auto &arg = args[i];
+        auto arg_reg = std::dynamic_pointer_cast<Register>(arg);
+        if (arg_reg == nullptr) {
+          int imm = 0;
+          auto arg_val = std::dynamic_pointer_cast<Constant>(arg);
+          if (std::holds_alternative<int>(arg_val->GetValue())) {
+            imm = std::get<int>(arg_val->GetValue());
+          } else {
+            imm = std::get<bool>(arg_val->GetValue());
+          }
+          cur_func_->PushInstruction(std::make_unique<LoadImmInstruction>(a(i), imm));
+        } else {
+          LoadRegister(arg_reg, a(i));
         }
       }
       cur_func_->PushInstruction(std::make_unique<CallInstruction>(func->GetName()));
@@ -348,17 +398,17 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
         if (dest != a(0)) {
           cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest, a(0)));
         }
-        for (auto item : cur_func_->GetBackupCallerList()) {
+        for (auto item : backup_list) {
           AsmRegister reg(item);
           if (reg == dest) {
-            continue;
+            assert(false);
           }
           auto offset = cur_func_->GetStackManager().GetMachineRegister(reg);
           cur_func_->PushInstruction(std::make_unique<LoadInstruction>(reg, sp, offset, MemType::kWord));
         }
         StoreRegister(res, dest, t(1));
       } else {
-        for (auto item : cur_func_->GetBackupCallerList()) {
+        for (auto item : backup_list) {
           AsmRegister reg(item);
           auto offset = cur_func_->GetStackManager().GetMachineRegister(reg);
           cur_func_->PushInstruction(std::make_unique<LoadInstruction>(reg, sp, offset, MemType::kWord));

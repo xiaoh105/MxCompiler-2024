@@ -10,6 +10,8 @@
 #include "asm/instruction/instruction.h"
 #include "asm/instruction/mem.h"
 #include "ir/function.h"
+#include "ir/stmt/call_stmt.h"
+#include "opt/reg_alloc/spill_graph.h"
 
 class BasicBlock {
  public:
@@ -32,12 +34,14 @@ class AsmFunction {
  public:
   explicit AsmFunction(const std::shared_ptr<IRFunction> &func,
                        std::unordered_map<std::shared_ptr<Register>, AsmRegister> allocation,
-                       std::unordered_set<std::shared_ptr<Register>> spilled_regs)
+                       std::unordered_set<std::shared_ptr<Register>> spilled_regs,
+                       std::unordered_map<CallStmt *, FunctionCallInfo> call_info)
       : func_name_(func->GetName()),
         func_(func),
         prologue_(std::make_shared<BasicBlock>(func_name_ + ".prologue")),
         allocation_(std::move(allocation)),
-        spilled_regs_(std::move(spilled_regs)) {
+        spilled_regs_(std::move(spilled_regs)),
+        call_info_(std::move(call_info)) {
     blocks_index_[func_name_ + ".prologue"] = prologue_;
     auto &arg_var = func->GetArgumentVars();
     for (std::size_t i = 8; i < arg_var.size(); ++i) {
@@ -143,6 +147,7 @@ class AsmFunction {
   StackManager &GetStackManager() { return stack_manager_; }
   [[nodiscard]] auto &GetAllocation() const { return allocation_; }
   [[nodiscard]] auto &GetSpillList() const { return spilled_regs_; }
+  [[nodiscard]] auto &GetFunctionCallInfo() const { return call_info_; }
   [[nodiscard]] auto &GetBackupCallerList() const { return backup_caller_list_; }
   [[nodiscard]] auto &GetBackupCalleeList() const { return backup_callee_list_; }
 
@@ -155,6 +160,7 @@ class AsmFunction {
   std::unordered_map<std::string, std::shared_ptr<BasicBlock>> blocks_index_;
   std::unordered_map<std::shared_ptr<Register>, AsmRegister> allocation_;
   std::unordered_set<std::shared_ptr<Register>> spilled_regs_;
+  std::unordered_map<CallStmt *, FunctionCallInfo> call_info_;
   std::unordered_set<int> backup_caller_list_{};
   std::unordered_set<int> backup_callee_list_{};
   StackManager stack_manager_;
