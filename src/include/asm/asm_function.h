@@ -155,7 +155,7 @@ class AsmFunction {
   std::unordered_map<std::string, std::shared_ptr<BasicBlock>> blocks_index_;
   std::unordered_map<std::shared_ptr<Register>, AsmRegister> allocation_;
   std::unordered_set<std::shared_ptr<Register>> spilled_regs_;
-  std::unordered_set<int> backup_caller_list_;
-  std::unordered_set<int> backup_callee_list_;
+  std::unordered_set<int> backup_caller_list_{};
+  std::unordered_set<int> backup_callee_list_{};
   StackManager stack_manager_;
 };

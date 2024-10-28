@@ -71,6 +71,7 @@ public:
 private:
   void GetDomSet();
   void CollectRegister();
+  void RemoveDeadBlock();
   void SetDefUse();
   void GetDataFlow();
   std::shared_ptr<IRFunction> func_;

@@ -79,7 +79,7 @@ constexpr AsmRegister t(int id) {
 
 constexpr AsmRegister s(int id) {
   assert(id >= 0 && id < 12);
-  if (id <= 2) {
+  if (id < 2) {
     return {id + 8};
   }
   return {id + 16};

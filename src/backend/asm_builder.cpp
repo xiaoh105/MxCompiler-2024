@@ -106,7 +106,7 @@ void AsmBuilder::StoreRegister(const std::shared_ptr<Register> &virtual_reg, Asm
   } else if (!allocation_->contains(virtual_reg)) {
     assert(spilled_registers_->contains(virtual_reg));
     auto pos = cur_func_->GetStackManager().GetVirtualRegister(virtual_reg);
-    if (pos.GetOffset() <= -2048 || pos.GetOffset() >= 2047) {
+    if (pos.GetOffset() < -2048 || pos.GetOffset() > 2047) {
       cur_func_->PushInstruction(std::make_unique<LoadImmInstruction>(temp_reg, pos.GetOffset()));
       cur_func_->PushInstruction(
           std::make_unique<RegArithInstruction>(temp_reg, sp, temp_reg, ArithInstruction::ArithType::kAdd));
@@ -346,6 +346,9 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
       auto res = gep_stmt->GetResult();
       auto &ir_ptr = gep_stmt->GetPtr();
       auto ptr = ir_ptr;
+      if (ptr == nullptr) {
+        continue;
+      }
       assert(!index.empty() && index.size() <= 2);
       if (index.size() == 2) {
         assert(std::get<int>(std::dynamic_pointer_cast<Constant>(index[0])->GetValue()) == 0);

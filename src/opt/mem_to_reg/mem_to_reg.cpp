@@ -160,7 +160,7 @@ void ReplaceRegs(const std::vector<std::shared_ptr<CFGNode>> &cfg_nodes) {
         }
         auto &ptr = gep_stmt->GetPtr();
         if (replace_reg.contains(ptr)) {
-          gep_stmt->SetPtr(std::dynamic_pointer_cast<Register>(replace_reg[ptr]));
+          gep_stmt->SetPtr(std::dynamic_pointer_cast<Register>(replace_reg.at(ptr)));
         }
       } else if (auto icmp_stmt = dynamic_cast<ICmpStmt *>(stmt.get()); icmp_stmt != nullptr) {
         auto &left = icmp_stmt->GetLhs();
@@ -218,8 +218,7 @@ void RemoveCriticalEdge(ControlFlowGraph &cfg) {
     auto &suc_nodes = node->GetSuc();
     for (auto &suc : suc_nodes) {
       if (node->GetSuc().size() > 1 && suc.lock()->GetPred().size() > 1 &&
-          !suc_nodes[0].lock()->GetBlock()->GetPhiStmts().empty() &&
-          !suc_nodes[1].lock()->GetBlock()->GetPhiStmts().empty()) {
+          !suc.lock()->GetBlock()->GetPhiStmts().empty()) {
         auto temp_block = std::make_shared<Block>(func->AssignTag("criticalRemoval"));
         func->PushBlock(temp_block);
         temp_block->Append(std::make_unique<UnconditionalBrStmt>(suc.lock()->GetBlock()));
@@ -229,6 +228,22 @@ void RemoveCriticalEdge(ControlFlowGraph &cfg) {
         for (auto &suc_pred : suc.lock()->GetPred()) {
           if (suc_pred.lock() == node) {
             suc_pred = std::weak_ptr(temp_node);
+          }
+        }
+        auto br_cond_stmt = dynamic_cast<ConditionalBrStmt *>(node->GetBlock()->GetBranchStmt().get());
+        assert(br_cond_stmt != nullptr);
+        if (br_cond_stmt->GetTrueBlock().lock() == suc.lock()->GetBlock()) {
+          br_cond_stmt->GetTrueBlock() = temp_block;
+        } else if (br_cond_stmt->GetFalseBlock().lock() == suc.lock()->GetBlock()) {
+          br_cond_stmt->GetFalseBlock() = temp_block;
+        }
+        for (auto &stmt : suc.lock()->GetBlock()->GetPhiStmts()) {
+          auto phi_stmt = dynamic_cast<PhiStmt *>(stmt.get());
+          assert(phi_stmt != nullptr);
+          for (auto &block : phi_stmt->GetBlocks() | std::views::values) {
+            if (block.lock() == node->GetBlock()) {
+              block = temp_block;
+            }
           }
         }
         suc = temp_node;

@@ -35,7 +35,7 @@ class IRFunction {
   void SetArgumentVars(std::vector<std::shared_ptr<Register>> arg_vars) { arg_vars_ = std::move(arg_vars); }
   [[nodiscard]] const std::vector<std::shared_ptr<Register>> &GetArgumentVars() const { return arg_vars_; }
   std::shared_ptr<Block> &GetCurBlock() { return blocks_.back(); }
-  [[nodiscard]] const std::vector<std::shared_ptr<Block>> &GetBlocks() const { return blocks_; }
+  std::vector<std::shared_ptr<Block>> &GetBlocks() { return blocks_; }
   [[nodiscard]] bool IsBuiltin() const { return builtin_; }
   void PushBlock(std::shared_ptr<Block> block) {
     assert(!builtin_);

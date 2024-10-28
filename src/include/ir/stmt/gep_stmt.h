@@ -18,6 +18,7 @@ class GetElementPtrStmt final : public Stmt {
   GetElementPtrStmt(std::shared_ptr<Register> res, std::shared_ptr<Register> ptr,
                     std::vector<std::shared_ptr<Var>> index)
       : result_(std::move(res)), ptr_(std::move(ptr)), index_(std::move(index)) {
+    assert(ptr_ != nullptr);
     for (const auto &item : index_) {
       assert(item->GetType() == kIRIntType);
     }

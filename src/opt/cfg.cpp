@@ -10,6 +10,8 @@
 #include "ir/ir.h"
 #include "opt/cfg.h"
 
+#include <queue>
+
 CFGNode::CFGNode(std::shared_ptr<Block> block) : block_(std::move(block)) {}
 
 std::shared_ptr<Block> &CFGNode::GetBlock() { return block_; }
@@ -101,11 +103,69 @@ ControlFlowGraph::ControlFlowGraph(std::shared_ptr<IRFunction> func) : func_(std
       false_br->PushPred(node);
     }
   }
+  RemoveDeadBlock();
   if (generate_dominator_tree) {
     GetDomSet();
   }
   if (generate_data_flow) {
     GetDataFlow();
+  }
+}
+
+void ControlFlowGraph::RemoveDeadBlock() {
+  std::unordered_set<std::shared_ptr<CFGNode>> visited;
+  std::unordered_set<std::shared_ptr<CFGNode>> dead_nodes;
+  std::queue<std::shared_ptr<CFGNode>> queue;
+  std::unordered_set<std::shared_ptr<Block>> dead;
+  queue.push(cfg_nodes_[0]);
+  visited.insert(cfg_nodes_[0]);
+  while (!queue.empty()) {
+    auto node = queue.front();
+    queue.pop();
+    for (const auto &suc : node->GetSuc()) {
+      if (!visited.contains(suc.lock())) {
+        visited.insert(suc.lock());
+        queue.push(suc.lock());
+      }
+    }
+  }
+  for (const auto &node : cfg_nodes_) {
+    if (node->GetPred().empty() && node != cfg_nodes_[0]) {
+      queue.push(node);
+      dead_nodes.insert(node);
+    }
+  }
+  while (!queue.empty()) {
+    auto node = queue.front();
+    queue.pop();
+    for (const auto &suc : node->GetSuc()) {
+      for (auto it = suc.lock()->GetPred().begin(); it != suc.lock()->GetPred().end(); ++it) {
+        if (it->lock() == node) {
+          suc.lock()->GetPred().erase(it);
+          break;
+        }
+      }
+      if (suc.lock()->GetPred().empty()) {
+        dead_nodes.insert(suc.lock());
+        queue.push(suc.lock());
+      }
+    }
+  }
+  for (auto it = cfg_nodes_.begin(); it != cfg_nodes_.end();) {
+    if (!visited.contains(*it) || dead_nodes.contains(*it)) {
+      dead.insert((*it)->GetBlock());
+      it = cfg_nodes_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  auto &blocks = func_->GetBlocks();
+  for (auto it = blocks.begin(); it != blocks.end();) {
+    if (dead.contains(*it)) {
+      it = blocks.erase(it);
+    } else {
+      ++it;
+    }
   }
 }
 
