@@ -11,7 +11,7 @@ build:
 	cd $(BUILD_DIR) && $(MAKE) -j$(nproc)
 
 run:
-	cd $(BUILD_DIR) && ./MxCompiler
+	cd $(BUILD_DIR) && ./MxCompiler -fmem-to-reg
 	if [ $$? -eq 0 ]; then \
 			cat lib/builtin.s; \
 	fi
