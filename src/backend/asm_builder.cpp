@@ -539,68 +539,68 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
     }
   }
   std::shared_ptr<Register> temp_dest{nullptr}, temp_cycle{nullptr};
-    while (!move_list.empty()) {
-      bool remove_link = false;
-      for (auto it = move_list.begin(); it != move_list.end(); ++it) {
-        auto &move = *it;
-        bool has_ref = false;
-        for (auto &item : move_list) {
-          if (!(item.first == temp_dest && item.second == temp_cycle) && item.second == move.first) {
-            has_ref = true;
-            break;
-          }
+  while (!move_list.empty()) {
+    bool remove_link = false;
+    for (auto it = move_list.begin(); it != move_list.end(); ++it) {
+      auto &move = *it;
+      bool has_ref = false;
+      for (auto &item : move_list) {
+        if (!(item.first == temp_dest && item.second == temp_cycle) && item.second == move.first) {
+          has_ref = true;
+          break;
         }
-        if (has_ref) {
-          continue;
-        }
-        remove_link = true;
-        auto dest = move.first;
-        auto src = move.second;
-        if (dest == temp_dest && src == temp_cycle) {
-          if (allocation_->contains(dest)) {
-            auto dest_reg = allocation_->at(dest);
-            cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest_reg, t(1)));
-          } else {
-            StoreRegister(dest, t(1), t(0));
-          }
-          temp_dest = nullptr;
-          temp_cycle = nullptr;
-        } else if (allocation_->contains(src)) {
-          AsmRegister src_reg = allocation_->at(src);
-          if (allocation_->contains(dest)) {
-            AsmRegister dest_reg = allocation_->at(dest);
-            cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest_reg, src_reg));
-          } else {
-            StoreRegister(dest, src_reg, t(0));
-          }
-        } else {
-          LoadRegister(src, t(0));
-          if (allocation_->contains(dest)) {
-            AsmRegister dest_reg = allocation_->at(dest);
-            cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest_reg, t(0)));
-          } else {
-            // Consider add stack register coalescing and remove this unsafe part
-            StoreRegister(dest, t(0));
-          }
-        }
-        move_list.erase(it);
-        break;
       }
-      if (remove_link) {
+      if (has_ref) {
         continue;
       }
-      assert(temp_dest == nullptr && temp_cycle == nullptr);
-      auto dest = move_list.begin()->first;
-      auto src = move_list.begin()->second;
-      if (allocation_->contains(src)) {
-        auto old_reg = allocation_->at(src);
-        cur_func_->PushInstruction(std::make_unique<MoveInstruction>(t(1), old_reg));
+      remove_link = true;
+      auto dest = move.first;
+      auto src = move.second;
+      if (dest == temp_dest && src == temp_cycle) {
+        if (allocation_->contains(dest)) {
+          auto dest_reg = allocation_->at(dest);
+          cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest_reg, t(1)));
+        } else {
+          StoreRegister(dest, t(1), t(0));
+        }
+        temp_dest = nullptr;
+        temp_cycle = nullptr;
+      } else if (allocation_->contains(src)) {
+        AsmRegister src_reg = allocation_->at(src);
+        if (allocation_->contains(dest)) {
+          AsmRegister dest_reg = allocation_->at(dest);
+          cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest_reg, src_reg));
+        } else {
+          StoreRegister(dest, src_reg, t(0));
+        }
       } else {
-        LoadRegister(src, t(1));
+        LoadRegister(src, t(0));
+        if (allocation_->contains(dest)) {
+          AsmRegister dest_reg = allocation_->at(dest);
+          cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest_reg, t(0)));
+        } else {
+          // Consider add stack register coalescing and remove this unsafe part
+          StoreRegister(dest, t(0));
+        }
       }
-      temp_cycle = nullptr;
-      temp_dest = nullptr;
+      move_list.erase(it);
+      break;
     }
+    if (remove_link) {
+      continue;
+    }
+    assert(temp_dest == nullptr && temp_cycle == nullptr);
+    auto dest = move_list.begin()->first;
+    auto src = move_list.begin()->second;
+    if (allocation_->contains(src)) {
+      auto old_reg = allocation_->at(src);
+      cur_func_->PushInstruction(std::make_unique<MoveInstruction>(t(1), old_reg));
+    } else {
+      LoadRegister(src, t(1));
+    }
+    temp_cycle = nullptr;
+    temp_dest = nullptr;
+  }
   if (auto br_cond_stmt = dynamic_cast<ConditionalBrStmt *>(branch_stmt.get()); br_cond_stmt != nullptr) {
     auto &cond = br_cond_stmt->GetCondition();
     auto true_block = br_cond_stmt->GetTrueBlock().lock();

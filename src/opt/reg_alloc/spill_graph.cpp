@@ -41,22 +41,23 @@ void SpillGraph::BuildGraph() {
       }
       live_out = reg_manager_.GetSet(stmt->GetUse()) | live_out - reg_manager_.GetSet({def});
     }
+    for (const auto &stmt : node->GetBlock()->GetPhiStmts()) {
+      live_out |= reg_manager_.GetSet(stmt->GetUse());
+      live_out.AddElement(stmt->GetDef());
+    }
     for (const auto &stmt : std::ranges::reverse_view(node->GetBlock()->GetPhiStmts())) {
       auto def = stmt->GetDef();
-      if (def != nullptr) {
-        auto cur_node = node_map_.at(def);
-        cur_node->pressure_ = 0;
-        for (const auto &regs : live_out) {
-          if (def == regs) {
-            continue;
-          }
-          auto live_node = node_map_.at(regs);
-          live_node->edge_.insert(cur_node);
-          cur_node->rev_edge_.insert(live_node);
+      auto cur_node = node_map_.at(def);
+      cur_node->pressure_ = 0;
+      for (const auto &regs : live_out) {
+        if (def == regs) {
+          continue;
         }
-        cur_node->pressure_ = cur_node->rev_edge_.size() + 1;
+        auto live_node = node_map_.at(regs);
+        live_node->edge_.insert(cur_node);
+        cur_node->rev_edge_.insert(live_node);
       }
-      live_out = reg_manager_.GetSet(stmt->GetUse()) | live_out - reg_manager_.GetSet({def});
+      cur_node->pressure_ = cur_node->rev_edge_.size() + 1;
     }
   }
   auto &arg_var = cfg_.GetIRFunction()->GetArgumentVars();
