@@ -13,7 +13,7 @@
 
 class ArithInstruction : public AsmInstruction {
  public:
-  enum class ArithType : int { kUnknown = 0, kAdd, kSub, kAnd, kOr, kXor, kShiftL, kShiftR, kSetLT, kMul, kDiv, kRem };
+  enum class ArithType : int { kUnknown = 0, kAdd, kSub, kAnd, kOr, kXor, kShiftL, kShiftR, kShiftRLogic, kSetLT, kMul, kMulH, kDiv, kRem };
   explicit ArithInstruction(ArithType type) : type_(type) {}
   [[nodiscard]] ArithType GetArithType() const { return type_; }
   void Print() const override = 0;
@@ -33,12 +33,16 @@ class ArithInstruction : public AsmInstruction {
         return "xor";
       case ArithType::kShiftL:
         return "sll";
+      case ArithType::kShiftRLogic:
+        return "srl";
       case ArithType::kShiftR:
         return "sra";
       case ArithType::kSetLT:
         return "slt";
       case ArithType::kMul:
         return "mul";
+      case ArithType::kMulH:
+        return "mulh";
       case ArithType::kDiv:
         return "div";
       case ArithType::kRem:

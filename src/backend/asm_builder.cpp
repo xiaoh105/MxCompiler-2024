@@ -65,6 +65,11 @@ void AsmBuilder::BuildFunction(const std::shared_ptr<IRFunction> &function) {
 }
 
 AsmRegister AsmBuilder::GetRegister(const std::shared_ptr<Var> &var, AsmRegister reg_hint) const {
+  auto val = std::dynamic_pointer_cast<Constant>(var);
+  if (val != nullptr && (std::holds_alternative<bool>(val->GetValue()) && std::get<bool>(val->GetValue()) == 0 ||
+                         std::holds_alternative<int>(val->GetValue()) && std::get<int>(val->GetValue()) == 0)) {
+    return zero;
+  }
   auto reg = std::dynamic_pointer_cast<Register>(var);
   if (reg == nullptr) {
     return reg_hint;
@@ -179,6 +184,9 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
           result = imm1 * imm2;
           force_reg_op = true;
           break;
+        case BinaryStmt::OpType::kMulH:
+          arith_type = ArithInstruction::ArithType::kMulH;
+          break;
         case BinaryStmt::OpType::kAnd:
           arith_type = ArithInstruction::ArithType::kAnd;
           result = imm1 & imm2;
@@ -194,6 +202,11 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
         case BinaryStmt::OpType::kShiftL:
           arith_type = ArithInstruction::ArithType::kShiftL;
           result = imm1 << imm2;
+          can_swap = false;
+          break;
+        case BinaryStmt::OpType::kShiftRLogic:
+          arith_type = ArithInstruction::ArithType::kShiftRLogic;
+          result = imm1 >> imm2;
           can_swap = false;
           break;
         case BinaryStmt::OpType::kShiftR:
@@ -222,13 +235,13 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
         AsmRegister src1 = GetRegister(lhs, t(1));
         if (l_reg != nullptr) {
           LoadRegister(l_reg, t(1));
-        } else {
+        } else if (imm1 != 0) {
           cur_func_->PushInstruction(std::make_unique<LoadImmInstruction>(src1, imm1));
         }
         AsmRegister src2 = GetRegister(rhs, t(2));
         if (r_reg != nullptr) {
           LoadRegister(r_reg, t(2));
-        } else {
+        } else if (imm2 != 0) {
           cur_func_->PushInstruction(std::make_unique<LoadImmInstruction>(src2, imm2));
         }
         cur_func_->PushInstruction(std::make_unique<RegArithInstruction>(dest, src1, src2, arith_type));

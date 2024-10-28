@@ -3,6 +3,7 @@
 #include "frontend/symbol_collector.h"
 #include "opt/cfg.h"
 #include "opt/mem_to_reg/mem_to_reg.h"
+#include "opt/normal_pass.h"
 #include "opt/reg_alloc/reg_alloc.h"
 
 void GenerateIR(RootNode *root) {
@@ -937,6 +938,7 @@ void IRBuilder::visit(FunctionDefClassStmtNode *node) {
 
 extern bool generate_cfg;
 extern bool mem_to_reg;
+extern bool emit_llvm;
 
 void IRBuilder::visit(RootNode *node) {
   for (const auto &def : node->GetDefNodes()) {
@@ -952,6 +954,9 @@ void IRBuilder::visit(RootNode *node) {
       ControlFlowGraph cfg(func.second);
       if (mem_to_reg) {
         MemToReg(cfg, vars_);
+      }
+      if (!emit_llvm) {
+        ArithmeticReduction(func.second, vars_);
       }
     }
   }
