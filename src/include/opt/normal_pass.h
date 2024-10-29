@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "opt/cfg.h"
+#include "asm/asm_function.h"
 
 class IRFunction;
 class VarManager;
@@ -16,3 +16,5 @@ class VarManager;
 void ArithmeticReduction(const std::shared_ptr<IRFunction> &func, VarManager& var_manager);
 
 bool DeadCodeElimination(const std::shared_ptr<IRFunction> &func);
+
+void DeadAsmElimination(const std::shared_ptr<AsmFunction> &func);

@@ -14,7 +14,7 @@ if (ENABLE_OJ_MODE)
   add_compile_options(-w)
 else()
   # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
+  # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
   add_compile_options(-Wall -Wextra -Wpedantic)
   add_executable(BitsetTests tests/bitset.cpp)
 endif ()
@@ -39,6 +39,7 @@ add_executable(MxCompiler src/main.cpp
         src/opt/reg_alloc/spill_graph.cpp
         src/opt/reg_alloc/reg_alloc.cpp
         src/opt/reg_alloc/coalesce_graph.cpp
-        src/opt/normal_pass.cpp)
+        src/opt/normal_pass.cpp
+        src/opt/localization/localization.cpp)
 
 target_link_libraries(MxCompiler antlr4-runtime)

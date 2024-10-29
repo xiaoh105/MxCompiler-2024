@@ -1,10 +1,11 @@
 #include "backend/ir_builder.h"
+
 #include "frontend/semantic_checker.h"
 #include "frontend/symbol_collector.h"
 #include "opt/cfg.h"
+#include "opt/localization/localization.h"
 #include "opt/mem_to_reg/mem_to_reg.h"
 #include "opt/normal_pass.h"
-#include "opt/reg_alloc/reg_alloc.h"
 
 void GenerateIR(RootNode *root) {
   auto [scope, global_scope] = CollectSymbol(root);
@@ -948,6 +949,7 @@ void IRBuilder::visit(RootNode *node) {
   }
   init_func_->PushStmt(std::make_unique<RetStmt>());
   init_func_->LinkInitStmt();
+  Localization(functions_);
   if (generate_cfg) {
     for (const auto &func : functions_.GetFunctions()) {
       if (func.second->IsBuiltin()) {
@@ -960,7 +962,7 @@ void IRBuilder::visit(RootNode *node) {
       if (!emit_llvm) {
         ArithmeticReduction(func.second, vars_);
       }
-      DeadCodeElimination(func.second);
+      while (DeadCodeElimination(func.second)) {}
     }
   }
 }

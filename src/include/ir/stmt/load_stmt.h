@@ -27,6 +27,7 @@ class LoadStmt : public Stmt {
     }
     return {ptr_};
   }
+  void SetPtr(std::shared_ptr<Register> ptr) { ptr_ = std::move(ptr); }
   void Print() const override {
     std::cout << result_->GetName() << " = load " << result_->GetType().GetIRTypename() << ", ptr " << ptr_->GetName()
               << std::endl;

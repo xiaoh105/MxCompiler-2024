@@ -63,6 +63,8 @@ class RegArithInstruction : public ArithInstruction {
       : ArithInstruction(type), rd_(rd), rs1_(rs1), rs2_(rs2) {
     assert(type != ArithType::kUnknown);
   }
+  [[nodiscard]] int GetDestId() const override { return rd_.GetId(); }
+  [[nodiscard]] std::list<int> GetSrcId() const override { return {rs1_.GetId(), rs2_.GetId()}; }
   void Print() const override {
     std::cout << GetInstructionName() << " " << rd_.GetName() << ", " << rs1_.GetName() << ", " << rs2_.GetName()
               << std::endl;
@@ -81,13 +83,13 @@ class ImmArithInstruction : public ArithInstruction {
     assert(type != ArithType::kSub && type != ArithType::kUnknown);
     assert(imm_ >= -2048 && imm_ <= 2047);
   }
+  [[nodiscard]] int GetDestId() const override { return rd_.GetId(); }
+  [[nodiscard]] std::list<int> GetSrcId() const override { return {rs1_.GetId()}; }
+  [[nodiscard]] AsmRegister GetSrcReg() const { return rs1_;}
+  [[nodiscard]] AsmRegister GetDestReg() const { return rd_; }
+  [[nodiscard]] int GetImm() const { return imm_; }
+  [[nodiscard]] ArithType GetOpType() const { return GetArithType(); }
   void Print() const override {
-    if (imm_ == 0 && GetArithType() == ArithType::kAdd && rd_ == rs1_) {
-      return;
-    }
-    if (imm_ == 1 && GetArithType() == ArithType::kMul && rd_ == rs1_) {
-      return;
-    }
     std::cout << GetInstructionName() << "i " << rd_.GetName() << ", " << rs1_.GetName() << ", " << imm_ << std::endl;
   }
 
@@ -100,6 +102,10 @@ class ImmArithInstruction : public ArithInstruction {
 class MoveInstruction : public ArithInstruction {
  public:
   MoveInstruction(AsmRegister rd, AsmRegister rs) : ArithInstruction(ArithType::kAdd), rd_(rd), rs_(rs) {}
+  [[nodiscard]] int GetDestId() const override { return rd_.GetId(); }
+  [[nodiscard]] std::list<int> GetSrcId() const override { return {rs_.GetId()}; }
+  [[nodiscard]] AsmRegister GetSrcReg() const { return rs_; }
+  [[nodiscard]] AsmRegister GetDestReg() const { return rd_; }
   void Print() const override {
     if (rd_ == rs_) {
       return;
@@ -115,6 +121,8 @@ class MoveInstruction : public ArithInstruction {
 class LoadImmInstruction : public ArithInstruction {
  public:
   LoadImmInstruction(AsmRegister rd, int imm) : ArithInstruction(ArithType::kAdd), rd_(rd), imm_(imm) {}
+  [[nodiscard]] int GetDestId() const override { return rd_.GetId(); }
+  [[nodiscard]] std::list<int> GetSrcId() const override { return {}; }
   void Print() const override { std::cout << "li " << rd_.GetName() << ", " << imm_ << std::endl; }
 
  private:
@@ -126,6 +134,8 @@ class LoadAddrInstruction : public ArithInstruction {
  public:
   LoadAddrInstruction(AsmRegister rd, std::string label)
       : ArithInstruction(ArithType::kAdd), rd_(rd), label_(std::move(label)) {}
+  [[nodiscard]] int GetDestId() const override { return rd_.GetId(); }
+  [[nodiscard]] std::list<int> GetSrcId() const override { return {}; }
   void Print() const override { std::cout << "la " << rd_.GetName() << ", " << label_ << std::endl; }
 
  private:
@@ -138,6 +148,8 @@ class CmpZInstruction : public ArithInstruction {
   enum class CmpType : int { kUnknown = 0, kEqz, kNez, kLtz, kGtz };
   CmpZInstruction(AsmRegister rd, AsmRegister rs, CmpType type)
       : ArithInstruction(ArithType::kUnknown), rd_(rd), rs_(rs), type_(type) {}
+  [[nodiscard]] int GetDestId() const override { return rd_.GetId(); }
+  [[nodiscard]] std::list<int> GetSrcId() const override { return {rs_.GetId()}; }
   void Print() const override {
     std::string type;
     switch (type_) {

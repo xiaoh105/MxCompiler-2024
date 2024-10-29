@@ -3,6 +3,7 @@
 #include "backend/asm_builder.h"
 #include "frontend/semantic_checker.h"
 #include "frontend/symbol_collector.h"
+#include "opt/normal_pass.h"
 #include "opt/reg_alloc/reg_alloc.h"
 
 void GenerateAsm(RootNode *root) {
@@ -21,7 +22,8 @@ AsmBuilder::AsmBuilder(FunctionManager functions, VarManager vars, ClassManager 
 void AsmBuilder::Print() {
   Build();
   std::cout << ".section .text" << std::endl;
-  for (const auto &function : asm_functions_) {
+  for (auto &function : asm_functions_) {
+    DeadAsmElimination(function.second);
     std::cout << ".globl " << function.first << std::endl;
     function.second->Print();
   }
@@ -137,6 +139,7 @@ void AsmBuilder::StoreRegister(const std::shared_ptr<Register> &virtual_reg, Asm
 void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
   auto ret = std::make_unique<BasicBlock>(cur_func_->GetName() + "." + block->GetLabel());
   cur_func_->PushBlock(std::move(ret));
+  std::unordered_set<int> loaded_registers;
   for (const auto &stmt : block->GetStmts()) {
     if (auto alloca_stmt = dynamic_cast<AllocaStmt *>(stmt.get()); alloca_stmt != nullptr) {
       auto res = cur_func_->GetStackManager().GetVirtualRegister(alloca_stmt->GetResult());
@@ -274,6 +277,7 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
           cur_func_->PushInstruction(std::make_unique<ImmArithInstruction>(dest, src1, imm1, arith_type));
         }
       }
+      loaded_registers.erase(dest.GetId());
       StoreRegister(res, dest, t(1));
     } else if (auto call_stmt = dynamic_cast<CallStmt *>(stmt.get()); call_stmt != nullptr) {
       auto func = call_stmt->GetFunction().lock();
@@ -295,6 +299,9 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
       for (auto arg_used : backup_list) {
         AsmRegister reg(arg_used);
         auto offset = cur_func_->GetStackManager().GetMachineRegister(reg);
+        if (loaded_registers.contains(arg_used.GetId())) {
+          continue;
+        }
         cur_func_->PushInstruction(std::make_unique<StoreInstruction>(sp, reg, offset, MemType::kWord));
       }
       for (int i = 8; i < args.size(); ++i) {
@@ -391,8 +398,8 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
           LoadRegister(arg_reg, a(i));
         }
       }
-      cur_func_->PushInstruction(std::make_unique<CallInstruction>(func->GetName()));
       auto &res = call_stmt->GetResult();
+      cur_func_->PushInstruction(std::make_unique<CallInstruction>(func->GetName(), res != nullptr, args.size()));
       if (res != nullptr) {
         auto dest = GetRegister(call_stmt->GetResult(), t(0));
         if (dest != a(0)) {
@@ -404,14 +411,19 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
             assert(false);
           }
           auto offset = cur_func_->GetStackManager().GetMachineRegister(reg);
-          cur_func_->PushInstruction(std::make_unique<LoadInstruction>(reg, sp, offset, MemType::kWord));
+          auto temp = std::make_unique<LoadInstruction>(reg, sp, offset, MemType::kWord);
+          loaded_registers.insert(item.GetId());
+          cur_func_->PushInstruction(std::move(temp));
         }
+        loaded_registers.erase(a(0).GetId());
         StoreRegister(res, dest, t(1));
       } else {
         for (auto item : backup_list) {
           AsmRegister reg(item);
           auto offset = cur_func_->GetStackManager().GetMachineRegister(reg);
-          cur_func_->PushInstruction(std::make_unique<LoadInstruction>(reg, sp, offset, MemType::kWord));
+          auto temp = std::make_unique<LoadInstruction>(reg, sp, offset, MemType::kWord);
+          loaded_registers.insert(item.GetId());
+          cur_func_->PushInstruction(std::move(temp));
         }
       }
     } else if (auto gep_stmt = dynamic_cast<GetElementPtrStmt *>(stmt.get()); gep_stmt != nullptr) {
@@ -433,6 +445,7 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
         cur_func_->PushInstruction(
             std::make_unique<ImmArithInstruction>(dest, reg, offset, ArithInstruction::ArithType::kAdd));
         StoreRegister(res, dest, t(1));
+        loaded_registers.erase(dest.GetId());
       } else {
         auto type = ir_ptr->GetType();
         auto ptr_reg = LoadRegister(ptr, t(1));
@@ -447,7 +460,6 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
             cur_func_->PushInstruction(
                 std::make_unique<RegArithInstruction>(dest, ptr_reg, index_reg, ArithInstruction::ArithType::kAdd));
           }
-          StoreRegister(res, dest, t(2));
         } else {
           auto index_val = std::dynamic_pointer_cast<Constant>(index[0]);
           if (index_val != nullptr) {
@@ -460,8 +472,9 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
             cur_func_->PushInstruction(
                 std::make_unique<RegArithInstruction>(dest, ptr_reg, t(2), ArithInstruction::ArithType::kAdd));
           }
-          StoreRegister(res, dest, t(2));
         }
+        StoreRegister(res, dest, t(2));
+        loaded_registers.erase(dest.GetId());
       }
     } else if (auto icmp_stmt = dynamic_cast<ICmpStmt *>(stmt.get()); icmp_stmt != nullptr) {
       auto &res = icmp_stmt->GetResult();
@@ -521,6 +534,7 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
           assert(false);
       }
       StoreRegister(res, dest, t(1));
+      loaded_registers.erase(dest.GetId());
     } else if (auto load_stmt = dynamic_cast<LoadStmt *>(stmt.get()); load_stmt != nullptr) {
       auto &res = load_stmt->GetResult();
       auto &ptr = load_stmt->GetPtr();
@@ -529,6 +543,7 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
       auto dest = LoadRegister(res, t(0));
       cur_func_->PushInstruction(std::make_unique<LoadInstruction>(dest, ptr_reg, 0, mem_type));
       StoreRegister(res, dest, t(2));
+      loaded_registers.erase(dest.GetId());
     } else if (auto store_stmt = dynamic_cast<StoreStmt *>(stmt.get()); store_stmt != nullptr) {
       auto &val = store_stmt->GetValue();
       auto &ptr = store_stmt->GetPtr();
@@ -565,6 +580,7 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
         auto src = LoadRegister(std::dynamic_pointer_cast<Register>(source), t(1));
         cur_func_->PushInstruction(std::make_unique<MoveInstruction>(dest, src));
       }
+      loaded_registers.erase(dest.GetId());
       StoreRegister(res, dest, t(2));
     }
   }

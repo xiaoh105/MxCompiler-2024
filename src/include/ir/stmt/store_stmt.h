@@ -6,6 +6,8 @@
  */
 #pragma once
 
+#include <utility>
+
 #include "ir/stmt/stmt.h"
 
 /**
@@ -20,6 +22,7 @@ class StoreStmt : public Stmt {
   [[nodiscard]] const std::shared_ptr<Var> &GetValue() const { return value_; }
   [[nodiscard]] const std::shared_ptr<Register> &GetPtr() const { return ptr_; }
   void SetValue(std::shared_ptr<Var> value) { value_ = std::move(value); }
+  void SetPtr(std::shared_ptr<Register> ptr) { ptr_ = std::move(ptr); }
   [[nodiscard]] std::shared_ptr<Register> GetDef() const override { return nullptr; }
   [[nodiscard]] std::vector<std::shared_ptr<Register>> GetUse() const override {
     std::vector<std::shared_ptr<Register>> ret;

@@ -17,6 +17,8 @@ class LoadInstruction : public AsmInstruction {
     assert(mem_type_ != MemType::kUnknown);
     assert(imm_>= -2048 && imm_ <= 2047);
   }
+  [[nodiscard]] int GetDestId() const override { return rd_.GetId(); }
+  [[nodiscard]] std::list<int> GetSrcId() const override { return {rs1_.GetId()}; }
   void Print() const override {
     std::string type = mem_type_ == MemType::kWord ? "w" : mem_type_ == MemType::kHalfWord ? "h" : "b";
     std::cout << "l" << type << " " << rd_.GetName() << ", " << imm_ << "(" << rs1_.GetName() << ")" << std::endl;
@@ -36,6 +38,8 @@ class StoreInstruction : public AsmInstruction {
     assert(mem_type_ != MemType::kUnknown);
     assert(imm_ >= -2048 && imm_ <= 2047);
   }
+  [[nodiscard]] int GetDestId() const override { return -1; }
+  [[nodiscard]] std::list<int> GetSrcId() const override { return {rs1_.GetId(), rs2_.GetId()}; }
   void Print() const override {
     std::string type = mem_type_ == MemType::kWord ? "w" : mem_type_ == MemType::kHalfWord ? "h" : "b";
     std::cout << "s" << type << " " << rs2_.GetName() << ", " << imm_ << "(" << rs1_.GetName() << ")" << std::endl;

@@ -9,6 +9,7 @@
 #include "asm/instruction/arith.h"
 #include "asm/instruction/instruction.h"
 #include "asm/instruction/mem.h"
+#include "asm/register/virtual_register.h"
 #include "ir/function.h"
 #include "ir/stmt/call_stmt.h"
 #include "opt/reg_alloc/spill_graph.h"
@@ -17,7 +18,9 @@ class BasicBlock {
  public:
   explicit BasicBlock(std::string tag) : tag_(std::move(tag)) {}
   [[nodiscard]] const std::string &GetTag() const { return tag_; }
+  std::list<std::unique_ptr<AsmInstruction>> &GetInstructions() { return instructions_; }
   void PushInstruction(std::unique_ptr<AsmInstruction> instruction) { instructions_.push_back(std::move(instruction)); }
+  [[nodiscard]] const std::string &GetLabel() const { return tag_; }
   void Print() const {
     std::cout << "." << tag_ << ":" << std::endl;
     for (const auto &instruction : instructions_) {
@@ -27,7 +30,7 @@ class BasicBlock {
 
  private:
   const std::string tag_;
-  std::vector<std::unique_ptr<AsmInstruction>> instructions_;
+  std::list<std::unique_ptr<AsmInstruction>> instructions_;
 };
 
 class AsmFunction {
@@ -72,6 +75,7 @@ class AsmFunction {
       }
     }
   }
+  std::list<std::shared_ptr<BasicBlock>> &GetBlocks() { return blocks_; }
   [[nodiscard]] const std::string &GetName() const { return func_name_; }
   void PushInstruction(std::unique_ptr<AsmInstruction> instruction) {
     blocks_.back()->PushInstruction(std::move(instruction));
@@ -163,7 +167,7 @@ class AsmFunction {
   const std::shared_ptr<IRFunction> func_;
   std::size_t stack_size_{-1u};
   std::shared_ptr<BasicBlock> prologue_{nullptr};
-  std::vector<std::shared_ptr<BasicBlock>> blocks_;
+  std::list<std::shared_ptr<BasicBlock>> blocks_;
   std::unordered_map<std::string, std::shared_ptr<BasicBlock>> blocks_index_;
   std::unordered_map<std::shared_ptr<Register>, AsmRegister> allocation_;
   std::unordered_set<std::shared_ptr<Register>> spilled_regs_;

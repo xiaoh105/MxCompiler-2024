@@ -6,6 +6,7 @@
  */
 #include <cmath>
 
+#include "asm/instruction/branch.h"
 #include "ir/ir.h"
 #include "opt/normal_pass.h"
 
@@ -113,7 +114,8 @@ void ArithmeticReduction(const std::shared_ptr<IRFunction> &func, VarManager &va
             auto tmp2 = var_manager.CreateTmpVar(kIRIntType, "");
             stmts.insert(it, std::make_unique<BinaryStmt>(tmp2, BinaryStmt::OpType::kAdd, tmp1, lhs));
             auto x_sign = var_manager.CreateTmpVar(kIRIntType, "");
-            stmts.insert(it, std::make_unique<BinaryStmt>(x_sign, BinaryStmt::OpType::kShiftR, lhs, var_manager.GetInt(31)));
+            stmts.insert(
+                it, std::make_unique<BinaryStmt>(x_sign, BinaryStmt::OpType::kShiftR, lhs, var_manager.GetInt(31)));
             if (imm > 0) {
               lhs = tmp2;
               rhs = x_sign;
@@ -132,8 +134,8 @@ void ArithmeticReduction(const std::shared_ptr<IRFunction> &func, VarManager &va
             auto tmp = lhs;
             if (imm != 2) {
               auto tmp0 = var_manager.CreateTmpVar(kIRIntType, "");
-              stmts.insert(
-                  it, std::make_unique<BinaryStmt>(tmp0, BinaryStmt::OpType::kShiftR, lhs, var_manager.GetInt(pow - 1)));
+              stmts.insert(it, std::make_unique<BinaryStmt>(tmp0, BinaryStmt::OpType::kShiftR, lhs,
+                                                            var_manager.GetInt(pow - 1)));
               tmp = tmp0;
             }
             auto tmp1 = var_manager.CreateTmpVar(kIRIntType, "");
@@ -170,12 +172,13 @@ bool DeadCodeElimination(const std::shared_ptr<IRFunction> &func) {
     for (auto it = stmts.begin(); it != stmts.end();) {
       auto &stmt = *it;
       auto def = stmt->GetDef();
-      if (def != nullptr && !def->IsGlobal() && !live_out.Contains(def) && dynamic_cast<CallStmt *>(stmt.get()) == nullptr) {
+      if (def != nullptr && !def->IsGlobal() && !live_out.Contains(def) &&
+          dynamic_cast<CallStmt *>(stmt.get()) == nullptr) {
         it = stmts.erase(it);
         succeed = true;
         continue;
       }
-      live_out  = reg_manager.GetSet(stmt->GetUse()) | live_out - reg_manager.GetSet({def});
+      live_out = reg_manager.GetSet(stmt->GetUse()) | live_out - reg_manager.GetSet({def});
       ++it;
     }
     stmts.reverse();
@@ -192,4 +195,85 @@ bool DeadCodeElimination(const std::shared_ptr<IRFunction> &func) {
     }
   }
   return succeed;
+}
+
+void RemoveRedundantJump(const std::shared_ptr<AsmFunction> &func) {
+  auto &blocks = func->GetBlocks();
+  for (auto it = blocks.begin(); it != blocks.end(); ++it) {
+    auto next_it = ++it;
+    --it;
+    if (next_it != blocks.end()) {
+      auto &block = *it;
+      auto &next_block = *next_it;
+      auto j_stmt = dynamic_cast<JInstruction *>(block->GetInstructions().back().get());
+      if (j_stmt != nullptr && j_stmt->GetLabel() == next_block->GetLabel()) {
+        block->GetInstructions().pop_back();
+      }
+    }
+  }
+}
+
+void RemoveRedundantInstruction(const std::shared_ptr<AsmFunction> &func) {
+  for (auto &block : func->GetBlocks()) {
+    auto &stmts = block->GetInstructions();
+    for (auto it = stmts.begin(); it != stmts.end();) {
+      auto &stmt = *it;
+      if (auto move_stmt = dynamic_cast<MoveInstruction *>(stmt.get()); move_stmt != nullptr) {
+        if (move_stmt->GetDestReg() == move_stmt->GetSrcReg()) {
+          it = stmts.erase(it);
+          continue;
+        }
+      }
+      if (auto imm_arith_stmt = dynamic_cast<ImmArithInstruction *>(stmt.get()); imm_arith_stmt != nullptr) {
+        if (imm_arith_stmt->GetDestReg() == imm_arith_stmt->GetSrcReg() && imm_arith_stmt->GetImm() == 0 &&
+            (imm_arith_stmt->GetArithType() == ArithInstruction::ArithType::kAdd ||
+             imm_arith_stmt->GetArithType() == ArithInstruction::ArithType::kSub)) {
+          it = stmts.erase(it);
+          continue;
+        }
+      }
+      ++it;
+    }
+  }
+}
+
+bool RemoveDeadInstruction(const std::shared_ptr<AsmFunction> &func) {
+  bool succeed = false;
+  auto &blocks = func->GetBlocks();
+  for (const auto &block : blocks) {
+    auto &stmts = block->GetInstructions();
+    std::unordered_map<int, std::list<std::unique_ptr<AsmInstruction>>::iterator> stmt_map;
+    for (auto it = stmts.begin(); it != stmts.end(); ++it) {
+      auto &stmt = *it;
+      auto def = stmt->GetDestId();
+      auto use = stmt->GetSrcId();
+      for (auto reg : use) {
+        stmt_map.erase(reg);
+      }
+      if (auto call_stmt = dynamic_cast<CallInstruction *>(stmt.get()); call_stmt != nullptr) {
+        for (auto reg : caller_saved_registers) {
+          if (stmt_map.contains(reg.GetId())) {
+            succeed = true;
+            stmts.erase(stmt_map.at(reg.GetId()));
+            stmt_map.erase(reg.GetId());
+          }
+        }
+      } else {
+        if (def != -1) {
+          if (stmt_map.contains(def)) {
+            succeed = true;
+            stmts.erase(stmt_map.at(def));
+          }
+          stmt_map[def] = it;
+        }
+      }
+    }
+  }
+  return succeed;
+}
+
+void DeadAsmElimination(const std::shared_ptr<AsmFunction> &func) {
+  RemoveRedundantJump(func);
+  RemoveRedundantInstruction(func);
+  while (RemoveDeadInstruction(func)) {}
 }
