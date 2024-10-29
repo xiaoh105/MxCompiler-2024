@@ -707,7 +707,13 @@ void AsmBuilder::BuildBlock(const std::shared_ptr<Block> &block) {
     }
     for (const auto &reg : cur_func_->GetBackupCalleeList()) {
       auto offset = cur_func_->GetStackManager().GetMachineRegister(reg);
-      cur_func_->PushInstruction(std::make_unique<LoadInstruction>(reg, sp, offset, MemType::kWord));
+      if (offset > 2047) {
+        cur_func_->PushInstruction(std::make_unique<LoadImmInstruction>(t(0), offset));
+        cur_func_->PushInstruction(std::make_unique<RegArithInstruction>(t(0), sp, t(0), ArithInstruction::ArithType::kAdd));
+        cur_func_->PushInstruction(std::make_unique<LoadInstruction>(reg, t(0), 0, MemType::kWord));
+      } else {
+        cur_func_->PushInstruction(std::make_unique<LoadInstruction>(reg, sp, offset, MemType::kWord));
+      }
     }
     auto stack_size = cur_func_->GetStackManager().GetStackSize();
     if (stack_size > 2047) {

@@ -8,7 +8,11 @@
 
 #include <memory>
 
+#include "opt/cfg.h"
+
 class IRFunction;
 class VarManager;
 
 void ArithmeticReduction(const std::shared_ptr<IRFunction> &func, VarManager& var_manager);
+
+bool DeadCodeElimination(const std::shared_ptr<IRFunction> &func);

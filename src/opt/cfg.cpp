@@ -10,8 +10,6 @@
 #include "ir/ir.h"
 #include "opt/cfg.h"
 
-#include <queue>
-
 CFGNode::CFGNode(std::shared_ptr<Block> block) : block_(std::move(block)) {}
 
 std::shared_ptr<Block> &CFGNode::GetBlock() { return block_; }
@@ -62,12 +60,16 @@ void CFGNode::SetLiveOut(Set<Register> live_out) { live_out_ = std::move(live_ou
 
 const Set<Register> &CFGNode::GetDef() const { return def_; }
 
+const Set<Register> &CFGNode::GetPhiDef() const { return phi_def_; }
+
 const Set<Register> &CFGNode::GetUse() const { return use_; }
 
 void CFGNode::SetDefUse(Set<Register> def, Set<Register> use) {
   def_ = std::move(def);
   use_ = std::move(use);
 }
+
+void CFGNode::SetPhiDef(Set<Register> phi_def) { phi_def_ = std::move(phi_def); }
 
 extern bool generate_dominator_tree;
 extern bool generate_data_flow;
@@ -272,8 +274,9 @@ void ControlFlowGraph::SetDefUse() {
     auto &block = node->GetBlock();
     auto def = reg_manager_.EmptySet();
     auto use = reg_manager_.EmptySet();
+    auto phi_def = reg_manager_.EmptySet();
     for (const auto &stmt : block->GetPhiStmts()) {
-      def |= reg_manager_.GetSet({stmt->GetDef()});
+      phi_def |= reg_manager_.GetSet({stmt->GetDef()});
     }
     for (const auto &stmt : block->GetStmts()) {
       use |= reg_manager_.GetSet(stmt->GetUse()) - def;
@@ -286,6 +289,7 @@ void ControlFlowGraph::SetDefUse() {
     use |= reg_manager_.GetSet(block->GetBranchStmt()->GetUse()) - def;
     def |= reg_manager_.GetSet({block->GetBranchStmt()->GetDef()});
     node->SetDefUse(std::move(def), std::move(use));
+    node->SetPhiDef(std::move(phi_def));
   }
 }
 
@@ -309,8 +313,11 @@ void ControlFlowGraph::GetDataFlow() {
     flag.erase(node);
     auto live_in = reg_manager_.EmptySet();
     auto live_out = reg_manager_.EmptySet();
+    if (node->GetBlock()->GetLabel() == "andEnd.7") {
+      live_out = live_out;
+    }
     for (const auto &suc : node->GetSuc()) {
-      live_out |= suc.lock()->GetLiveIn();
+      live_out |= suc.lock()->GetLiveIn() - suc.lock()->GetPhiDef();
       for (const auto &stmt : suc.lock()->GetBlock()->GetPhiStmts()) {
         auto phi_stmt = dynamic_cast<PhiStmt *>(stmt.get());
         assert(phi_stmt != nullptr);
@@ -325,7 +332,7 @@ void ControlFlowGraph::GetDataFlow() {
         }
       }
     }
-    live_in = node->GetUse() | live_out - node->GetDef();
+    live_in = node->GetUse() | live_out - node->GetDef() | node->GetPhiDef();
     if (live_out != node->GetLiveOut() || live_in != node->GetLiveIn()) {
       node->SetLiveOut(live_out);
       node->SetLiveIn(live_in);

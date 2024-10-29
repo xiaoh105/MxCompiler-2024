@@ -34,10 +34,12 @@ public:
   [[nodiscard]] const Set<Register> &GetLiveIn() const;
   [[nodiscard]] const Set<Register> &GetLiveOut() const;
   [[nodiscard]] const Set<Register> &GetDef() const;
+  [[nodiscard]] const Set<Register> &GetPhiDef() const;
   [[nodiscard]] const Set<Register> &GetUse() const;
   void SetLiveIn(Set<Register> live_in);
   void SetLiveOut(Set<Register> live_out);
   void SetDefUse(Set<Register> def, Set<Register> use);
+  void SetPhiDef(Set<Register> phi_def);
 
 private:
   std::shared_ptr<Block> block_{nullptr};
@@ -51,6 +53,7 @@ private:
   Set<Register> live_in_;
   Set<Register> live_out_;
   Set<Register> def_;
+  Set<Register> phi_def_;
   Set<Register> use_;
 };
 

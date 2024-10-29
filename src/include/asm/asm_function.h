@@ -93,7 +93,7 @@ class AsmFunction {
       stack_manager_.ReserveRegister({used_reg});
     }
     stack_size_ = stack_manager_.GetStackSize();
-    if (stack_size_ > 2048) {
+    if (stack_size_ >= 2048) {
       prologue_->PushInstruction(std::make_unique<LoadImmInstruction>(t(0), -1 * stack_size_));
       prologue_->PushInstruction(
           std::make_unique<RegArithInstruction>(sp, sp, t(0), ArithInstruction::ArithType::kAdd));
@@ -102,8 +102,15 @@ class AsmFunction {
                                                                        ArithInstruction::ArithType::kAdd));
     }
     for (const auto &reg : backup_callee_list_) {
-      prologue_->PushInstruction(
-          std::make_unique<StoreInstruction>(sp, reg, stack_manager_.GetMachineRegister(reg), MemType::kWord));
+      auto offset = stack_manager_.GetMachineRegister(reg);
+      if (offset >= 2048) {
+        prologue_->PushInstruction(std::make_unique<LoadImmInstruction>(t(0), offset));
+        prologue_->PushInstruction(std::make_unique<RegArithInstruction>(t(0), sp, t(0), ArithInstruction::ArithType::kAdd));
+        prologue_->PushInstruction(std::make_unique<StoreInstruction>(t(0), reg, 0, MemType::kWord));
+      } else {
+        prologue_->PushInstruction(
+        std::make_unique<StoreInstruction>(sp, reg, stack_manager_.GetMachineRegister(reg), MemType::kWord));
+      }
     }
     auto &arg_var = func_->GetArgumentVars();
     int cnt = 0;

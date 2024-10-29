@@ -152,3 +152,44 @@ void ArithmeticReduction(const std::shared_ptr<IRFunction> &func, VarManager &va
     }
   }
 }
+
+bool DeadCodeElimination(const std::shared_ptr<IRFunction> &func) {
+  ControlFlowGraph cfg(func);
+  if (cfg.GetRegisters().empty()) {
+    return false;
+  }
+  bool succeed = false;
+  auto &reg_manager = cfg.GetRegManager();
+  auto &cfg_nodes = cfg.GetCFGNodes();
+  for (auto &node : cfg_nodes) {
+    auto live_out = node->GetLiveOut();
+    auto &br_stmt = node->GetBlock()->GetBranchStmt();
+    live_out |= reg_manager.GetSet(br_stmt->GetUse());
+    auto &stmts = node->GetBlock()->GetStmts();
+    stmts.reverse();
+    for (auto it = stmts.begin(); it != stmts.end();) {
+      auto &stmt = *it;
+      auto def = stmt->GetDef();
+      if (def != nullptr && !def->IsGlobal() && !live_out.Contains(def) && dynamic_cast<CallStmt *>(stmt.get()) == nullptr) {
+        it = stmts.erase(it);
+        succeed = true;
+        continue;
+      }
+      live_out  = reg_manager.GetSet(stmt->GetUse()) | live_out - reg_manager.GetSet({def});
+      ++it;
+    }
+    stmts.reverse();
+    auto &phi_stmts = node->GetBlock()->GetPhiStmts();
+    for (auto it = phi_stmts.begin(); it != phi_stmts.end();) {
+      auto &stmt = *it;
+      auto def = stmt->GetDef();
+      if (def != nullptr && !live_out.Contains(def)) {
+        it = stmts.erase(it);
+        succeed = true;
+        continue;
+      }
+      ++it;
+    }
+  }
+  return succeed;
+}

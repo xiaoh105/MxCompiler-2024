@@ -193,7 +193,7 @@ void CoalesceGraph::Select(std::stack<std::shared_ptr<RegisterNode>> worklist) {
     int pos = -1;
     int max_preference = INT32_MIN;
     for (auto reg : used_regs) {
-      if (reg_preference[static_cast<int>(reg)] > max_preference) {
+      if (reg_preference[static_cast<int>(reg)] >= max_preference) {
         max_preference = reg_preference[static_cast<int>(reg)];
         pos = static_cast<int>(reg);
       }

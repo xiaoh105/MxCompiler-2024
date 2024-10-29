@@ -502,6 +502,7 @@ void IRBuilder::visit(BinaryExprNode *node) {
       rhs->accept(this);
       r_var = ToRightVal(rhs->GetVar());
       cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(and_end));
+      and_rhs = cur_func_->GetCurBlock();
       cur_func_->PushBlock(and_end);
       auto res = vars_.CreateTmpVar(kIRBoolType, "");
       cur_func_->GetCurBlock()->AppendPhi(
@@ -521,6 +522,7 @@ void IRBuilder::visit(BinaryExprNode *node) {
       rhs->accept(this);
       r_var = ToRightVal(rhs->GetVar());
       cur_func_->PushStmt(std::make_unique<UnconditionalBrStmt>(or_end));
+      or_rhs = cur_func_->GetCurBlock();
       cur_func_->PushBlock(or_end);
       auto res = vars_.CreateTmpVar(kIRBoolType, "");
       cur_func_->GetCurBlock()->AppendPhi(
@@ -958,6 +960,7 @@ void IRBuilder::visit(RootNode *node) {
       if (!emit_llvm) {
         ArithmeticReduction(func.second, vars_);
       }
+      DeadCodeElimination(func.second);
     }
   }
 }
