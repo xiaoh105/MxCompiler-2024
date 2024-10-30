@@ -103,93 +103,75 @@ std::unordered_map<std::shared_ptr<IRFunction>, GlobalUsageInfo> Localization(Fu
     auto &use = node->use_;
     auto &func = node->func_;
     std::unordered_map<std::shared_ptr<Register>, std::shared_ptr<Register>> local_map;
-    std::unordered_map<std::shared_ptr<Register>, std::shared_ptr<Register>> replace_map;
     for (const auto &reg : use) {
-      if (!def.contains(reg)) {
-        auto local_reg =
-            std::make_shared<Register>(reg->GetType().RemovePtr(), reg->GetName().substr(1) + ".local", false, false);
-        local_map.emplace(reg, local_reg);
-      }
+      auto local_reg = std::make_shared<Register>(reg->GetType(), reg->GetName().substr(1) + ".local", false, true);
+      local_map.emplace(reg, local_reg);
     }
+    int temp_cnt = 0;
     ret.emplace(func, GlobalUsageInfo{node->def_, node->use_});
     for (const auto &block : func->GetBlocks()) {
       auto &stmts = block->GetStmts();
       for (auto it = stmts.begin(); it != stmts.end();) {
         auto &stmt = *it;
         if (auto load_stmt = dynamic_cast<LoadStmt *>(stmt.get()); load_stmt != nullptr) {
-          if (replace_map.contains(load_stmt->GetPtr())) {
-            load_stmt->SetPtr(replace_map.at(load_stmt->GetPtr()));
-          }
           if (load_stmt->GetPtr()->IsGlobal() && local_map.contains(load_stmt->GetPtr())) {
-            replace_map[load_stmt->GetResult()] = local_map.at(load_stmt->GetPtr());
-            it = stmts.erase(it);
-            continue;
-          }
-        } else if (auto binary_stmt = dynamic_cast<BinaryStmt *>(stmt.get()); binary_stmt != nullptr) {
-          auto lhs = std::dynamic_pointer_cast<Register>(binary_stmt->GetLeft());
-          auto rhs = std::dynamic_pointer_cast<Register>(binary_stmt->GetRight());
-          if (lhs != nullptr && replace_map.contains(lhs)) {
-            binary_stmt->SetLeft(replace_map.at(lhs));
-          }
-          if (rhs != nullptr && replace_map.contains(rhs)) {
-            binary_stmt->SetRight(replace_map.at(rhs));
-          }
-        } else if (auto call_stmt = dynamic_cast<CallStmt *>(stmt.get()); call_stmt != nullptr) {
-          auto &args = call_stmt->GetArguments();
-          for (auto &arg : args) {
-            auto reg = std::dynamic_pointer_cast<Register>(arg);
-            if (reg != nullptr && replace_map.contains(reg)) {
-              arg = replace_map.at(reg);
-            }
-          }
-        } else if (auto gep_stmt = dynamic_cast<GetElementPtrStmt *>(stmt.get()); gep_stmt != nullptr) {
-          if (replace_map.contains(gep_stmt->GetPtr())) {
-            gep_stmt->SetPtr(replace_map.at(gep_stmt->GetPtr()));
-          }
-          auto &index = gep_stmt->GetIndex();
-          for (auto &arg : index) {
-            auto reg = std::dynamic_pointer_cast<Register>(arg);
-            if (reg != nullptr && replace_map.contains(reg)) {
-              arg = replace_map.at(reg);
-            }
-          }
-        } else if (auto icmp_stmt = dynamic_cast<ICmpStmt *>(stmt.get()); icmp_stmt != nullptr) {
-          auto lhs = std::dynamic_pointer_cast<Register>(icmp_stmt->GetLhs());
-          auto rhs = std::dynamic_pointer_cast<Register>(icmp_stmt->GetRhs());
-          if (lhs != nullptr && replace_map.contains(lhs)) {
-            icmp_stmt->SetLhs(replace_map.at(lhs));
-          }
-          if (rhs != nullptr && replace_map.contains(rhs)) {
-            icmp_stmt->SetRhs(replace_map.at(rhs));
+            load_stmt->SetPtr(local_map.at(load_stmt->GetPtr()));
           }
         } else if (auto store_stmt = dynamic_cast<StoreStmt *>(stmt.get()); store_stmt != nullptr) {
-          if (replace_map.contains(store_stmt->GetPtr())) {
-            store_stmt->SetPtr(replace_map.at(store_stmt->GetPtr()));
+          if (store_stmt->GetPtr()->IsGlobal() && local_map.contains(store_stmt->GetPtr())) {
+            store_stmt->SetPtr(local_map.at(store_stmt->GetPtr()));
           }
-          auto val = std::dynamic_pointer_cast<Register>(store_stmt->GetValue());
-          if (val != nullptr && replace_map.contains(val)) {
-            store_stmt->SetValue(replace_map.at(val));
+        } else if (auto call_stmt = dynamic_cast<CallStmt *>(stmt.get()); call_stmt != nullptr) {
+          auto &call_func = call_stmt->GetFunction();
+          auto next_it = ++it;
+          --it;
+          if (!call_func.lock()->IsBuiltin()) {
+            for (const auto &call_node : list) {
+              if (call_node->func_ == call_func.lock()) {
+                for (const auto &use_reg : use) {
+                  if (def.contains(use_reg) && call_node->use_.contains(use_reg)) {
+                    auto &local_reg = local_map.at(use_reg);
+                    auto tmp_reg = std::make_shared<Register>(local_reg->GetType().RemovePtr(),
+                                                              "loadLocal." + std::to_string(temp_cnt++), false, false);
+                    stmts.insert(it, std::make_unique<LoadStmt>(tmp_reg, local_reg));
+                    stmts.insert(it, std::make_unique<StoreStmt>(tmp_reg, use_reg));
+                  }
+                  if (call_node->def_.contains(use_reg)) {
+                    auto &local_reg = local_map.at(use_reg);
+                    auto tmp_reg = std::make_shared<Register>(local_reg->GetType().RemovePtr(),
+                                                              "storeLocal." + std::to_string(temp_cnt++), false, false);
+                    stmts.insert(next_it, std::make_unique<LoadStmt>(tmp_reg, use_reg));
+                    stmts.insert(next_it, std::make_unique<StoreStmt>(tmp_reg, local_reg));
+                  }
+                }
+              }
+            }
+            it = next_it;
+            continue;
           }
         }
         ++it;
       }
       auto &br_stmt = block->GetBranchStmt();
-      if (auto cond_br_stmt = dynamic_cast<ConditionalBrStmt *>(br_stmt.get()); cond_br_stmt != nullptr) {
-        auto reg = std::dynamic_pointer_cast<Register>(cond_br_stmt->GetCondition());
-        if (reg != nullptr && replace_map.contains(reg)) {
-          cond_br_stmt->SetCondition(replace_map.at(reg));
-        }
-      } else if (auto ret_stmt = dynamic_cast<RetStmt *>(br_stmt.get()); ret_stmt != nullptr) {
-        auto reg = std::dynamic_pointer_cast<Register>(ret_stmt->GetRet());
-        if (reg != nullptr && replace_map.contains(reg)) {
-          ret_stmt->SetRet(replace_map.at(reg));
+      if (auto ret_stmt = dynamic_cast<RetStmt *>(br_stmt.get()); ret_stmt != nullptr) {
+        for (const auto &reg : def) {
+          if (use.contains(reg)) {
+            auto &local_reg = local_map.at(reg);
+            auto tmp_reg = std::make_shared<Register>(local_reg->GetType().RemovePtr(),
+                                                      "loadLocal." + std::to_string(temp_cnt++), false, false);
+            stmts.push_back(std::make_unique<LoadStmt>(tmp_reg, local_reg));
+            stmts.push_back(std::make_unique<StoreStmt>(tmp_reg, reg));
+          }
         }
       }
     }
     for (const auto &reg : use) {
-      if (!def.contains(reg)) {
-        func->GetBlocks()[0]->GetStmts().push_back(std::make_unique<LoadStmt>(local_map.at(reg), reg));
-      }
+      auto &local_reg = local_map.at(reg);
+      func->GetBlocks()[0]->GetStmts().push_back(std::make_unique<AllocaStmt>(local_reg));
+      auto tmp_reg = std::make_shared<Register>(local_reg->GetType().RemovePtr(),
+                                                "storeLocal." + std::to_string(temp_cnt++), false, false);
+      func->GetBlocks()[0]->GetStmts().push_back(std::make_unique<LoadStmt>(tmp_reg, reg));
+      func->GetBlocks()[0]->GetStmts().push_back(std::make_unique<StoreStmt>(tmp_reg, local_reg));
     }
   }
   return ret;
